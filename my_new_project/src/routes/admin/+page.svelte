@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance, deserialize } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { onMount, untrack } from 'svelte';
 	import type { DiscountCode } from '$lib/discountCodes';
@@ -119,6 +119,94 @@
 
 	// מינוי רכז - מודל
 	let showCoordModal  = $state(false);
+
+	// ---- SMS "השלימו עיר ושכונה" למי שלא מילא (סופר-אדמין) ----
+	// המודל מציג נוסח לעריכה, כמה נמענים, כפתור בדיקה לעצמי, ושליחה לכולם במנות
+	// (הפעולה בשרת שולחת עד 20 בכל קריאה ומסמנת את מי שהצליח; כאן קוראים שוב עד שנגמר).
+	const SMS_DRAFT =
+		'שלום {name}, כאן "קהילה בשכונה" 👋\n' +
+		'בפרופיל שלך חסרים עיר ושכונה, ובלעדיהם האתר לא יודע להציג לך את מה שקורה אצלך.\n' +
+		'ההשלמה לוקחת חצי דקה: https://community.gofreeil.com/profile';
+	let showSmsModal = $state(false);
+	let smsText      = $state(SMS_DRAFT);
+	let smsBusy      = $state(false);
+	let smsStop      = $state(false);
+	let smsLog       = $state<string[]>([]);
+	let smsSentTotal = $state(0);
+
+	const isMobile = (p: string | null | undefined) => {
+		let d = (p ?? '').replace(/\D/g, '');
+		if (d.startsWith('972')) d = '0' + d.slice(3);
+		return /^05\d{8}$/.test(d);
+	};
+	// נמענים צפויים: בלי עיר, נייד תקין, לא חסום, לא נשלח להם כבר
+	const smsRecipients = $derived(
+		(data.users ?? []).filter((u) =>
+			!(u as any).city?.trim() && !u.banned && !(u as any).sms_profile_nudge_at && isMobile(u.phone)),
+	);
+	// בלי עיר אבל בלי נייד תקין - אי אפשר להגיע אליהם ב-SMS
+	const smsUnreachable = $derived(
+		(data.users ?? []).filter((u) => !(u as any).city?.trim() && !isMobile(u.phone)).length,
+	);
+
+	function openSmsModal() {
+		smsLog = [];
+		smsSentTotal = 0;
+		smsStop = false;
+		showSmsModal = true;
+	}
+
+	async function smsCall(mode: 'test' | 'batch') {
+		const fd = new FormData();
+		fd.set('message', smsText);
+		fd.set('mode', mode);
+		const res = await fetch('?/smsIncompleteProfiles', {
+			method: 'POST', body: fd, headers: { 'x-sveltekit-action': 'true' },
+		});
+		const result = deserialize(await res.text());
+		if (result.type === 'success') {
+			return (result.data as any)?.smsResult as
+				{ sent: number; failed: number; remaining: number; provider: string; failedSample?: string[] };
+		}
+		const err = result.type === 'failure' ? String((result.data as any)?.smsError ?? 'שגיאה') : 'שגיאה';
+		throw new Error(err);
+	}
+
+	async function smsSendTest() {
+		if (smsBusy || !smsText.trim()) return;
+		smsBusy = true;
+		try {
+			const r = await smsCall('test');
+			smsLog = [...smsLog, `✅ הודעת בדיקה נשלחה לנייד שלך (ספק: ${r.provider}). בדוק איך היא נראית לפני שליחה לכולם.`];
+		} catch (e) {
+			smsLog = [...smsLog, `❌ ${e instanceof Error ? e.message : e}`];
+		} finally {
+			smsBusy = false;
+		}
+	}
+
+	async function smsSendAll() {
+		if (smsBusy || !smsText.trim()) return;
+		if (!confirm(`לשלוח SMS ל-${smsRecipients.length} משתמשים שלא מילאו עיר ושכונה? השליחה במנות, ואפשר לעצור באמצע.`)) return;
+		smsBusy = true;
+		smsStop = false;
+		try {
+			for (let i = 0; i < 100 && !smsStop; i++) {
+				const r = await smsCall('batch');
+				smsSentTotal += r.sent;
+				smsLog = [...smsLog,
+					`מנה ${i + 1}: נשלחו ${r.sent}${r.failed ? `, נכשלו ${r.failed}` : ''}${r.remaining ? `, נותרו ${r.remaining}` : ''}` +
+					(r.failedSample?.length ? ` (${r.failedSample.join(' · ')})` : ''),
+				];
+				if (r.remaining <= 0 || (r.sent === 0 && r.failed > 0)) break;
+			}
+			smsLog = [...smsLog, smsStop ? `⏹️ נעצר. סה"כ נשלחו ${smsSentTotal}.` : `✅ הסתיים. סה"כ נשלחו ${smsSentTotal}.`];
+		} catch (e) {
+			smsLog = [...smsLog, `❌ ${e instanceof Error ? e.message : e} (סה"כ נשלחו עד כה ${smsSentTotal})`];
+		} finally {
+			smsBusy = false;
+		}
+	}
 	let coordModalUser  = $state<{ id: string; name: string | null; coordinator_of: string[]; neighborhood?: string | null; city?: string | null } | null>(null);
 	let coordNeighborhoods = $state(''); // שכונות מופרדות בשורות
 	// בורר מובנה במודל הרכז: החלפת/הוספת שכונה מהרשימה הרשמית (מונע שגיאות פורמט "שכונה (עיר)")
@@ -895,6 +983,15 @@
 				<span class="text-xs text-gray-500">
 					{(data.users ?? []).filter((u) => !(u as any).city?.trim()).length} משתמשים בלי עיר
 				</span>
+				<!-- SMS יזום למי שלא מילא - נפתח מודל עם נוסח לעריכה לפני שליחה -->
+				<button
+					type="button"
+					onclick={openSmsModal}
+					class="px-3 py-1.5 text-sm rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all cursor-pointer"
+					title="שליחת SMS לכל מי שלא מילא עיר ושכונה - הנוסח נפתח לעריכה לפני השליחה"
+				>
+					📱 SMS למי שלא השלים פרטים ({smsRecipients.length})
+				</button>
 			</form>
 
 			{#if usersListOpen || searchQuery}
@@ -1166,6 +1263,86 @@
 </div>
 
 <!-- מודל מינוי רכז -->
+<!-- מודל SMS "השלימו עיר ושכונה": נוסח לעריכה, בדיקה לעצמי, שליחה לכולם במנות -->
+{#if showSmsModal}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+		onclick={(e) => { if (e.target === e.currentTarget && !smsBusy) showSmsModal = false; }}
+		onkeydown={(e) => { if (e.key === 'Escape' && !smsBusy) showSmsModal = false; }}
+		role="dialog"
+		aria-modal="true"
+		aria-label="שליחת SMS למי שלא השלים פרטים"
+		tabindex="-1"
+		dir="rtl"
+	>
+		<div class="w-full max-w-lg rounded-2xl bg-[#0f172a] border border-white/10 p-5 shadow-2xl">
+			<h2 class="text-xl font-bold mb-1">📱 SMS למי שלא השלים פרטים</h2>
+			<p class="text-gray-400 text-sm mb-3">
+				נמענים: <span class="text-white font-bold">{smsRecipients.length}</span> משתמשים בלי עיר, עם נייד תקין, שעוד לא קיבלו.
+				{#if smsUnreachable}
+					<span class="text-gray-500">({smsUnreachable} נוספים בלי נייד תקין - לא ניתן להגיע אליהם ב-SMS)</span>
+				{/if}
+			</p>
+
+			<label for="sms-text" class="block text-xs text-gray-400 font-bold mb-1">הנוסח שיישלח (אפשר לערוך; <code>{'{name}'}</code> = שם הנמען)</label>
+			<textarea
+				id="sms-text"
+				bind:value={smsText}
+				rows="6"
+				maxlength="600"
+				disabled={smsBusy}
+				class="w-full resize-y rounded-xl bg-[#070b14] border border-white/10 focus:border-emerald-400/60 focus:outline-none text-white text-sm leading-relaxed px-3 py-2 disabled:opacity-60"
+			></textarea>
+			<div class="text-[11px] text-gray-500 mt-1 mb-3">{smsText.length} תווים · הודעה בעברית מפוצלת לקטעים של ~70 תווים</div>
+
+			<div class="flex items-center gap-2 flex-wrap">
+				<button
+					type="button"
+					disabled={smsBusy || !smsText.trim()}
+					onclick={smsSendTest}
+					class="px-3 py-2 text-sm rounded-lg bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:bg-blue-500/20 transition-all cursor-pointer disabled:opacity-40"
+					title="שולח את הנוסח רק לנייד שלך, כדי לראות איך הוא נראה"
+				>
+					🧪 שלח לי לבדיקה
+				</button>
+				<button
+					type="button"
+					disabled={smsBusy || !smsText.trim() || smsRecipients.length === 0}
+					onclick={smsSendAll}
+					class="px-3 py-2 text-sm rounded-lg bg-emerald-500/20 text-emerald-200 border border-emerald-500/50 hover:bg-emerald-500/30 font-bold transition-all cursor-pointer disabled:opacity-40"
+				>
+					{smsBusy ? '⏳ שולח...' : `📨 שלח ל-${smsRecipients.length} נמענים`}
+				</button>
+				{#if smsBusy}
+					<button
+						type="button"
+						onclick={() => (smsStop = true)}
+						class="px-3 py-2 text-sm rounded-lg bg-red-500/10 text-red-300 border border-red-500/30 hover:bg-red-500/20 transition-all cursor-pointer"
+					>
+						⏹️ עצור אחרי המנה הנוכחית
+					</button>
+				{/if}
+				<button
+					type="button"
+					disabled={smsBusy}
+					onclick={() => (showSmsModal = false)}
+					class="ms-auto px-3 py-2 text-sm rounded-lg text-gray-300 border border-white/15 hover:bg-white/10 transition-all cursor-pointer disabled:opacity-40"
+				>
+					סגור
+				</button>
+			</div>
+
+			{#if smsLog.length}
+				<div class="mt-3 rounded-xl bg-white/5 border border-white/10 p-3 max-h-40 overflow-y-auto space-y-1">
+					{#each smsLog as line}
+						<div class="text-xs text-gray-300">{line}</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
+
 {#if showCoordModal && coordModalUser}
 	<!-- סגירה בלחיצה על הרקע נבדקת לפי היעד עצמו, במקום stopPropagation על
 	     תיבת הדיאלוג - כך אין מאזין לחיצה על אלמנט לא-אינטראקטיבי -->

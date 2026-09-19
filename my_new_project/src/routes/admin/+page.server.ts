@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { withUserAvatarUrl } from '$lib/server/userAvatar';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, adminSmsSend, adminSmsStatus, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { cityCenters } from '$lib/neighborhoodCoords';
@@ -341,6 +341,74 @@ export const actions: Actions = {
             };
         } catch (e) {
             return fail(500, { error: `שגיאה בהשלמת מיקומים: ${e instanceof Error ? e.message : e}` });
+        }
+    },
+
+    /**
+     * SMS "השלימו עיר ושכונה" למשתמשים שלא מילאו - מנה אחת לכל קריאה (עד 20), הפרונט
+     * קורא שוב עד שנגמר. mode=test → רק לנייד של המנהל עצמו (הנוסח נבדק לפני שליחה לכולם).
+     * נמען: בלי עיר, נייד ישראלי תקין, לא חסום, ולא נשלח לו כבר (sms_profile_nudge_at).
+     * מי שהצליח מסומן מיד - כך גם ריצה שנעצרה באמצע לא שולחת פעמיים.
+     */
+    smsIncompleteProfiles: async (event) => {
+        const session = await event.locals.auth();
+        requireSuperAdmin(session);
+
+        const form = await event.request.formData();
+        const message = form.get('message')?.toString().trim() ?? '';
+        const mode    = form.get('mode')?.toString() === 'test' ? 'test' : 'batch';
+        if (!message) return fail(400, { smsError: 'חסר נוסח ההודעה' });
+        if (message.length > 600) return fail(400, { smsError: 'ההודעה ארוכה מדי (עד 600 תווים)' });
+
+        const isMobile = (p: string | null | undefined) => {
+            let d = (p ?? '').replace(/\D/g, '');
+            if (d.startsWith('972')) d = '0' + d.slice(3);
+            return /^05\d{8}$/.test(d);
+        };
+
+        try {
+            const status = await adminSmsStatus();
+            if (!status.enabled) return fail(503, { smsError: 'בבאקאנד לא מוגדר ספק SMS (SMSGATE / TRACCAR / TWILIO)' });
+            const perCall = Math.max(1, Math.min(20, status.maxPerCall || 20));
+
+            if (mode === 'test') {
+                const me = session?.user?.id ? await getUserById(session.user.id as string) : undefined;
+                if (!isMobile(me?.phone)) return fail(400, { smsError: 'בפרופיל שלך אין נייד תקין לשליחת בדיקה' });
+                const [r] = await adminSmsSend([{ phone: me!.phone, name: me?.name ?? '' }], message);
+                if (!r?.ok) return fail(502, { smsError: `שליחת הבדיקה נכשלה: ${r?.error ?? 'unknown'}` });
+                return { smsResult: { mode: 'test', sent: 1, failed: 0, remaining: 0, provider: status.provider } };
+            }
+
+            const users = await getAllUsersRaw();
+            const pending = users.filter((u) =>
+                !u.city?.trim() && !u.banned && !u.sms_profile_nudge_at && isMobile(u.phone));
+            const batch = pending.slice(0, perCall);
+            if (!batch.length) {
+                return { smsResult: { mode: 'batch', sent: 0, failed: 0, remaining: 0, provider: status.provider } };
+            }
+
+            const results = await adminSmsSend(
+                batch.map((u) => ({ phone: u.phone, name: u.name ?? '' })), message,
+            );
+            const okPhones = new Set(results.filter((r) => r.ok).map((r) => r.phone));
+            const okIds = batch.filter((u) => okPhones.has(u.phone)).map((u) => u.id);
+            if (okIds.length) await markUsersSmsNudged(okIds);
+
+            const failed = results.filter((r) => !r.ok);
+            return {
+                smsResult: {
+                    mode: 'batch',
+                    sent: okIds.length,
+                    failed: failed.length,
+                    // מי שנכשל לא סומן - ייכלל שוב במנה הבאה; כדי לא להסתובב לנצח על
+                    // אותם כשלים, "נותרו" לא כולל אותם בקריאה הזו
+                    remaining: Math.max(0, pending.length - batch.length),
+                    failedSample: failed.slice(0, 3).map((r) => `${r.phone}: ${r.error ?? ''}`),
+                    provider: status.provider,
+                },
+            };
+        } catch (e) {
+            return fail(500, { smsError: `שגיאה בשליחת SMS: ${e instanceof Error ? e.message : e}` });
         }
     },
 

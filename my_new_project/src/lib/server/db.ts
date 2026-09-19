@@ -97,6 +97,8 @@ export interface DbUser {
     totp_enabled: boolean;
     /** העדפות SMS לנייד (רלוונטי למנהלים/רכזים) — תמיד מנורמל; ברירת מחדל = הכל */
     sms_prefs: SmsPrefs;
+    /** מתי נשלח למשתמש SMS "השלם עיר/שכונה בפרופיל" מעמוד הניהול ('' = מעולם לא) */
+    sms_profile_nudge_at: string;
     /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
     merged_ids?: string[];
     /** מספר החשבונות שאוחדו (1 = חשבון יחיד) */
@@ -203,6 +205,8 @@ interface StrapiUpUser {
     tier_prompted: number[] | null;
     /** העדפות SMS לנייד של מנהל/רכז (json חופשי; null = הכל) */
     sms_prefs?: unknown;
+    /** מתי נשלח SMS "השלם פרופיל" מעמוד הניהול (datetime) */
+    sms_profile_nudge_at?: string | null;
     createdAt: string;
 }
 
@@ -269,6 +273,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         // חושפים רק בוליאני — הסוד עצמו (u.totp_secret) לעולם לא יוצא ל-DbUser/דפים
         totp_enabled: !!(u.totp_secret && u.totp_secret.trim()),
         sms_prefs:    normalizeSmsPrefs(u.sms_prefs),
+        sms_profile_nudge_at: u.sms_profile_nudge_at ?? '',
     };
 }
 
@@ -1619,6 +1624,42 @@ export async function setCoordinatorOfAnyId(id: string, neighborhoods: string[])
     if (!user) throw new Error('משתמש לא נמצא');
     await updateStrapiUpUser(user.id, { coordinator_of: neighborhoods });
     invalidate('user:');
+}
+
+/** סימון "נשלח SMS השלמת-פרופיל" על משתמשים (לפי id חיצוני) - כדי לא לשלוח פעמיים */
+export async function markUsersSmsNudged(externalIds: string[]): Promise<void> {
+    const now = new Date().toISOString();
+    for (const id of externalIds) {
+        try {
+            const user = await findUpUser(id);
+            if (user) await updateStrapiUpUser(user.id, { sms_profile_nudge_at: now });
+        } catch (e) {
+            console.warn('[db] markUsersSmsNudged failed:', id, e instanceof Error ? e.message : e);
+        }
+    }
+    invalidate('user:');
+}
+
+// ---- SMS יזום מהמנהל (הבאקאנד שולח; כאן רק קריאה מוגנת ב-STRAPI_TOKEN) ----
+export interface AdminSmsRecipient { phone: string; name?: string }
+export interface AdminSmsResult { phone: string; ok: boolean; error?: string }
+
+/** האם בבאקאנד מוגדר ספק SMS (ואיזה) - לפני שמציעים למנהל לשלוח */
+export async function adminSmsStatus(): Promise<{ enabled: boolean; provider: string; maxPerCall: number }> {
+    try {
+        return await strapiGet<{ enabled: boolean; provider: string; maxPerCall: number }>('/api/admin/sms/status');
+    } catch {
+        return { enabled: false, provider: 'none', maxPerCall: 20 };
+    }
+}
+
+/** שליחת מנה אחת (עד maxPerCall נמענים). "{name}" בהודעה מוחלף בשם הנמען. */
+export async function adminSmsSend(recipients: AdminSmsRecipient[], message: string): Promise<AdminSmsResult[]> {
+    const res = await strapiPost<{ ok: boolean; results?: AdminSmsResult[]; error?: string }>(
+        '/api/admin/sms/send', { recipients, message },
+    );
+    if (!res?.ok) throw new Error(res?.error ?? 'sms_failed');
+    return res.results ?? [];
 }
 
 /** חסימת משתמש (אדמין בלבד) */
