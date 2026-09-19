@@ -6,6 +6,7 @@ import { BOT_UA_RX } from '$lib/server/botUa';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { isPrivateCategory } from '$lib/itemCategories';
 import { getDemoItemById } from '$lib/demoUserItems';
+import { buildShareImage } from '$lib/server/shareImage';
 import type { PageServerLoad } from './$types';
 
 export interface SinglesPhoneStatus {
@@ -178,11 +179,20 @@ export const load: PageServerLoad = async (event) => {
             incomingRequests,
         };
 
+        // תמונת השיתוף (og:image + מידות) מחושבת בשרת - כך ה-head לא תלוי
+        // בתמונה עצמה בנתוני הדף (בוט לא צריך את ה-base64, רק את הכתובת)
+        const shareCandidate =
+            (typeof extraFields?.avatar === 'string' && extraFields.avatar)
+            || galleryImages[0]
+            || '';
+        const share = buildShareImage(origin, dbItem.id, shareCandidate);
+
         if (botOgPreview) {
-            // תצוגת-קדימון לבוט: רק מה שתגי ה-OG צריכים (כינוי/גיל/מגדר/תמונה
-            // ראשית/עיר). הטקסטים החופשיים, הכתובת ופרטי הקשר לא נחשפים.
+            // תצוגת-קדימון לבוט: רק מה שתגי ה-OG צריכים (כינוי/גיל/מגדר/עיר).
+            // הטקסטים החופשיים, הכתובת, פרטי הקשר והתמונה עצמה (base64) לא
+            // נחשפים - הבוט מקבל רק את כתובת התמונה דרך share.
             const efBot: Record<string, unknown> = {};
-            for (const k of ['nickname', 'age', 'gender', 'avatar'] as const) {
+            for (const k of ['nickname', 'age', 'gender'] as const) {
                 if (extraFields?.[k] !== undefined) efBot[k] = extraFields[k];
             }
             Object.assign(item, {
@@ -192,12 +202,12 @@ export const load: PageServerLoad = async (event) => {
                 lat:         null,
                 lng:         null,
                 extraFields: efBot,
-                image:       galleryImages[0],
-                images:      galleryImages.slice(0, 1),
+                image:       undefined,
+                images:      [],
             });
         }
 
-        return { origin, isLoggedIn: !!viewerId, viewerId, item };
+        return { origin, isLoggedIn: !!viewerId, viewerId, item, share };
     }
 
     // Fallback ל-static data הקיים
@@ -214,6 +224,7 @@ export const load: PageServerLoad = async (event) => {
                 isUserSubmitted: false,
                 viewCount:    staticItem.viewCount ?? 0,
             },
+            share: buildShareImage(origin, staticItem.id, staticItem.image ?? ''),
         };
     }
 

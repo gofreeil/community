@@ -1267,24 +1267,49 @@
         return bits.join(' · ') || fallback;
     });
 
+    // תמונת השיתוף המלאה (כתובת + מידות + סוג) מגיעה מהשרת (buildShareImage) -
+    // כך ה-head לא תלוי ב-base64 בנתוני הדף. בלי פריט - תמונת השיתוף של האתר.
+    const SITE_SHARE_IMAGE = {
+        path: '/images/community-advantages-share.jpg', type: 'image/jpeg', width: 1200, height: 801,
+    } as const;
     const ogImage = $derived.by(() => {
+        if (!item) return `${origin}${SITE_SHARE_IMAGE.path}`;
+        const fromServer = (data as { share?: { image?: string } }).share?.image;
+        if (fromServer) return fromServer;
+        // נפילה-לאחור (פריט בלי share מהשרת): אותה לוגיקה כמו פעם
         const ef = (item as { extraFields?: Record<string, unknown> })?.extraFields ?? {};
         const candidate = (typeof ef.avatar === 'string' && ef.avatar)
             || galleryImages[0]
             || (typeof (item as { image?: string } | null)?.image === 'string' ? (item as { image: string }).image : '')
             || '';
-        if (!item) return '';
-        // אין תמונה מועלית - ה-endpoint מייצר כרטיס ממותג (שם/קטגוריה/שכונה)
-        if (!candidate) return `${origin}/api/items/${item.id}/og.jpg`;
-        // data URLs לא נתמכים ע"י סקרפרים - נשלח דרך endpoint שמפענח ומגיש כתמונה
-        // סיומת .jpg חשובה - חלק מהסקרפרים (כולל טלגרם) בודקים סיומת בנוסף ל-Content-Type
-        if (candidate.startsWith('data:')) return `${origin}/api/items/${item.id}/og.jpg`;
+        if (!candidate || candidate.startsWith('data:')) return `${origin}/api/items/${item.id}/og.jpg`;
         if (/^https?:\/\//i.test(candidate)) return toRasterImage(candidate);
         if (candidate.startsWith('/')) return `${origin}${candidate}`;
         return `${origin}/api/items/${item.id}/og.jpg`;
     });
 
-    const ogType = $derived(isSingles ? 'profile' : 'website');
+    // og:image:type/width/height - וואטסאפ מסתמך עליהם כדי לבחור פורמט קדימון.
+    // נבנה כמחרוזת {@html} ולא כבלוק {#if}: בלוקי תנאי ב-<svelte:head> מייצרים
+    // סמני hydration (<!--[-->) סביב תגי ה-OG, וזו הסביבה שבה וואטסאפ נפל לקדימון
+    // גנרי (title + לוגו) בעוד טלגרם/פייסבוק קראו את התגים כרגיל.
+    const ogImageDimsHtml = $derived.by(() => {
+        const meta = item
+            ? (data as { share?: { type?: string; width?: number; height?: number } }).share
+            : SITE_SHARE_IMAGE;
+        if (!meta) return '';
+        const parts: string[] = [];
+        if (typeof meta.type === 'string' && /^image\/[a-z0-9.+-]+$/i.test(meta.type)) {
+            parts.push(`<meta property="og:image:type" content="${meta.type}" />`);
+        }
+        if (Number.isFinite(meta.width) && Number.isFinite(meta.height) && meta.width! > 0 && meta.height! > 0) {
+            parts.push(`<meta property="og:image:width" content="${Math.round(meta.width!)}" />`);
+            parts.push(`<meta property="og:image:height" content="${Math.round(meta.height!)}" />`);
+        }
+        return parts.join('\n');
+    });
+
+    // תמיד website: og:type=profile מצפה לשדות profile:* ואינו מועיל לקדימון
+    const ogType = 'website';
 
     // Structured data לפריט. singles מדולגים (פרטיות). אירועים → Event, השאר → Product.
     const isEvent = $derived(item?.category === 'events' || item?.category === 'event');
@@ -1311,25 +1336,24 @@
 
 <svelte:head>
     <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה | יוצאים לחירות</title>
-    {#if item}
-        <meta name="description" content={ogDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:type" content={ogType} />
-        <meta property="og:site_name" content="קהילה בשכונה" />
-        <meta property="og:title" content={ogTitle} />
-        <meta property="og:description" content={ogDescription} />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:locale" content="he_IL" />
-        {#if ogImage}
-            <meta property="og:image" content={ogImage} />
-            <meta property="og:image:secure_url" content={ogImage} />
-            <meta property="og:image:alt" content={ogTitle} />
-        {/if}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={ogTitle} />
-        <meta name="twitter:description" content={ogDescription} />
-        {#if ogImage}<meta name="twitter:image" content={ogImage} />{/if}
-    {/if}
+    <!-- בלי בלוקי {#if} כאן בכוונה (ראו ogImageDimsHtml): כל התגים תמיד קיימים,
+         ובלי פריט הם מקבלים את ערכי ברירת המחדל של האתר -->
+    <meta name="description" content={ogDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="קהילה בשכונה" />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    {@html ogImageDimsHtml}
+    <meta property="og:image:alt" content={ogTitle} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <meta name="twitter:image" content={ogImage} />
 </svelte:head>
 
 {#if itemSchema}<JsonLd schema={itemSchema} />{/if}
