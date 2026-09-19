@@ -29,6 +29,7 @@
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
     import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
+    import { autoGrow } from '$lib/actions/autoGrow';
     import { EXTRA_CONTACTS_KEY, serializeExtraContacts, parseExtraContacts } from '$lib/extraContacts';
     import { openCropper } from '$lib/imageCropper.svelte';
     import type { PageData } from './$types';
@@ -1274,6 +1275,7 @@
                             placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
                             rows={field.maxLength && field.maxLength <= 150 ? 1 : 3}
                             maxlength={field.maxLength ?? undefined}
+                            use:autoGrow={getFieldValue(field.key)}
                             class="{inputClass} resize-none"
                             required={field.required}
                         ></textarea>
@@ -1737,6 +1739,7 @@
                                     oninput={(e) => setFieldValue(field.key, (e.target as HTMLTextAreaElement).value)}
                                     placeholder={trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
                                     rows="2"
+                                    use:autoGrow={getFieldValue(field.key)}
                                     class="{inputClass} resize-none"
                                 ></textarea>
                             </div>
