@@ -1,5 +1,16 @@
+import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { getUserById, getNeighborhoods, maybeSendTierUpgradeMessage } from '$lib/server/db';
+
+/**
+ * נתיבים שפתוחים גם למשתמש מחובר שעדיין לא בחר שכונה: האשף עצמו, מסכי
+ * כניסה/הרשמה/אימות, גשרי SSO, דפי מידע ותנאים. כל השאר מופנה ל-/onboarding/1.
+ */
+const NEIGHBORHOOD_GATE_EXEMPT = [
+    '/onboarding', '/login', '/register', '/banned', '/confirm-email',
+    '/forgot-password', '/reset-password', '/sso', '/sso-adopt', '/auth',
+    '/admin/verify', '/coordinator/verify', '/about', '/sitemap.xml', '/api',
+];
 import { listApprovedLive, computeAdSlots, adImageUrl } from '$lib/server/adsStore';
 
 /**
@@ -54,6 +65,20 @@ export const load: LayoutServerLoad = async (event) => {
 
     // פרטי משתמש מלאים לתצוגה בדרואר
     const layoutUser = userRes.status === 'fulfilled' ? userRes.value : null;
+
+    // שער השכונה: משתמש מחובר בלי שכונה - לא משנה איך נרשם (אימייל, גוגל, פייסבוק,
+    // SSO מאתר אחר, או חשבון ממוזג שדילג על האשף) - מופנה לשלב 1 של אשף ההרשמה
+    // עד שיבחר עיר ושכונה. רץ רק על ניווטי דף (ה-layout לא רץ על /api). כשל
+    // שליפה (layoutUser=null) לא חוסם: אי אפשר לדעת, ועדיף דף פתוח על נעילה
+    // בגלל Strapi איטי. סופר-אדמין פטור כדי לא לנעול את בעל האתר בטעות.
+    if (
+        layoutUser && !layoutUser.banned && layoutUser.role !== 'super_admin' &&
+        !(layoutUser.neighborhood ?? '').trim()
+    ) {
+        const path = event.url.pathname;
+        const exempt = NEIGHBORHOOD_GATE_EXEMPT.some(p => path === p || path.startsWith(p + '/'));
+        if (!exempt) redirect(303, '/onboarding/1');
+    }
 
     // הודעת השלמת-פרופיל חד-פעמית ב"הודעות" (הבאנר הקבוע הוסר מהפרופיל).
     // no-op מיידי כשכבר נשלחה (דגל על המשתמש); כשל כאן לעולם לא מפיל את הדף.

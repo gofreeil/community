@@ -84,8 +84,16 @@
 		return p;
 	}
 
+	// שכונה חובה (ראו +layout.server.ts): בלי עיר ושכונה אין המשך ואין דילוג
+	const required = $derived(!!data.neighborhoodRequired);
+	const canProceed = $derived(!required || !!(city.trim() && neighborhood.trim()));
+
 	async function saveAndNext() {
 		if (saving) return;
+		if (!canProceed) {
+			errorMsg = tFn('onboarding.nb_required_msg');
+			return;
+		}
 		const payload = buildPayload();
 		if (Object.keys(payload).length === 0) { goto('/onboarding/2'); return; }
 		saving = true;
@@ -110,7 +118,11 @@
 <div>
 	<h2 class="text-white font-bold text-xl mb-1">{tFn('onboarding.s1_title')}</h2>
 	<p class="text-gray-400 text-sm mb-1 leading-relaxed">{tFn('onboarding.s1_intro')}</p>
-	<p class="text-white/40 text-xs mb-4">{tFn('onboarding.optional_hint')}</p>
+	{#if required}
+		<p class="text-yellow-300 text-xs font-semibold mb-4 bg-yellow-500/10 border border-yellow-500/25 rounded-xl px-3 py-2">📍 {tFn('onboarding.required_hint')}</p>
+	{:else}
+		<p class="text-white/40 text-xs mb-4">{tFn('onboarding.optional_hint')}</p>
+	{/if}
 
 	<!-- דרגה נוכחית: צופה → משתמש אחרי כתובת מלאה -->
 	<div class="rounded-2xl border p-3 mb-2 flex items-center gap-3 transition-colors {isUser ? 'border-green-500/40 bg-green-500/10' : 'border-white/10 bg-white/5'}">
@@ -170,8 +182,11 @@
 			bind:value={neighborhood}
 			neighborhoods={hoods}
 			disabled={!city}
-			buttonClass="w-full text-right bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition disabled:opacity-50 flex items-center justify-between gap-2 cursor-pointer"
+			buttonClass="w-full text-right bg-[#1e293b] border {required && !neighborhood.trim() ? 'border-yellow-500/50' : 'border-white/10'} rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition disabled:opacity-50 flex items-center justify-between gap-2 cursor-pointer"
 		/>
+		{#if required}
+			<p class="text-white/45 text-[11px] mt-1 leading-relaxed">{tFn('onboarding.nb_not_listed_hint')}</p>
+		{/if}
 	</div>
 
 	<!-- כתובת (מספר בית) -->
@@ -201,11 +216,14 @@
 
 	<!-- כפתורים -->
 	<div class="flex gap-3 mt-6">
-		<a href="/onboarding/2"
-			class="px-5 py-3 rounded-2xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition text-sm font-semibold">
-			{tFn('onboarding.skip')}
-		</a>
-		<button type="button" onclick={saveAndNext} disabled={saving}
+		{#if !required}
+			<a href="/onboarding/2"
+				class="px-5 py-3 rounded-2xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 transition text-sm font-semibold">
+				{tFn('onboarding.skip')}
+			</a>
+		{/if}
+		<button type="button" onclick={saveAndNext} disabled={saving || !canProceed}
+			title={canProceed ? '' : tFn('onboarding.nb_required_msg')}
 			class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold shadow-lg hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed">
 			{saving ? tFn('onboarding.saving') : tFn('onboarding.next')}
 		</button>

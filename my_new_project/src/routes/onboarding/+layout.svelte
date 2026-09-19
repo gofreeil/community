@@ -66,11 +66,13 @@
 			</div>
 		</div>
 
-		<!-- דילוג מהיר לכל האשף -->
-		<div class="text-center mt-4">
-			<a href="/profile" class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
-				{tFn('onboarding.skip')} →
-			</a>
-		</div>
+		<!-- דילוג מהיר לכל האשף - לא כשעדיין אין שכונה (השער היה מחזיר לכאן ממילא) -->
+		{#if !data.neighborhoodRequired}
+			<div class="text-center mt-4">
+				<a href="/profile" class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
+					{tFn('onboarding.skip')} →
+				</a>
+			</div>
+		{/if}
 	</div>
 </div>

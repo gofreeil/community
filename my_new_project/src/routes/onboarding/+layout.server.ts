@@ -15,6 +15,10 @@ export const load: LayoutServerLoad = async (event) => {
     } catch { /* Strapi מהבהב — ממשיכים עם ברירות מחדל ריקות */ }
 
     return {
+        // שכונה חובה: כל עוד אין למשתמש שכונה, שער השכונה ב-layout הראשי מחזיר אותו
+        // לכאן מכל דף - לכן באשף אין "דלג" ו"המשך" לא עובד בלי עיר ושכונה (שלב 1).
+        // כשהשליפה נכשלה (user=undefined) אי אפשר לדעת - לא מחמירים, כמו בשער.
+        neighborhoodRequired: !!user && user.role !== 'super_admin' && !(user.neighborhood ?? '').trim(),
         name: (session.user.name as string | undefined) || user?.nickname || user?.name || '',
         avatar: user?.avatar_url || (session.user.image as string | undefined) || null,
         profile: {
