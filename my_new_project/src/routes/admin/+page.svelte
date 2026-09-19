@@ -189,12 +189,22 @@
 	// מקום המגורים להצגה במודל הרכז
 	const coordResidence = $derived(coordModalUser ? residenceLabel(coordModalUser.neighborhood, coordModalUser.city) : '');
 
+	// טלפון בשני הפורמטים (0528822941 / 972528822941) - כדי שחיפוש לפי מספר מהודעת
+	// "בקשת שכונה" ימצא את המשתמש גם אם בפרופיל הוא שמור בפורמט הבינלאומי
+	function phoneVariants(p: string | null | undefined): string[] {
+		const d = (p ?? '').replace(/\D/g, '');
+		if (!d) return [];
+		const local = d.startsWith('972') ? '0' + d.slice(3) : d;
+		const intl  = local.startsWith('0') ? '972' + local.slice(1) : local;
+		return [d, local, intl];
+	}
+
 	// סינון משתמשים
 	const filteredUsers = $derived(() => {
 		let list = data.users ?? [];
 		if (searchQuery) {
 			list = list.filter(u =>
-				heMatches(searchQuery, u.name, u.email, u.id, u.neighborhood, (u as any).city)
+				heMatches(searchQuery, u.name, u.email, u.id, u.neighborhood, (u as any).city, ...phoneVariants(u.phone))
 			);
 		}
 		if (roleFilter !== 'all') {
@@ -900,6 +910,12 @@
 										</span>
 									{/if}
 								</div>
+								<!-- פרטי קשר + תאריך הרשמה - כדי לזהות משתמש לפי טלפון/אימייל מתוך בקשה שהגיעה -->
+								{#if user.phone || user.email || user.created_at}
+									<div class="text-xs text-gray-500 truncate" dir="ltr" style="text-align: right;">
+										{[user.phone, user.email].filter(Boolean).join(' · ')}{user.created_at ? `${user.phone || user.email ? ' · ' : ''}${fmtDateTime(user.created_at).split(',')[0]}` : ''}
+									</div>
+								{/if}
 							</div>
 						</a>
 
