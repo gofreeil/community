@@ -1120,6 +1120,10 @@ async function handleLocationRequest(event: Parameters<NonNullable<Actions[strin
     const requesterId = form.get('requesterId')?.toString() ?? '';
     const latRaw      = parseFloat(form.get('lat')?.toString() ?? '');
     const lngRaw      = parseFloat(form.get('lng')?.toString() ?? '');
+    // דחייה מהכרטיס: האדמין ערך את ההודעה למבקש, או בחר "דחה בלי הודעה"
+    const noMessage   = form.get('noMessage')?.toString() === '1';
+    const customMsg   = form.get('message')?.toString().trim() ?? '';
+    const requesterMessage: string | null | undefined = noMessage ? null : (customMsg || undefined);
     if (!location) return fail(400, { lrError: 'חסר שם המיקום בבקשה' });
 
     try {
@@ -1146,9 +1150,10 @@ async function handleLocationRequest(event: Parameters<NonNullable<Actions[strin
             city,
             requesterId: requesterId || undefined,
             adminMsgId:  msgId || undefined,
+            requesterMessage,
         });
 
-        return { lrSuccess: decision, lrLocation: location };
+        return { lrSuccess: decision, lrLocation: location, lrSilent: noMessage };
     } catch (e) {
         console.warn('[profile] handleLocationRequest failed:', e);
         return fail(500, { lrError: 'שגיאה בטיפול בבקשה, נסה שוב' });

@@ -1,5 +1,5 @@
 import { createItem, updateItem, deleteItem, getItemsByUserId, getMessagesByUserId, getAllSuperAdmins, getNeighborhoods, approveNeighborhood, rejectNeighborhood, reopenNeighborhood } from './db';
-import { isKnownNeighborhood } from '$lib/neighborhoodsData';
+import { locationDecisionMessage } from '$lib/locationDecisionText';
 
 /** נרמול שם מיקום לזיהוי התאמה - מסיר "שכונת"/"שכונה" מובילה ורווחים כפולים */
 function normalizeLoc(s: string): string {
@@ -28,6 +28,8 @@ export interface LocationDecisionInput {
     requesterId?: string | null;
     /** הודעת האדמין שממנה בוצעה ההחלטה (אם ידועה) - תסומן כטופלה גם אם ההתאמה בשם נכשלת */
     adminMsgId?: string;
+    /** הודעה למבקש: undefined = הנוסח האוטומטי, מחרוזת = נוסח שהאדמין ערך, null = בלי הודעה בכלל */
+    requesterMessage?: string | null;
 }
 
 /**
@@ -40,11 +42,11 @@ export interface LocationDecisionInput {
  * 4. הודעות הבקשה בתיבות הסופר-אדמינים מסומנות "טופל" ונשארות כהיסטוריה - לא נמחקות
  */
 export async function finalizeLocationDecision(input: LocationDecisionInput): Promise<void> {
-    const { decision, location, city, requesterId, adminMsgId } = input;
+    const { decision, location, city, requesterId, adminMsgId, requesterMessage } = input;
     const normalized = normalizeLoc(location);
 
-    // 1. הודעת החלטה למבקש
-    if (requesterId) {
+    // 1. הודעת החלטה למבקש (אלא אם האדמין בחר "דחה בלי הודעה")
+    if (requesterId && requesterMessage !== null) {
         try {
             const existing = await getMessagesByUserId(requesterId);
             const alreadyNotified = (existing ?? []).some((m) => {
@@ -56,21 +58,13 @@ export async function finalizeLocationDecision(input: LocationDecisionInput): Pr
                 } catch { return false; }
             });
             if (!alreadyNotified) {
-                // דחייה של שכונה שכבר קיימת ברשימת העיר (קרה: "עין גנים" בפתח תקווה) -
-                // אומרים למבקש במפורש שהיא קיימת ושיבחר אותה, במקום "החליט שלא להוסיף".
-                const existsAlready = decision === 'reject' && !!city && isKnownNeighborhood(city, location);
+                // הנוסח האוטומטי (משותף עם הטיוטה שהאדמין רואה בכרטיס), או הנוסח שהאדמין ערך
+                const auto = locationDecisionMessage(decision, location, city);
+                const custom = (requesterMessage ?? '').trim();
                 await createItem({
                     category:    'message',
-                    label:       decision === 'approve'
-                        ? `✅ בקשתך אושרה: "${location}" נוסף לרשימה`
-                        : existsAlready
-                            ? `ℹ️ "${location}" כבר קיימת ברשימת השכונות של ${city}`
-                            : `❌ בקשתך להוספת "${location}" לא אושרה`,
-                    description: decision === 'approve'
-                        ? `המנהל אישר את בקשתך — "${location}"${city ? ` (${city})` : ''} נוסף לרשימת השכונות וכעת ניתן לבחור בו בפרופיל ובפרסום.`
-                        : existsAlready
-                            ? `השכונה "${location}" כבר נמצאת ברשימת השכונות של ${city}, ולכן אין צורך להוסיף אותה. פשוט בחרו אותה מהרשימה בפרופיל (או בטופס הפרסום) ותוכלו להמשיך.`
-                            : `המנהל בחן את בקשתך להוסיף את "${location}" והחליט שלא להוסיף אותו כרגע. אפשר לבחור שכונה קיימת או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
+                    label:       auto.label,
+                    description: custom || auto.description,
                     icon:        decision === 'approve' ? '✅' : '❌',
                     color:       decision === 'approve' ? 'green' : 'red',
                     user_id:     requesterId,

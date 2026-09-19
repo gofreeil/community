@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance, deserialize } from "$app/forms";
+	import { locationDecisionMessage } from "$lib/locationDecisionText";
 	import CameraCapture from "$lib/components/CameraCapture.svelte";
 	import { beforeNavigate, goto } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
@@ -799,7 +800,25 @@
 		clearTimeout(lrNoticeTimer);
 		lrNoticeTimer = setTimeout(() => (lrNotice = null), 8000);
 	}
-	async function decideLocationRequest(msg: LrMsg, decision: "approve" | "reject") {
+	// דחייה מהכרטיס: לחיצה על "דחה" פותחת מיד תיבת הודעה עם הטיוטה שתישלח למבקש.
+	// משם האדמין עורך ושולח, או דוחה בלי הודעה בכלל. הטיוטה = הנוסח האוטומטי של השרת.
+	let lrRejectId = $state("");
+	let lrRejectText = $state("");
+	function openLrReject(msg: LrMsg) {
+		if (!msg.lr) return;
+		lrConfirmId = "";
+		lrRejectId = msg.id;
+		lrRejectText = locationDecisionMessage("reject", msg.lr.location, msg.lr.city).description;
+	}
+	function closeLrReject() {
+		lrRejectId = "";
+		lrRejectText = "";
+	}
+	async function decideLocationRequest(
+		msg: LrMsg,
+		decision: "approve" | "reject",
+		opts: { message?: string; noMessage?: boolean } = {},
+	) {
 		if (!msg.lr || lrBusyId) return;
 		const { location, city, lat, lng, requesterId } = msg.lr;
 		lrConfirmId = "";
@@ -809,6 +828,10 @@
 			fd.set("msgId", msg.dbId ?? "");
 			fd.set("location", location);
 			fd.set("city", city);
+			if (decision === "reject") {
+				if (opts.noMessage) fd.set("noMessage", "1");
+				else if (opts.message?.trim()) fd.set("message", opts.message.trim());
+			}
 			if (lat != null && lng != null) {
 				fd.set("lat", String(lat));
 				fd.set("lng", String(lng));
@@ -822,11 +845,14 @@
 			if (result.type === "success") {
 				// ההתראה סומנה "טופל" ב-DB (נשארת בהיסטוריה) - מסירים מהתצוגה הנוכחית
 				messages = messages.filter((m) => m.id !== msg.id);
+				if (lrRejectId === msg.id) closeLrReject();
 				showLrNotice(
 					"success",
 					decision === "approve"
 						? tFn("profile.lr_approved", { location })
-						: tFn("profile.lr_rejected", { location }),
+						: opts.noMessage
+							? tFn("profile.lr_rejected_silent", { location })
+							: tFn("profile.lr_rejected", { location }),
 				);
 			} else {
 				const errMsg =
@@ -3622,44 +3648,27 @@
 								>
 									{#if msgLr}
 										<!-- אשר/דחה בקשת מיקום - ישירות מהכרטיס, בלי לחפש בעמוד הניהול -->
-										{#if lrConfirmId === msg.id}
-											<!-- אישור דחייה בתוך הכרטיס במקום confirm() של הדפדפן -->
-											<span class="text-xs font-bold text-red-200">{tFn("profile.lr_reject_confirm")}</span>
-											<button
-												type="button"
-												disabled={lrBusyId === msg.id}
-												onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "reject"); }}
-												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-											>
-												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
-											</button>
-											<button
-												type="button"
-												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
-												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-											>
-												{tFn("profile.cancel")}
-											</button>
-										{:else}
-											<button
-												type="button"
-												disabled={lrBusyId === msg.id}
-												onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "approve"); }}
-												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-												title={tFn("profile.lr_approve_title")}
-											>
-												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_approve")}
-											</button>
-											<button
-												type="button"
-												disabled={lrBusyId === msg.id}
-												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
-												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-												title={tFn("profile.lr_reject_title")}
-											>
-												{tFn("profile.lr_reject")}
-											</button>
-										{/if}
+										<button
+											type="button"
+											disabled={lrBusyId === msg.id}
+											onclick={(e) => { e.stopPropagation(); decideLocationRequest(msgLr, "approve"); }}
+											class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											title={tFn("profile.lr_approve_title")}
+										>
+											{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_approve")}
+										</button>
+										<!-- "דחה" פותח מיד את תיבת ההודעה עם הטיוטה (למטה) - לא שאלת כן/לא -->
+										<button
+											type="button"
+											disabled={lrBusyId === msg.id}
+											onclick={(e) => { e.stopPropagation(); if (lrRejectId === msg.id) closeLrReject(); else openLrReject(msgLr); }}
+											class="text-xs font-black border px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait {lrRejectId === msg.id
+												? 'bg-red-500/25 text-red-100 border-red-400/70'
+												: 'bg-red-500/10 text-red-300 border-red-500/40 hover:bg-red-500/20'}"
+											title={tFn("profile.lr_reject_title")}
+										>
+											{tFn("profile.lr_reject")}
+										</button>
 										<span class="flex-1"></span>
 									{:else if msgAd}
 										<!-- אשר/דחה בקשת פרסום - ישירות מההתראה, בלי לנווט למסך אישור הפרסומות -->
@@ -3840,6 +3849,54 @@
 										{tFn("profile.delete")}
 									</button>
 								</div>
+
+								<!-- תיבת הדחייה - הטיוטה שתישלח למבקש, לעריכה, או דחייה בלי הודעה -->
+								{#if msgLr && lrRejectId === msg.id}
+									<div
+										class="mt-2 rounded-xl border border-red-500/30 bg-red-500/5 p-2.5"
+										onclick={(e) => e.stopPropagation()}
+										onkeydown={(e) => e.stopPropagation()}
+										role="presentation"
+									>
+										<p class="text-[11px] text-red-200/80 mb-1.5">{tFn("profile.lr_reject_compose_hint")}</p>
+										<!-- svelte-ignore a11y_autofocus -->
+										<textarea
+											bind:value={lrRejectText}
+											autofocus
+											rows="3"
+											maxlength="4000"
+											disabled={lrBusyId === msg.id}
+											class="w-full resize-y rounded-lg bg-[#0b1220] border border-white/10 focus:border-red-400/60 focus:outline-none text-white text-xs leading-relaxed px-3 py-2 disabled:opacity-50"
+										></textarea>
+										<div class="flex items-center gap-1.5 flex-wrap mt-2">
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id || !lrRejectText.trim()}
+												onclick={() => decideLocationRequest(msgLr, "reject", { message: lrRejectText })}
+												class="text-[11px] font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_reject_send")}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={() => decideLocationRequest(msgLr, "reject", { noMessage: true })}
+												class="text-[11px] font-bold text-red-300/90 border border-red-500/30 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-40"
+												title={tFn("profile.lr_reject_silent_title")}
+											>
+												{tFn("profile.lr_reject_silent")}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={closeLrReject}
+												class="text-[11px] font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-40"
+											>
+												{tFn("profile.cancel")}
+											</button>
+										</div>
+									</div>
+								{/if}
 
 								<!-- תיבת התשובה - נפתחת בתוך הכרטיס, בלי לעזוב את האזור האישי -->
 								{#if replyOpenId === msg.id}
