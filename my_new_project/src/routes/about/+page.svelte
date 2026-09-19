@@ -4,7 +4,7 @@
     // כך שמנועי החיפוש ומנועי ה-AI קוראים בדיוק את הטקסט שהגולש רואה.
     import { _, locale } from 'svelte-i18n';
     import JsonLd from '$lib/components/JsonLd.svelte';
-    import { faqSchema, breadcrumbSchema, canonical, SITE_NAME, SITE_URL, DEFAULT_OG_IMAGE, PARENT_BRAND } from '$lib/seo';
+    import { faqSchema, breadcrumbSchema, canonical, SITE_NAME, SITE_URL, DEFAULT_OG_IMAGE, PARENT_BRAND, PARENT_SITE } from '$lib/seo';
     import { aboutFaq } from '$lib/aboutFaq';
 
     const faq = $derived(aboutFaq($locale));
@@ -57,6 +57,10 @@
             <h2 id="about-intro-heading" class="sr-only">{SITE_NAME}</h2>
             <p class="text-gray-300 leading-relaxed">
                 {$_('aboutPages.about_intro_p1')}
+            </p>
+            <!-- שיוך לתנועה-האם עם קישור אמיתי לאתר התנועה (עבר לכאן מדף הבית) -->
+            <p class="text-gray-300 leading-relaxed mt-3">
+                {@html $_('aboutPages.about_parent_line', { values: { url: PARENT_SITE.url } })}
             </p>
         </section>
 
