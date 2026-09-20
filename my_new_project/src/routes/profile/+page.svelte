@@ -557,6 +557,9 @@
 								kind: efType,
 								// התראת פנוי חדש: מזהה הכרטיס שעליו היא מדווחת + זמן ההתראה (להודעות ישנות בלי מזהה)
 								singlesItemId: efType === "singles_review" ? String(ef?.item_id ?? "") : undefined,
+								// התראת משאלה חדשה: מזהה המשאלה - אשר/דחה על הכרטיס עצמו
+								wishId: efType === "wish_request" && ef?.wish_item_id ? String(ef.wish_item_id) : undefined,
+								wishText: efType === "wish_request" ? String(ef?.wish_text ?? "") : undefined,
 								createdMs: new Date(m.created_at).getTime() || 0,
 								// בקשת מיקום/שכונה שכבר אושרה/נדחתה בעמוד הניהול - כבר טופלה,
 								// לכן יורדת מספירת "שלא נקראו" ועוברת להיסטוריה
@@ -978,6 +981,88 @@
 	// אותה פעולה של דף /admin/singles-review, בלי לנווט אליו. משתמש באותם
 	// מצב-טעינה/אישור-דחייה/משוב של שאר הבקשות.
 	type SinglesReq = { kind: "singles_access" | "matchmaker_request"; requestId: string; name: string };
+	// אישור/דחיית כרטיס פנויים (בדיקת צניעות) מכרטיס ההתראה "פנוי חדש" - אותה
+	// פעולה של דף /admin/singles-review, בלי לנווט אליו. הדף נשאר זמין (כפתור
+	// "לבדיקת הכרטיס") למי שרוצה לראות את התמונות לפני ההחלטה.
+	type SinglesCardMsg = { id: string; dbId?: string; singlesItemId?: string; kind?: string; handled?: boolean };
+	async function decideSinglesCard(msg: SinglesCardMsg, decision: "approve" | "reject") {
+		if (!msg.singlesItemId || lrBusyId) return;
+		lrConfirmId = "";
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("cardId", msg.singlesItemId);
+			const res = await fetch(`?/${decision === "approve" ? "approveSinglesCard" : "rejectSinglesCard"}`, {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				messages = messages.filter((m) => m.id !== msg.id);
+				const label = String((result.data as { singlesCardLabel?: string })?.singlesCardLabel ?? "");
+				showLrNotice(
+					"success",
+					decision === "approve"
+						? tFn("profile.singles_card_approved", { label })
+						: tFn("profile.singles_card_rejected", { label }),
+				);
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { singlesCardError?: string })?.singlesCardError ?? tFn("profile.singles_card_error"))
+						: tFn("profile.singles_card_error");
+				// כרטיס שכבר הוכרע: ההתראה סומנה בשרת, ולכן יורדת גם כאן
+				if (result.type === "failure" && result.status === 404) {
+					messages = messages.filter((m) => m.id !== msg.id);
+				}
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			lrBusyId = "";
+		}
+	}
+
+	// אישור/דחיית משאלה לכותל מכרטיס ההתראה "משאלה חדשה" - אותה פעולה של
+	// "משאלות ממתינות לאישור" בעמוד הניהול, בלי לנווט אליו.
+	type WishMsg = { id: string; dbId?: string; wishId?: string; wishText?: string };
+	async function decideWish(msg: WishMsg, decision: "approve" | "reject") {
+		if (!msg.wishId || lrBusyId) return;
+		lrConfirmId = "";
+		lrBusyId = msg.id;
+		try {
+			const fd = new FormData();
+			fd.set("msgId", msg.dbId ?? "");
+			fd.set("wishId", msg.wishId);
+			const res = await fetch(`?/${decision === "approve" ? "approveWishRequest" : "rejectWishRequest"}`, {
+				method: "POST",
+				body: fd,
+				headers: { "x-sveltekit-action": "true" },
+			});
+			const result = deserialize(await res.text());
+			if (result.type === "success") {
+				messages = messages.filter((m) => m.id !== msg.id);
+				showLrNotice("success", tFn(decision === "approve" ? "profile.wish_approved" : "profile.wish_rejected"));
+			} else {
+				const errMsg =
+					result.type === "failure"
+						? String((result.data as { wishError?: string })?.wishError ?? tFn("profile.wish_error"))
+						: tFn("profile.wish_error");
+				if (result.type === "failure" && result.status === 404) {
+					messages = messages.filter((m) => m.id !== msg.id);
+				}
+				showLrNotice("error", errMsg);
+			}
+		} catch {
+			showLrNotice("error", tFn("profile.lr_network"));
+		} finally {
+			lrBusyId = "";
+		}
+	}
+
 	type SinglesReqMsg = { id: string; dbId?: string; singlesReq?: SinglesReq };
 	async function decideSinglesRequest(msg: SinglesReqMsg, decision: "approve" | "reject") {
 		if (!msg.singlesReq || lrBusyId) return;
@@ -3614,6 +3699,8 @@
 					{@const msgAd = (msg as AdMsg).adSubId ? (msg as AdMsg) : null}
 					{@const msgCoord = (msg as CoordMsg).coordReq ? (msg as CoordMsg) : null}
 					{@const msgSingles = (msg as SinglesReqMsg).singlesReq ? (msg as SinglesReqMsg) : null}
+					{@const msgWish = (msg as WishMsg).wishId && !(msg as { handled?: boolean }).handled ? (msg as WishMsg) : null}
+					{@const msgCard = (msg as SinglesCardMsg).kind === 'singles_review' && (msg as SinglesCardMsg).singlesItemId && !(msg as { handled?: boolean }).handled ? (msg as SinglesCardMsg) : null}
 					{@const isSinglesReview = (msg as { kind?: string }).kind === 'singles_review' && !(msg as { handled?: boolean }).handled}
 					{@const isSinglesMatch = msg.id === 'singles-match'}
 					{@const msgLink = (msg as { link?: string }).link}
@@ -3842,17 +3929,98 @@
 											</button>
 										{/if}
 										<span class="flex-1"></span>
-									{:else if isSinglesReview && msgLink}
-										<!-- כרטיס פנויים ממתין לבדיקת צניעות: האישור דורש לראות את התמונות, לכן
-										     כפתור מפורש שפותח את דף האישור (בלי לנחש שכל הכרטיס לחיץ) -->
-										<button
-											type="button"
-											onclick={(e) => { e.stopPropagation(); goto(msgLink); }}
-											class="text-xs font-black bg-pink-500/15 text-pink-200 border border-pink-500/40 hover:bg-pink-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-											title={tFn("profile.singles_review_open_title")}
-										>
-											{tFn("profile.singles_review_open")}
-										</button>
+									{:else if msgWish}
+										<!-- אשר/דחה משאלה לכותל - ישירות מההתראה (הטקסט המלא בגוף ההודעה), בלי לנווט לעמוד הניהול -->
+										{#if lrConfirmId === msg.id}
+											<span class="text-xs font-bold text-red-200">{tFn("profile.wish_reject_confirm")}</span>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideWish(msgWish, "reject"); }}
+												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
+											</button>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
+												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											>
+												{tFn("profile.cancel")}
+											</button>
+										{:else}
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideWish(msgWish, "approve"); }}
+												class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn("profile.wish_approve_title")}
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.wish_approve")}
+											</button>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
+												class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+												title={tFn("profile.wish_reject_title")}
+											>
+												{tFn("profile.coord_reject")}
+											</button>
+										{/if}
+										<span class="flex-1"></span>
+									{:else if isSinglesReview && (msgCard || msgLink)}
+										<!-- כרטיס פנויים ממתין לבדיקת צניעות: אשר/דחה ישירות מההתראה (קיצור דרך),
+										     ולצדם "לבדיקת הכרטיס" שפותח את דף האישור למי שרוצה לראות את התמונות קודם -->
+										{#if msgCard && lrConfirmId === msg.id}
+											<span class="text-xs font-bold text-red-200">{tFn("profile.singles_card_reject_confirm")}</span>
+											<button
+												type="button"
+												disabled={lrBusyId === msg.id}
+												onclick={(e) => { e.stopPropagation(); decideSinglesCard(msgCard, "reject"); }}
+												class="text-xs font-black bg-red-500/20 text-red-200 border border-red-500/50 hover:bg-red-500/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+											>
+												{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.lr_yes_reject")}
+											</button>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); lrConfirmId = ""; }}
+												class="text-xs font-bold text-gray-300 border border-white/15 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+											>
+												{tFn("profile.cancel")}
+											</button>
+										{:else}
+											{#if msgCard}
+												<button
+													type="button"
+													disabled={lrBusyId === msg.id}
+													onclick={(e) => { e.stopPropagation(); decideSinglesCard(msgCard, "approve"); }}
+													class="text-xs font-black bg-green-500/15 text-green-300 border border-green-500/40 hover:bg-green-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+													title={tFn("profile.singles_card_approve_title")}
+												>
+													{lrBusyId === msg.id ? tFn("profile.lr_processing") : tFn("profile.singles_card_approve")}
+												</button>
+												<button
+													type="button"
+													disabled={lrBusyId === msg.id}
+													onclick={(e) => { e.stopPropagation(); lrConfirmId = msg.id; }}
+													class="text-xs font-black bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+													title={tFn("profile.singles_card_reject_title")}
+												>
+													{tFn("profile.coord_reject")}
+												</button>
+											{/if}
+											{#if msgLink}
+												<button
+													type="button"
+													onclick={(e) => { e.stopPropagation(); goto(msgLink); }}
+													class="text-xs font-black bg-pink-500/15 text-pink-200 border border-pink-500/40 hover:bg-pink-500/25 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+													title={tFn("profile.singles_review_open_title")}
+												>
+													{tFn("profile.singles_review_open")}
+												</button>
+											{/if}
+										{/if}
 										<span class="flex-1"></span>
 									{/if}
 									{#if (msg as ReplyMsg).replyTo}

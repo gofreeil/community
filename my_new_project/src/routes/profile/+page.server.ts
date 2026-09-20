@@ -18,6 +18,8 @@ import { approveCoordinatorRequest, rejectCoordinatorRequest, findPendingCoordin
 import { decideSinglesAccess } from '$lib/server/singlesAccess';
 import { decideMatchmakerRequest, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
 import { markSinglesRequestMessageHandled } from '$lib/server/singlesRequestNotifications';
+import { decideSinglesCard, markSinglesReviewMessageHandled } from '$lib/server/singlesCardReview';
+import { decideWish } from '$lib/server/wishDecision';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
 const PUBLICATION_CATEGORIES = new Set(Object.keys(categoryConfig));
@@ -843,6 +845,12 @@ export const actions: Actions = {
     rejectSinglesAccess:      (event) => handleSinglesRequest(event, 'singles_access', 'rejected'),
     approveMatchmakerRequest: (event) => handleSinglesRequest(event, 'matchmaker_request', 'approved'),
     rejectMatchmakerRequest:  (event) => handleSinglesRequest(event, 'matchmaker_request', 'rejected'),
+    // כרטיס פנויים (בדיקת צניעות) - אשר/דחה מכרטיס ההתראה, אותה לוגיקה של /admin/singles-review
+    approveSinglesCard:       (event) => handleSinglesCard(event, 'approved'),
+    rejectSinglesCard:        (event) => handleSinglesCard(event, 'rejected'),
+    // משאלה לכותל - אשר/דחה מכרטיס ההתראה, אותה לוגיקה של "משאלות ממתינות" בעמוד הניהול
+    approveWishRequest:       (event) => handleWishRequest(event, 'approve'),
+    rejectWishRequest:        (event) => handleWishRequest(event, 'reject'),
 
     // סימון התראת מערכת ("קריאות שכונה שפרסמתי") כנקראה - הכרטיס נעלם מהרשימה
     dismissCommunityAlert: async (event) => {
@@ -1156,6 +1164,66 @@ async function handleSinglesRequest(
     } catch (e) {
         console.warn('[profile] handleSinglesRequest failed:', e);
         return fail(500, { singlesReqError: 'שגיאה בטיפול בבקשה, נסה שוב' });
+    }
+}
+
+/** אישור/דחיית כרטיס פנויים מכרטיס ההתראה "פנוי חדש" בפרופיל. ההתראה נושאת
+ *  item_id של הכרטיס; כרטיס שכבר הוכרע (בדף האישור) - ההתראה מסומנת כטופלה ויורדת. */
+async function handleSinglesCard(
+    event: Parameters<NonNullable<Actions[string]>>[0],
+    decision: 'approved' | 'rejected',
+) {
+    const adminId = await requireSuperAdminId(event);
+    if (!adminId) return fail(403, { singlesCardError: 'נדרשת הרשאת מנהל ראשי' });
+    const form   = await event.request.formData();
+    const msgId  = form.get('msgId')?.toString() ?? '';
+    const cardId = form.get('cardId')?.toString() ?? '';
+    if (!cardId) return fail(400, { singlesCardError: 'ההתראה הזו ישנה ולא נושאת מזהה כרטיס - אשרו מדף הבדיקה' });
+    try {
+        const msg = msgId ? await getDbItemById(msgId) : undefined;
+        const res = await decideSinglesCard(cardId, decision);
+        if (!res.ok) {
+            if (res.alreadyDecided && msg) { try { await markSinglesReviewMessageHandled(msg, decision); } catch { /* ריק */ } }
+            return fail(404, { singlesCardError: res.alreadyDecided ? 'הכרטיס כבר הוכרע במקום אחר' : 'הכרטיס לא נמצא' });
+        }
+        if (msg) { try { await markSinglesReviewMessageHandled(msg, decision); } catch { /* ריק */ } }
+        return { singlesCardSuccess: decision, singlesCardLabel: res.label };
+    } catch (e) {
+        console.warn('[profile] handleSinglesCard failed:', e);
+        return fail(500, { singlesCardError: 'שגיאה בטיפול בכרטיס, נסה שוב' });
+    }
+}
+
+/** אישור/דחיית משאלה לכותל מכרטיס ההתראה "משאלה חדשה". decideWish מסמן בעצמו
+ *  את התראות כל המנהלים כטופלו. */
+async function handleWishRequest(
+    event: Parameters<NonNullable<Actions[string]>>[0],
+    decision: 'approve' | 'reject',
+) {
+    const adminId = await requireSuperAdminId(event);
+    if (!adminId) return fail(403, { wishError: 'נדרשת הרשאת מנהל ראשי' });
+    const form   = await event.request.formData();
+    const msgId  = form.get('msgId')?.toString() ?? '';
+    const wishId = form.get('wishId')?.toString() ?? '';
+    if (!wishId) return fail(400, { wishError: 'ההתראה הזו ישנה ולא נושאת מזהה משאלה - אשרו מעמוד הניהול' });
+    try {
+        const res = await decideWish(wishId, decision);
+        if (!res.ok) {
+            // כבר הוכרעה במקום אחר - ההתראה שנלחצה מסומנת כטופלה כדי שלא תישאר פתוחה
+            if (res.alreadyDecided && msgId) {
+                try {
+                    const msg = await getDbItemById(msgId);
+                    let ef: Record<string, unknown> = {};
+                    try { ef = JSON.parse(msg?.extra_fields || '{}') ?? {}; } catch { /* ריק */ }
+                    if (msg && !ef.handled) await updateItem(msg.id, { extra_fields: { ...ef, handled: true, read: true, handled_at: new Date().toISOString() } });
+                } catch { /* ריק */ }
+            }
+            return fail(404, { wishError: res.alreadyDecided ? 'המשאלה כבר הוכרעה במקום אחר' : 'המשאלה לא נמצאה' });
+        }
+        return { wishSuccess: decision };
+    } catch (e) {
+        console.warn('[profile] handleWishRequest failed:', e);
+        return fail(500, { wishError: 'שגיאה בטיפול במשאלה, נסה שוב' });
     }
 }
 

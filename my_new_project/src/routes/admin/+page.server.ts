@@ -5,6 +5,7 @@ import { withUserAvatarUrl } from '$lib/server/userAvatar';
 import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, adminSmsSend, adminSmsStatus, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
+import { finalizeWishDecision } from '$lib/server/wishDecision';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { countPending } from '$lib/server/adsStore';
@@ -223,68 +224,6 @@ export const load: PageServerLoad = async (event) => {
 // finalizeLocationDecision: 1) הודעת החלטה למבקש (אם היה מחובר) 2) סימון הודעות
 // "משאלה חדשה" בתיבות הסופר-אדמינים כ"טופל" - נשארות כהיסטוריה, לא נמחקות.
 // כשל בכל אחד מהשלבים לא מבטל את האישור/הדחייה עצמם.
-async function finalizeWishDecision(wish: DbItem | undefined, decision: 'approve' | 'reject'): Promise<void> {
-    if (!wish) return;
-    const wishText = wish.description || wish.label;
-
-    // 1. הודעת החלטה למבקש
-    if (wish.user_id) {
-        try {
-            await createItem({
-                category: 'message',
-                label: decision === 'approve'
-                    ? '✅ המשאלה שלך אושרה ומוצגת בכותל המשאלות'
-                    : 'לגבי המשאלה ששלחת לכותל המשאלות',
-                description: decision === 'approve'
-                    ? `המנהל אישר את המשאלה ששלחת:\n\n"${wishText}"\n\nהיא מוצגת עכשיו בכותל המשאלות 🙏\n/community-fund`
-                    : `לאחר בדיקה, המשאלה ששלחת:\n\n"${wishText}"\n\nלא אושרה לפרסום בכותל המשאלות כרגע. אפשר לנסח משאלה חדשה או לפנות אלינו דרך "כתוב למערכת" בפרופיל.`,
-                icon:    decision === 'approve' ? '✅' : '💬',
-                color:   decision === 'approve' ? 'green' : 'red',
-                user_id: wish.user_id,
-                extra_fields: {
-                    type:       'wish_decision',
-                    decision,
-                    read:       false,
-                    link:       '/community-fund',
-                    decided_at: new Date().toISOString(),
-                },
-            });
-        } catch (e) {
-            console.warn('[admin/wish] notify requester failed:', e instanceof Error ? e.message : e);
-        }
-    }
-
-    // 2. סימון הודעות "משאלה חדשה" בתיבות הסופר-אדמינים כ"טופל"
-    try {
-        const admins = await getAllSuperAdmins();
-        const decisionWord = decision === 'approve' ? 'אושרה' : 'נדחתה';
-        for (const admin of admins) {
-            let msgs;
-            try { msgs = await getMessagesByUserId(admin.id); } catch { continue; }
-            const related = (msgs ?? []).filter((m) => {
-                let ef: Record<string, unknown> = {};
-                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { return false; }
-                if (ef?.handled) return false;
-                if (String(ef?.type ?? '') !== 'wish_request') return false;
-                return String(ef?.wish_item_id ?? '') === wish.id ||
-                    String(ef?.wish_text ?? '').trim() === wishText.trim();
-            });
-            await Promise.all(related.map(async (m) => {
-                let ef: Record<string, unknown> = {};
-                try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch {}
-                await updateItem(m.id, {
-                    label: `${decision === 'approve' ? '✅' : '❌'} טופל (${decisionWord}) · ${(m.label ?? '').replace(/^[✅❌🙏]+\s*(טופל\s*\([^)]*\)\s*·\s*)?/, '')}`,
-                    icon:  decision === 'approve' ? '✅' : '❌',
-                    color: decision === 'approve' ? 'green' : 'red',
-                    extra_fields: { ...ef, handled: true, decision, handled_at: new Date().toISOString() },
-                });
-            }));
-        }
-    } catch (e) {
-        console.warn('[admin/wish] mark admin messages handled failed:', e instanceof Error ? e.message : e);
-    }
-}
-
 export const actions: Actions = {
     /**
      * השלמה רטרואקטיבית של עיר/שכונה למשתמשים שנרשמו בלי (רוב המשתמשים): לוקחים

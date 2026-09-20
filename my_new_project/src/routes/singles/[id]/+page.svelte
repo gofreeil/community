@@ -1,7 +1,23 @@
 <script lang="ts">
     import type { PageData } from './$types';
     import { religiosityLabel, statusLabel } from '$lib/singlesMock';
+    import { onMount } from 'svelte';
     let { data }: { data: PageData } = $props();
+
+    // הגעה מהטופס (?saved=1): פאנל "נשמר ומוכן לשיתוף" מעל הכרטיס - שיתוף,
+    // מה קורה עכשיו (בדיקת צניעות, רק כשהכרטיס ממתין), לערוך שוב, לאזור האישי
+    let savedPanel = $state(false);
+    let savedPending = $state(true);
+    onMount(() => {
+        try {
+            const sp = new URLSearchParams(window.location.search);
+            if (sp.get('saved') === '1') {
+                savedPanel = true;
+                savedPending = sp.get('pending') !== '0';
+                history.replaceState(null, '', window.location.pathname);
+            }
+        } catch {}
+    });
 
     // $derived: מעבר בין כרטיסים בניווט צד-לקוח משתמש באותה קומפוננטה
     const s = $derived(data.single!);
@@ -203,6 +219,49 @@
                 → חזרה ללוח
             </a>
         </div>
+
+        {#if savedPanel}
+            <div class="mb-4 rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-4 md:p-5 text-center relative">
+                <button type="button" onclick={() => (savedPanel = false)} aria-label="סגור"
+                    class="absolute top-2 start-3 text-gray-500 hover:text-white text-lg leading-none">×</button>
+                <div class="text-3xl mb-1">✅</div>
+                <h2 class="text-lg font-black text-green-300 mb-1">הכרטיס שלך נשמר - כך הוא נראה לאחרים</h2>
+                <p class="text-green-100 text-sm leading-relaxed mb-3">
+                    מרוצים? מומלץ לשתף עכשיו. שיתוף <b>עם עצמכם</b> בוואטסאפ מראה גם את הקדימון בדיוק כפי שאחרים יראו אותו.
+                </p>
+                <div class="flex flex-wrap justify-center gap-2 mb-4">
+                    <button type="button" onclick={() => shareTo('whatsapp')}
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#25D366] hover:bg-[#1ebe5b] text-white text-sm font-bold transition-colors">
+                        💬 שיתוף בוואטסאפ
+                    </button>
+                    <button type="button" onclick={() => shareTo('telegram')}
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold transition-colors">
+                        ✈️ טלגרם
+                    </button>
+                    <button type="button" onclick={nativeShare}
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">
+                        🔗 רשת אחרת
+                    </button>
+                    <button type="button" onclick={() => shareTo('copy')}
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">
+                        {copied ? '✓ הועתק' : '📋 העתקת קישור'}
+                    </button>
+                </div>
+                {#if savedPending}
+                <div class="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4 text-right mb-3">
+                    <p class="text-purple-100 text-sm font-bold mb-1.5">🔒 מה קורה עכשיו?</p>
+                    <ul class="text-purple-200/90 text-sm leading-relaxed space-y-1 list-disc pr-5">
+                        <li>הכרטיס עובר <b>בדיקת צניעות</b> לפני שהוא מועבר לרשימה הארצית - כדי שהשדכניות והשדכנים של המערכת יוכלו לחפש עבורך התאמות.</li>
+                        <li>תקבל/י <b>הודעה לאזור האישי</b> ברגע שהכרטיס נבדק - ואושר, או שנדרש בו תיקון.</li>
+                    </ul>
+                </div>
+                {/if}
+                <div class="flex flex-wrap justify-center gap-2">
+                    <a href="/add/singles?edit={s.id}" class="px-4 py-2 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 text-sm font-bold transition-all">✏️ לערוך שוב</a>
+                    <a href="/messages" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">📬 לאזור האישי</a>
+                </div>
+            </div>
+        {/if}
 
         <!-- כרטיס מלא -->
         <div class="rounded-3xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-2xl">

@@ -1012,7 +1012,9 @@
             }
 
             if (isSinglesCard && result.id) {
-                // כרטיס פנויים: נשארים במסך "הכרטיס מוכן לשיתוף" - בלי ניתוב אוטומטי
+                // כרטיס פנויים: מציגים את הכרטיס עצמו (לא כפתור "לצפייה") - דף הכרטיס
+                // פותח עם ?saved=1 את פאנל "נשמר ומוכן לשיתוף" מעל הכרטיס
+                setTimeout(() => goto(`/singles/${result.id}?saved=1&pending=${savedPending ? 1 : 0}`), 900);
             } else if (result.id) {
                 // זרימה דו-שלבית: הפרטים הראשוניים נשמרו ועלו למפה - עוברים לדף
                 // הפריט המלא במצב בנייה, שם משלימים תמונות/שעות/קישורים מול העיניים
@@ -1104,43 +1106,10 @@
         <div class="rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-8 text-center"
              style="animation: fadeIn 0.4s ease-out;">
             <div class="text-4xl mb-3">✅</div>
-            <h2 class="text-xl font-black text-green-300 mb-2">{isSinglesCard && savedId ? 'הכרטיס שלך נשמר ומוכן לשיתוף' : 'המודעה שלך נשמרה'}</h2>
+            <h2 class="text-xl font-black text-green-300 mb-2">{isSinglesCard && savedId ? 'הכרטיס שלך נשמר' : 'המודעה שלך נשמרה'}</h2>
             {#if isSinglesCard && savedId}
-                <p class="text-green-100 text-sm leading-relaxed mb-4">
-                    רוצים לראות איך הכרטיס נראה כקדימון? שתפו אותו <b>עם עצמכם</b> בוואטסאפ או בכל רשת חברתית אחרת -
-                    ותראו את התצוגה המקדימה בדיוק כפי שאחרים יראו אותה.
-                </p>
-                <div class="flex flex-wrap justify-center gap-2 mb-5">
-                    <button type="button" onclick={() => shareSavedCard('whatsapp')}
-                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#25D366] hover:bg-[#1ebe5b] text-white text-sm font-bold transition-colors">
-                        💬 שיתוף בוואטסאפ
-                    </button>
-                    <button type="button" onclick={() => shareSavedCard('telegram')}
-                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold transition-colors">
-                        ✈️ טלגרם
-                    </button>
-                    <button type="button" onclick={() => shareSavedCard('native')}
-                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">
-                        🔗 רשת אחרת
-                    </button>
-                    <button type="button" onclick={() => shareSavedCard('copy')}
-                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">
-                        {shareCopied ? '✓ הועתק' : '📋 העתקת קישור'}
-                    </button>
-                </div>
-                {#if savedPending}
-                <div class="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4 text-right mb-4">
-                    <p class="text-purple-100 text-sm font-bold mb-1.5">🔒 מה קורה עכשיו?</p>
-                    <ul class="text-purple-200/90 text-sm leading-relaxed space-y-1 list-disc pr-5">
-                        <li>הכרטיס עובר <b>בדיקת צניעות</b> לפני שהוא מועבר לרשימה הארצית - כדי שהשדכניות והשדכנים של המערכת יוכלו לחפש עבורך התאמות.</li>
-                        <li>תקבל/י <b>הודעה לאזור האישי</b> ברגע שהכרטיס נבדק - ואושר, או שנדרש בו תיקון.</li>
-                    </ul>
-                </div>
-                {/if}
-                <div class="flex flex-wrap justify-center gap-2">
-                    <a href="/singles/{savedId}" class="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-500 text-white text-sm font-bold transition-colors">👀 לצפייה בכרטיס</a>
-                    <a href="/messages" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">📬 לאזור האישי</a>
-                </div>
+                <!-- הכרטיס עצמו מוצג בדף הכרטיס (עם פאנל שיתוף/עריכה מעליו) - לא כפתור "לצפייה" -->
+                <p class="text-gray-400 text-sm">מציגים את הכרטיס כפי שאחרים יראו אותו...</p>
             {:else if isPaidFlow && !isEditMode}
                 <p class="text-green-200 text-base font-bold mb-1">🎉 הפריט עלה למפה!</p>
                 <p class="text-gray-400 text-sm">עוברים לדף הכרטיס - שם תראו איך הוא יצא, תוכלו לשתף אותו או לערוך שוב.</p>
