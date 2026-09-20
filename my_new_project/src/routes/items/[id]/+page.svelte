@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount, untrack } from "svelte";
+    import { page } from "$app/state";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { locale, t } from "svelte-i18n";
     import { get } from "svelte/store";
@@ -244,6 +245,21 @@
             ? ((item as { extraFields: { sector: string } }).extraFields.sector).trim()
             : ''
     );
+
+    // פנויים: משפט מעורר השראה - מוצג תמיד בתחתית התמונה (לא בטבלת "פרטים נוספים")
+    const inspiration = $derived<string>(
+        typeof (item as { extraFields?: { inspiration?: unknown } } | null)?.extraFields?.inspiration === 'string'
+            ? ((item as { extraFields: { inspiration: string } }).extraFields.inspiration).trim()
+            : ''
+    );
+    // פנויים: תוויות חיצוניות (מחוץ לטבלה) - "לא מחוסן", "חתום על אמנת המוסר"
+    const isTruthyFlag = (v: unknown) => v != null && v !== '' && v !== '0' && v !== 0 && v !== false && v !== 'false';
+    const showUnvaccinated = $derived(item?.category === 'singles' && isTruthyFlag((item as { extraFields?: Record<string, unknown> } | null)?.extraFields?.unvaccinated));
+    // מוקאפ בלבד (עד שנעבוד על זה בהרחבה): מוצג כשהשדה ethics_charter מסומן, או עם ?mockup=1 בכתובת
+    const showEthicsCharter = $derived(item?.category === 'singles' && (
+        isTruthyFlag((item as { extraFields?: Record<string, unknown> } | null)?.extraFields?.ethics_charter)
+        || page.url.searchParams.get('mockup') === '1'
+    ));
 
     const age = $derived.by<number | null>(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
@@ -1683,7 +1699,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video', 'visibility', 'extra_contacts'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video', 'visibility', 'extra_contacts', 'inspiration', 'unvaccinated', 'ethics_charter'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -2039,6 +2055,14 @@
                     {/if}
                     <input bind:this={imageInputEl} type="file" accept="image/*" multiple class="hidden" onchange={onImagesPicked} />
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent pointer-events-none"></div>
+                    {#if isSingles && inspiration}
+                        <!-- משפט מעורר השראה - תמיד בתחתית התמונה, מעל הגרדיאנט -->
+                        <div class="absolute inset-x-0 {galleryImages.length > 1 || builderMode ? 'bottom-9' : 'bottom-3'} z-10 px-4 pointer-events-none">
+                            <p class="mx-auto max-w-[95%] text-center text-white text-sm md:text-base font-semibold italic leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                                <span class="text-amber-300/90" aria-hidden="true">“</span>{inspiration}<span class="text-amber-300/90" aria-hidden="true">”</span>
+                            </p>
+                        </div>
+                    {/if}
                 </div>
                     <!-- מקטע הקישורים הועבר לעמודת המידע, מתחת לתיאור והכתובת -->
                 </div>
@@ -2064,6 +2088,21 @@
                             {/if}
                             {#if sector}
                                 <p class="text-gray-300 text-base leading-tight">{sector}</p>
+                            {/if}
+                        </div>
+                    {/if}
+                    {#if showUnvaccinated || showEthicsCharter}
+                        <!-- תוויות חיצוניות (לא חלק מטבלת הפרטים) -->
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            {#if showUnvaccinated}
+                                <span class="inline-flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 text-xs font-bold px-2.5 py-0.5 w-fit">
+                                    💉 לא מחוסן
+                                </span>
+                            {/if}
+                            {#if showEthicsCharter}
+                                <span class="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 text-emerald-200 text-xs font-bold px-2.5 py-0.5 w-fit" title="מוקאפ - בקרוב">
+                                    📜 חתום על אמנת המוסר
+                                </span>
                             {/if}
                         </div>
                     {/if}
