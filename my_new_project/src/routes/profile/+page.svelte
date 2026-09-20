@@ -7338,7 +7338,6 @@
 	.terms-attention {
 		animation: termsAttentionScale 1s ease-in-out 2;
 		transform-origin: center;
-		scroll-margin-top: 120px;
 	}
 	.terms-attention span {
 		animation: termsTextGlow 1s ease-in-out 2;
@@ -7371,7 +7370,6 @@
 	:global(.field-flash) {
 		animation: fieldFlash 1.2s ease-out;
 		border-radius: 14px;
-		scroll-margin-top: 100px;
 	}
 
 	/* הבהוב קצר על מקטע שלם שגללנו אליו דרך קיצור דרך */
@@ -7390,7 +7388,6 @@
 	}
 	:global(.section-flash) {
 		animation: sectionFlash 1.5s ease-out;
-		scroll-margin-top: 130px;
 	}
 
 	/* כפתור "הירשם" — זוהר קצר למשיכת עין בפעם הראשונה, ואז נרגע */

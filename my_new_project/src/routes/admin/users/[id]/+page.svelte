@@ -213,7 +213,7 @@
 		{/if}
 
 		<!-- צ'אט בסגנון וואטסאפ/טלגרם -->
-		<div id="chat" class="rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-lg scroll-mt-8">
+		<div id="chat" class="rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-lg">
 			<!-- סרגל עליון: בן-שיח -->
 			<div class="flex items-center gap-3 px-4 py-2.5 bg-[#0f172a] border-b border-black/30">
 				{#if u.avatar_url}

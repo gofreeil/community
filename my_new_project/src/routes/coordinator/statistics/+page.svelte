@@ -154,7 +154,7 @@
 
 		<!-- סיכום התוכן שהועלה בשכונה: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
-			<div id="items" class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+			<div id="items" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 				<h2 class="text-lg font-black mb-3">📦 תוכן שהועלה בשכונה</h2>
 
 				<!-- גרף עמודות: פריטים שנוספו לפי חודש (השנה הנוכחית) -->
@@ -215,7 +215,7 @@
 		{/if}
 
 		<!-- נרשמים חדשים בשכונה לפי חודש (גרף מפורט, צבע סגול) -->
-		<div id="registrations" class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+		<div id="registrations" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 			<div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
 				<h2 class="text-lg font-black">🧑‍🤝‍🧑 תושבים שנרשמו</h2>
 				<div class="text-sm text-gray-400">סה״כ <b class="text-violet-300 text-base">{fmt(data.registrations?.total ?? 0)}</b> תושבים</div>

@@ -223,7 +223,7 @@
 
 		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
-			<div id="items" class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+			<div id="items" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 				<h2 class="text-lg font-black mb-3">📦 תוכן שהועלה לאתר</h2>
 
 				<!-- גרף עמודות: פריטים שנוספו לפי חודש (השנה הנוכחית) -->
@@ -284,7 +284,7 @@
 		{/if}
 
 		<!-- נרשמים חדשים לפי חודש (גרף מפורט, צבע סגול) -->
-		<div id="registrations" class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+		<div id="registrations" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 			<div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
 				<h2 class="text-lg font-black">🧑‍🤝‍🧑 נרשמים חדשים</h2>
 				<div class="text-sm text-gray-400">סה״כ <b class="text-violet-300 text-base">{fmt(data.registrations?.total ?? 0)}</b> משתמשים</div>
@@ -323,7 +323,7 @@
 			<!-- גרף + טבלה של 12 חודשים לכל שנה -->
 			{#each years as y, yi}
 				{@const maxCount = Math.max(1, ...y.months.map((c) => c ?? 0))}
-				<div id={yi === 0 ? 'visits' : undefined} class="scroll-mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
+				<div id={yi === 0 ? 'visits' : undefined} class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">
 					<!-- זה-לצד-זה: גרף משמאל, פירוט חודשי מימין (בדסקטופ); נערם בנייד -->
 					<div class="flex flex-col lg:flex-row-reverse gap-4 lg:gap-4 lg:items-start">
 						<!-- גרף עמודות חודשי -->

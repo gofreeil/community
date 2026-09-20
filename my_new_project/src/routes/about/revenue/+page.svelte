@@ -955,7 +955,7 @@
 		</div>
 
 		<!-- התגמול המפורט -->
-		<div class="mb-8" id="coordinator-detail" style="scroll-margin-top:110px;">
+		<div class="mb-8" id="coordinator-detail">
 			<h2 class="text-2xl font-black mb-2 flex items-center gap-3">
 				<span class="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-[#1a1035]"
 					style="background:linear-gradient(135deg,#fbbf24,#d97706);">3</span>
@@ -1020,15 +1020,7 @@
 </div>
 
 <style>
-	/* גובה scroll - נייד 110px, דסקטופ 150px */
-	:global(.scroll-target) {
-		scroll-margin-top: 110px;
-	}
-	@media (min-width: 768px) {
-		:global(.scroll-target) {
-			scroll-margin-top: 150px;
-		}
-	}
+	/* פיצוי על ההדר הדביק בגלילה ליעד: scroll-padding-top גלובלי ב-app.css */
 
 	@keyframes flash-title {
 		0%   { color: #fff;    text-shadow: none; }
