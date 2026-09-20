@@ -1,7 +1,6 @@
-import { redirect, error } from '@sveltejs/kit';
+// (redirect/error לא בשימוש יותר: שער הפנויים הוסר - ראו הערה בגוף ה-load)
 import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
-import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { BOT_UA_RX } from '$lib/server/botUa';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { isPrivateCategory } from '$lib/itemCategories';
@@ -56,23 +55,14 @@ export const load: PageServerLoad = async (event) => {
         if (dbItem.category === 'singles') {
             const isOwner = !!viewerId && dbItem.user_id === viewerId;
 
-            // שער גישה: כרטיס פנויים נגיש רק לבעלים / סופר-אדמין / מי שאושרה לו גישה ללוח.
-            // גולש שאין לו גישה מנותב לשער ב-/singles (או להתחברות אם אינו מחובר).
-            // בוטים של שיתוף עוברים את השער ומקבלים תצוגת-קדימון מצומצמת (בלי
-            // טלפון וטקסטים חופשיים) — אחרת וואטסאפ רואה רק את דף ההתחברות.
-            if (!isOwner && !isSuperAdmin(session)) {
-                if (isBot) {
-                    botOgPreview = true;
-                } else {
-                    const access = await getSinglesAccessStatus(viewerId, false);
-                    // תקלת Strapi זמנית ≠ אין גישה: לא זורקים משתמש מאושר מהלוח
-                    if (access === 'unavailable') {
-                        throw error(503, 'תקלה זמנית בטעינת ההרשאות - נסה שוב בעוד רגע');
-                    }
-                    if (access !== 'granted') {
-                        throw redirect(302, viewerId ? '/singles' : '/login?redirect=' + encodeURIComponent('/singles'));
-                    }
-                }
+            // קישור ישיר לכרטיס פתוח לכולם - הצפייה חופשית, אינטראקציה (טלפון/בקשה)
+            // מחייבת התחברות. אותה מדיניות כמו /singles/[id] (64a55d7, 31.8.2026):
+            // הלוח /singles נשאר סגור, אבל כרטיס ששותף בקישור נפתח גם לאורח.
+            // עד 20.9 נשאר כאן שער ישן שהפנה אורחים להתחברות - ואת זה בדיוק
+            // ראה מי שקיבל את הקישור בווטסאפ.
+            // בוטים של שיתוף מקבלים תצוגת-קדימון מצומצמת (בלי טלפון וטקסטים חופשיים).
+            if (!isOwner && !isSuperAdmin(session) && isBot) {
+                botOgPreview = true;
             }
 
             if (isOwner) {
