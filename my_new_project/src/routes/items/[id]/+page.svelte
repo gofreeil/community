@@ -9,6 +9,7 @@
     import { fade, fly, scale } from "svelte/transition";
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
+    import ItemShareHead from "$lib/components/ItemShareHead.svelte";
     import { productSchema, eventSchema } from "$lib/seo";
     import { formatOpeningHours, formatOpeningHoursLines, DAY_SHORT } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
@@ -1304,24 +1305,12 @@
     });
 
     // og:image:type/width/height - וואטסאפ מסתמך עליהם כדי לבחור פורמט קדימון.
-    // נבנה כמחרוזת {@html} ולא כבלוק {#if}: בלוקי תנאי ב-<svelte:head> מייצרים
-    // סמני hydration (<!--[-->) סביב תגי ה-OG, וזו הסביבה שבה וואטסאפ נפל לקדימון
-    // גנרי (title + לוגו) בעוד טלגרם/פייסבוק קראו את התגים כרגיל.
-    const ogImageDimsHtml = $derived.by(() => {
-        const meta = item
-            ? (data as { share?: { type?: string; width?: number; height?: number } }).share
-            : SITE_SHARE_IMAGE;
-        if (!meta) return '';
-        const parts: string[] = [];
-        if (typeof meta.type === 'string' && /^image\/[a-z0-9.+-]+$/i.test(meta.type)) {
-            parts.push(`<meta property="og:image:type" content="${meta.type}" />`);
-        }
-        if (Number.isFinite(meta.width) && Number.isFinite(meta.height) && meta.width! > 0 && meta.height! > 0) {
-            parts.push(`<meta property="og:image:width" content="${Math.round(meta.width!)}" />`);
-            parts.push(`<meta property="og:image:height" content="${Math.round(meta.height!)}" />`);
-        }
-        return parts.join('\n');
-    });
+    // הרינדור עצמו ב-ItemShareHead (רכיב בלי בלוק style - ראו הסבר שם).
+    const ogImageMeta = $derived(
+        item
+            ? ((data as { share?: { type?: string; width?: number; height?: number } }).share ?? null)
+            : SITE_SHARE_IMAGE,
+    );
 
     // תמיד website: og:type=profile מצפה לשדות profile:* ואינו מועיל לקדימון
     const ogType = 'website';
@@ -1349,27 +1338,18 @@
     });
 </script>
 
-<svelte:head>
-    <title>{item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה | יוצאים לחירות</title>
-    <!-- בלי בלוקי {#if} כאן בכוונה (ראו ogImageDimsHtml): כל התגים תמיד קיימים,
-         ובלי פריט הם מקבלים את ערכי ברירת המחדל של האתר -->
-    <meta name="description" content={ogDescription} />
-    <link rel="canonical" href={canonicalUrl} />
-    <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content="קהילה בשכונה" />
-    <meta property="og:title" content={ogTitle} />
-    <meta property="og:description" content={ogDescription} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:locale" content="he_IL" />
-    <meta property="og:image" content={ogImage} />
-    <meta property="og:image:secure_url" content={ogImage} />
-    {@html ogImageDimsHtml}
-    <meta property="og:image:alt" content={ogTitle} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={ogTitle} />
-    <meta name="twitter:description" content={ogDescription} />
-    <meta name="twitter:image" content={ogImage} />
-</svelte:head>
+<!-- ה-head (title + OG) ברכיב בלי בלוק style: רכיב עם style מדביק class="svelte-…"
+     על תגי ה-meta, ווואטסאפ התעלם מהם. תמיד כל התגים, בלי בלוקי תנאי -->
+<ItemShareHead
+    title={`${item ? displayLabel : tFn("item_not_found")} | קהילה בשכונה | יוצאים לחירות`}
+    description={ogDescription}
+    canonical={canonicalUrl}
+    {ogType}
+    {ogTitle}
+    {ogDescription}
+    {ogImage}
+    imageMeta={ogImageMeta}
+/>
 
 {#if itemSchema}<JsonLd schema={itemSchema} />{/if}
 
