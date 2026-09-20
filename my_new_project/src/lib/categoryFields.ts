@@ -297,7 +297,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'nickname',    label: 'שם או כינוי',             type: 'text',     required: true,  placeholder: 'שם פרטי או כינוי' },
             { key: 'gender',      label: 'מין',                     type: 'select',   required: true,  options: ['גבר', 'אישה'] },
             { key: 'birth_date',  label: 'תאריך לידה',                type: 'date',     required: true,  hint: 'הגיל יחושב אוטומטית' },
-            { key: 'sector',      label: 'מגזר / רקע',              type: 'select',   required: false, options: ['דתי', 'דתי-לאומי', 'חרדי', 'מסורתי', 'חילוני'] },
+            { key: 'sector',      label: 'מגזר / רקע',              type: 'select',   required: false, options: ['דתי', 'דתי-לאומי', 'חרדי', 'מסורתי', 'חילוני', 'מאמין'] },
             { key: 'marital_status', label: 'מצב משפחתי',           type: 'select',   required: false, options: ['רווק/ה', 'גרוש/ה', 'אלמן/ה', 'פרוד/ה'], default: 'רווק/ה' },
             { key: 'unvaccinated', label: 'תווית לכרטיס (לא חובה)',   type: 'checkbox', required: false, placeholder: 'הצג תווית "לא מחוסן" על הכרטיס', hint: 'סמנו רק אם תרצו — התווית "לא מחוסן" תופיע על הכרטיס. אם לא תסמנו, לא יוצג דבר.' },
             { key: 'education',   label: 'מקצוע / תעסוקה / השכלה',  type: 'text',     required: false, placeholder: 'תואר / ישיבה / מקצוע...' },

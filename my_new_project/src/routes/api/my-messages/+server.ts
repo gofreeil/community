@@ -2,6 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { getMessagesByUserId, getItemsByCategoryAndStatus } from '$lib/server/db';
 import { reconcileAdMessages } from '$lib/server/adNotifications';
 import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
+import { isSinglesReviewHandled, toPendingSinglesRefs, type PendingSinglesRef } from '$lib/singlesReviewHandled';
 
 // מחזיר את ההודעות החיות (items category='message') של המשתמש המחובר.
 // משמש את הבאדג' ב-Header לספירת הודעות שלא טופלו - אותה מערכת כמו תיבת ההודעות בפרופיל
@@ -25,9 +26,11 @@ export const GET: RequestHandler = async ({ locals }) => {
         const hasSinglesReview = msgs.some((m) => {
             try { return JSON.parse(m.extra_fields || '{}')?.type === 'singles_review'; } catch { return false; }
         });
-        let pendingSingles = 1; // ברירת מחדל: לא להסתיר אם לא הצלחנו לבדוק
+        // כל התראה נבדקת מול הכרטיס שלה (singlesReviewHandled) - כרטיס חדש אחד לא
+        // מחזיר את ההתראות הישנות לספירה. null = לא הצלחנו לבדוק → לא מסתירים.
+        let pendingSingles: PendingSinglesRef[] | null = null;
         if (hasSinglesReview) {
-            try { pendingSingles = (await getItemsByCategoryAndStatus('singles', 'pending')).length; } catch { /* שקט */ }
+            try { pendingSingles = toPendingSinglesRefs(await getItemsByCategoryAndStatus('singles', 'pending')); } catch { /* שקט */ }
         }
 
         const now = Date.now();
@@ -42,7 +45,10 @@ export const GET: RequestHandler = async ({ locals }) => {
             if (ef?.handled) return false;
             const sn = Number(ef?.snooze_until);
             if (Number.isFinite(sn) && sn > now) return false;
-            if (pendingSingles === 0 && ef?.type === 'singles_review') return false;
+            if (pendingSingles && ef?.type === 'singles_review') {
+                const createdMs = new Date(m.created_at ?? '').getTime() || 0;
+                if (isSinglesReviewHandled(String(ef?.item_id ?? ''), createdMs, pendingSingles)) return false;
+            }
             return true;
         });
 

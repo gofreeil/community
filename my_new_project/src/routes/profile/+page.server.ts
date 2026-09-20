@@ -1,4 +1,5 @@
 import { withSinglesItemImageUrls } from '$lib/server/singlesImages';
+import { toPendingSinglesRefs, type PendingSinglesRef } from '$lib/singlesReviewHandled';
 import { stripInlineImages } from '$lib/server/inlineImage';
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
@@ -10,7 +11,7 @@ import { normalizeSmsPrefs } from '$lib/smsPrefs';
 import { citiesData } from '$lib/neighborhoodsData';
 import { cityCenters } from '$lib/neighborhoodCoords';
 import { categoryConfig } from '$lib/categoryFields';
-import { countPending, approveAd, rejectAd, getMyAds } from '$lib/server/adsStore';
+import { countPending, approveAd, rejectAd, getMyAds, pauseAd, resumeAd, unapproveAd } from '$lib/server/adsStore';
 import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifications';
 import { reconcileCoordinatorMessages, markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { approveCoordinatorRequest, rejectCoordinatorRequest, findPendingCoordinatorRequest } from '$lib/server/db';
@@ -189,6 +190,9 @@ export const load: PageServerLoad = async (event) => {
     let registeredUsersCount = 0;
     // כרטיסי פנויים שממתינים לאישור - אם 0, התראות "כרטיס פנויים ממתין" מסומנות כטופלו ועוברות להיסטוריה
     let pendingSinglesCount = 0;
+    // הכרטיסים הממתינים עצמם (מזהה + זמן יצירה): כל התראת "פנוי חדש" נבדקת מול
+    // הכרטיס שלה, כדי שכרטיס חדש אחד לא יחזיר את כל ההתראות הישנות לתיבה
+    let pendingSinglesRefs: PendingSinglesRef[] = [];
     // בקשות גישה ללוח / בקשות שדכנות שממתינות - התראה ישנה (בלי request_id) שלא סומנה
     // כטופלה יורדת להיסטוריה ברגע שאין בקשה ממתינה מסוגה, במקום להישאר עם כפתורים מתים
     let pendingAccessCount = 0;
@@ -210,7 +214,10 @@ export const load: PageServerLoad = async (event) => {
         ]);
         if (adsRes.status === 'fulfilled') pendingAdsCount = adsRes.value;
         if (usersRes.status === 'fulfilled') registeredUsersCount = usersRes.value.length;
-        if (singlesPendRes.status === 'fulfilled') pendingSinglesCount = singlesPendRes.value.length;
+        if (singlesPendRes.status === 'fulfilled') {
+            pendingSinglesCount = singlesPendRes.value.length;
+            pendingSinglesRefs = toPendingSinglesRefs(singlesPendRes.value);
+        }
         if (accessRes.status === 'fulfilled') pendingAccessCount = countPendingReq(accessRes.value);
         if (mmRes.status === 'fulfilled') pendingMatchmakerCount = countPendingReq(mmRes.value);
     } else if (resolvedUser?.role === 'neighborhood_admin') {
@@ -284,6 +291,7 @@ export const load: PageServerLoad = async (event) => {
         myAds,
         registeredUsersCount,
         pendingSinglesCount,
+        pendingSinglesRefs,
         pendingAccessCount,
         pendingMatchmakerCount,
         strapiAvailable,
@@ -743,6 +751,88 @@ export const actions: Actions = {
     approveAdSubmission: (event) => handleAdSubmission(event, 'approve'),
     rejectAdSubmission:  (event) => handleAdSubmission(event, 'reject'),
 
+    // קיצורי הניהול מ"הפרסומות שלי" - לאדמין שגם מפרסם בעצמו, כדי לא לעבור
+    // למסך הניהול בשביל פרסומת אחת. אותן פונקציות בדיוק כמו ב-/admin/ads-review;
+    // ההרשאה נבדקת בתוך כל פעולה (myAdAction). כל התוצאות באותה צורה:
+    // { message } בהצלחה, fail עם { error } בכישלון - הלקוח מציג אותן מעל הרשימה.
+
+    // אישור (או חידוש של פרסומת שפג תוקפה - אותה פעולה, תוקף חדש מהיום).
+    // המסלול = מה שהמפרסם בחר בשליחה (duration_days); שינוי מסלול - במסך הניהול.
+    approveMyAd: async (event) => {
+        const a = await myAdAction(event);
+        if ('error' in a) return fail(a.status, { error: a.error });
+        try {
+            const r = await approveAd(a.id, a.adminId);
+            if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+            // ההתראות על הבקשה (ועל הגרסה שירדה במקומה) יורדות מתיבת כל האדמינים -
+            // כמו במסך הניהול, אחרת נשאר שם כרטיס "אשר ופרסם" על בקשה שכבר טופלה
+            await markAdMessagesHandled([a.id], 'approve');
+            if (r.replacedNowIds?.length) {
+                await markAdMessagesHandled(r.replacedNowIds, 'superseded', { superseded_by: a.id });
+            }
+            return {
+                message: r.replacedNowTitle
+                    ? `אושרה ופורסמה: ${r.title} - נכנסה במקום "${r.replacedNowTitle}", שירדה מהאתר ✅`
+                    : `אושרה ופורסמה: ${r.title} ✅`,
+            };
+        } catch (e) {
+            console.warn('[profile] approveMyAd failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'האישור נכשל - נסה שוב' });
+        }
+    },
+    rejectMyAd: async (event) => {
+        const a = await myAdAction(event);
+        if ('error' in a) return fail(a.status, { error: a.error });
+        try {
+            const r = await rejectAd(a.id, a.adminId, a.form.get('reason')?.toString().trim() || undefined);
+            if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+            await markAdMessagesHandled([a.id], 'reject');
+            return { message: `נדחתה: ${r.title}` };
+        } catch (e) {
+            console.warn('[profile] rejectMyAd failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'הדחייה נכשלה - נסה שוב' });
+        }
+    },
+    // השהיה - יורדת מהאתר והימים שנותרו נשמרים לה
+    pauseMyAd: async (event) => {
+        const a = await myAdAction(event);
+        if ('error' in a) return fail(a.status, { error: a.error });
+        try {
+            const r = await pauseAd(a.id);
+            if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+            return { message: `${r.title} הושהתה - ${r.daysLeft} ימים שמורים לה` };
+        } catch (e) {
+            console.warn('[profile] pauseMyAd failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'ההשהיה נכשלה - נסה שוב' });
+        }
+    },
+    // המשך אחרי השהיה - הימים השמורים נספרים מהיום
+    resumeMyAd: async (event) => {
+        const a = await myAdAction(event);
+        if ('error' in a) return fail(a.status, { error: a.error });
+        try {
+            const r = await resumeAd(a.id);
+            if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+            return { message: `${r.title} חזרה לאוויר - ${r.daysLeft} ימים` };
+        } catch (e) {
+            console.warn('[profile] resumeMyAd failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'ההפעלה מחדש נכשלה - נסה שוב' });
+        }
+    },
+    // הורדה מהאתר בלי מחיקה - חוזרת לממתינות
+    unapproveMyAd: async (event) => {
+        const a = await myAdAction(event);
+        if ('error' in a) return fail(a.status, { error: a.error });
+        try {
+            const r = await unapproveAd(a.id);
+            if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+            return { message: `${r.title} הורדה מהאתר וחזרה לממתינות` };
+        } catch (e) {
+            console.warn('[profile] unapproveMyAd failed:', e instanceof Error ? e.message : e);
+            return fail(502, { error: 'ההורדה נכשלה - נסה שוב' });
+        }
+    },
+
     // אישור/דחיית בקשת רכז מתוך כרטיס ההתראה - בלי מעבר לעמוד הניהול
     approveCoordRequest: (event) => handleCoordinatorRequest(event, 'approve'),
     rejectCoordRequest:  (event) => handleCoordinatorRequest(event, 'reject'),
@@ -909,6 +999,19 @@ async function requireAdsAdminId(event: Parameters<NonNullable<Actions[string]>>
         } catch { /* ignore */ }
     }
     return role === 'super_admin' || role === 'neighborhood_admin' ? session.user.id : null;
+}
+
+/** הפתיח המשותף לקיצורי הניהול ב"הפרסומות שלי": הרשאת ניהול פרסומות
+ *  (סופר-אדמין או אדמין שמונה, כמו במסך הניהול) + מזהה הפרסומת מהטופס. */
+async function myAdAction(
+    event: Parameters<NonNullable<Actions[string]>>[0],
+): Promise<{ adminId: string; id: string; form: FormData } | { error: string; status: number }> {
+    const adminId = await requireAdsAdminId(event);
+    if (!adminId) return { error: 'נדרשת הרשאת ניהול', status: 403 };
+    const form = await event.request.formData();
+    const id = form.get('id')?.toString() ?? '';
+    if (!id) return { error: 'חסר מזהה פרסומת', status: 400 };
+    return { adminId, id, form };
 }
 
 /** אישור/דחייה של בקשת פרסום ישירות מכרטיס ההתראה באזור האישי.

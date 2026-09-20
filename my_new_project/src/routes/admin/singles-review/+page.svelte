@@ -5,6 +5,10 @@
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
+    // "הורד מהלוח" על כרטיס מאושר - מוסתר (20.9.2026): לחיצה בטעות מורידה כרטיס
+    // חי מהלוח בלי אישור. הפעולה (?/unapprove) נשארת בשרת; להצגה מחדש - true.
+    const SHOW_UNAPPROVE = false;
+
     // ניסוח בגוף שלישי לשתי השאלות הוותיקות (כמו שהיה); שאר השאלות - תווית הטופס כמו שהיא
     const MATCHMAKER_ADMIN_LABELS: Record<string, string> = {
         match_partner_character: 'מהו אופי בן הזוג שהוא/היא מחפש/ת',
@@ -288,7 +292,8 @@
                                         <input type="hidden" name="id" value={c.id} />
                                         <button class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">🚫 דחה</button>
                                     </form>
-                                {:else}
+                                {:else if SHOW_UNAPPROVE}
+                                    <!-- "הורד מהלוח" מוסתר: לחיצה בטעות מורידה כרטיס מאושר מהלוח. הפעולה נשארת בשרת. -->
                                     <form method="POST" action="?/unapprove" use:enhance class="flex-1 min-w-[120px]">
                                         <input type="hidden" name="id" value={c.id} />
                                         <button class="w-full bg-amber-600/80 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">⏳ הורד מהלוח</button>

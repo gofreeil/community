@@ -2519,7 +2519,7 @@
                                             >{item?.viewCount ?? 0} צפיות</span>
                                         </div>
                                         {#if incoming.length === 0}
-                                            <p class="text-white/80 text-[11px] bg-white/10 rounded px-2 py-0.5">אין בקשות ממתינות</p>
+                                            <p class="inline-block w-fit text-white/80 text-[11px] bg-white/10 rounded px-2 py-0.5">אין בקשות ממתינות</p>
                                         {:else}
                                             <ul class="space-y-3">
                                                 {#each incoming as r (r.id)}

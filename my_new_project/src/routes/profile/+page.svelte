@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { enhance, deserialize } from "$app/forms";
+	import { isSinglesReviewHandled, type PendingSinglesRef } from "$lib/singlesReviewHandled";
 	import { locationDecisionMessage } from "$lib/locationDecisionText";
 	import CameraCapture from "$lib/components/CameraCapture.svelte";
-	import { beforeNavigate, goto } from "$app/navigation";
+	import { beforeNavigate, goto, invalidateAll } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
 	import {
 		subscribeToPush,
@@ -554,6 +555,9 @@
 								read: false,
 								// סוג ההודעה (singles_review וכו') - משמש לזיהוי התראות שניתן לסמן כטופלו
 								kind: efType,
+								// התראת פנוי חדש: מזהה הכרטיס שעליו היא מדווחת + זמן ההתראה (להודעות ישנות בלי מזהה)
+								singlesItemId: efType === "singles_review" ? String(ef?.item_id ?? "") : undefined,
+								createdMs: new Date(m.created_at).getTime() || 0,
 								// בקשת מיקום/שכונה שכבר אושרה/נדחתה בעמוד הניהול - כבר טופלה,
 								// לכן יורדת מספירת "שלא נקראו" ועוברת להיסטוריה
 								handled: !!ef?.handled,
@@ -1170,13 +1174,19 @@
 	// התראות "כרטיס פנויים ממתין לאישור" נחשבות טופלו ברגע שאין יותר כרטיסים ממתינים.
 	// אז הן יורדות מההתראות הפעילות (ומספירת שלא-נקראו) ועוברות להיסטוריית ההודעות עם וי ירוק.
 	let pendingSinglesCount = $derived(data.pendingSinglesCount ?? 0);
+	let pendingSinglesRefs = $derived((data as { pendingSinglesRefs?: PendingSinglesRef[] }).pendingSinglesRefs ?? []);
 	let pendingAccessCount = $derived((data as { pendingAccessCount?: number }).pendingAccessCount ?? 0);
 	let pendingMatchmakerCount = $derived((data as { pendingMatchmakerCount?: number }).pendingMatchmakerCount ?? 0);
-	function isHandledMsg(m: { id: string; kind?: string; handled?: boolean }): boolean {
+	function isHandledMsg(m: { id: string; kind?: string; handled?: boolean; singlesItemId?: string; createdMs?: number }): boolean {
 		// בקשת מיקום/שכונה שכבר אושרה/נדחתה (extra_fields.handled) - יורדת מההתראות
 		// הפעילות (ומספירת "שלא נקראו") ועוברת להיסטוריית ההודעות שטופלו
 		if (m.handled) return true;
-		if (m.kind === "singles_review") return pendingSinglesCount === 0;
+		// התראת פנוי חדש: טופלה כשהכרטיס *שלה* כבר לא ממתין (לא "כשאין אף ממתין" -
+		// אחרת כרטיס חדש אחד היה מחזיר את כל ההתראות הישנות ומקפיץ את הבאדג')
+		if (m.kind === "singles_review") {
+			if (pendingSinglesCount === 0) return true;
+			return isSinglesReviewHandled(m.singlesItemId ?? "", m.createdMs ?? 0, pendingSinglesRefs);
+		}
 		// התראה ישנה על בקשת גישה/שדכנות שכבר הוכרעה בדף האישור לפני שהסימון היה קיים
 		if (m.kind === "singles_access") return pendingAccessCount === 0;
 		if (m.kind === "matchmaker_request") return pendingMatchmakerCount === 0;
@@ -2350,8 +2360,49 @@
 	// (cross-route) כדי שהלוגיקה וההרשאות יישארו במקום אחד. ----
 	let syndicatingAdId = $state("");
 	let syndicatedIds = $state<string[]>([]);
-	let myAdsSyndMsg = $state("");
-	let myAdsSyndOk = $state(false);
+	// הודעת הפלאש של רשימת "הפרסומות שלי" - משותפת לסנדיקציה ולקיצורי הניהול
+	let myAdsMsg = $state("");
+	let myAdsOk = $state(false);
+
+	// ---- קיצורי הניהול ברשימת "הפרסומות שלי" (אשר/דחה/השהה/המשך/הורד) ----
+	// שאלת אישור לפני השליחה (ביטול = לא נשלח); בדחייה - סיבה לא-חובה שנכנסת
+	// לשדה reason של הטופס. התוצאה מוצגת מעל הרשימה, והרשימה נטענת מחדש
+	// ב-invalidateAll במקום update() - כדי ש-form.error של הפרופיל לא יזוהם.
+	let myAdsBusyId = $state("");
+	function myAdsAction(
+		row: { id: string },
+		opts: { confirm?: string; promptReason?: boolean } = {},
+	): import("@sveltejs/kit").SubmitFunction {
+		return ({ formData, cancel }) => {
+			if (opts.confirm && !confirm(opts.confirm)) {
+				cancel();
+				return;
+			}
+			if (opts.promptReason) {
+				const reason = prompt("סיבת הדחייה (אפשר להשאיר ריק):", "");
+				if (reason === null) {
+					cancel();
+					return;
+				}
+				formData.set("reason", reason);
+			}
+			myAdsBusyId = row.id;
+			return async ({ result }) => {
+				myAdsBusyId = "";
+				if (result.type === "success") {
+					myAdsOk = true;
+					myAdsMsg = (result.data as { message?: string } | undefined)?.message ?? "בוצע ✅";
+					await invalidateAll();
+				} else if (result.type === "failure") {
+					myAdsOk = false;
+					myAdsMsg = (result.data as { error?: string } | undefined)?.error ?? "הפעולה נכשלה";
+				} else {
+					myAdsOk = false;
+					myAdsMsg = "הפעולה נכשלה - נסה שוב";
+				}
+			};
+		};
+	}
 	function syndicateFromProfile(row: {
 		id: string;
 		title: string;
@@ -2373,19 +2424,19 @@
 			return async ({ result }) => {
 				syndicatingAdId = "";
 				if (result.type === "success") {
-					myAdsSyndOk = true;
+					myAdsOk = true;
 					if (!syndicatedIds.includes(row.id)) syndicatedIds = [...syndicatedIds, row.id];
-					myAdsSyndMsg =
+					myAdsMsg =
 						(result.data as { message?: string } | undefined)?.message ??
 						`🌐 "${row.title}" פורסמה בכל האתרים`;
 				} else if (result.type === "failure") {
-					myAdsSyndOk = false;
-					myAdsSyndMsg =
+					myAdsOk = false;
+					myAdsMsg =
 						(result.data as { error?: string } | undefined)?.error ??
 						"הפרסום בכל האתרים נכשל";
 				} else {
-					myAdsSyndOk = false;
-					myAdsSyndMsg = "הפרסום בכל האתרים נכשל - נסה שוב";
+					myAdsOk = false;
+					myAdsMsg = "הפרסום בכל האתרים נכשל - נסה שוב";
 				}
 			};
 		};
@@ -4390,11 +4441,18 @@
 								<span class="text-amber-400">📢</span>
 								{tFn("profile.my_ads_list")}
 								<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">{(data.myAds ?? []).length}</span>
+								{#if isUserAdmin}
+									<!-- לאדמין: קיצור למסך הניהול המלא (שינוי מסלול, מקום בטור, קציבה) -->
+									<a href="/admin/ads-review" class="ms-auto text-[10px] font-bold text-purple-300 hover:text-purple-200 no-underline whitespace-nowrap" title="ניהול כל הפרסומות">🛠 לניהול הפרסומות</a>
+								{/if}
 							</p>
+							{#if myAdsMsg}
+								<p class="mb-2 text-[11px] font-bold m-0 {myAdsOk ? 'text-green-300' : 'text-red-300'}">{myAdsMsg}</p>
+							{/if}
 							<div class="space-y-1.5">
 								{#each data.myAds ?? [] as myAdRow (myAdRow.id)}
 									{@const st = myAdRow.status === 'approved' ? (myAdRow.paused ? 'paused' : myAdRow.live ? 'live' : 'expired') : myAdRow.status}
-									<div class="flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-2.5 py-2">
+									<div class="ad-row flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-2.5 py-2">
 										<span class="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0
 											{st === 'live' ? 'bg-green-500/20 text-green-300 border border-green-500/40'
 											: st === 'paused' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
@@ -4415,11 +4473,59 @@
 												{#if myAdRow.expiresAt}{tFn("profile.my_ad_until", { date: new Date(myAdRow.expiresAt).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" }) })}{/if}
 											</p>
 										</div>
-										<a href={`/about/advertise/builder?edit=${myAdRow.id}`} onclick={() => setAdIntent('edit')}
-										   title={tFn("profile.my_ad_edit_title")}
-										   class="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-[11px] transition-colors">
-											{tFn("profile.my_ad_edit")}
-										</a>
+										<span class="ad-actions">
+											<!-- קיצורי הניהול לאדמין - הפעולות השכיחות ישר מכאן, בלי לעבור
+											     למסך הניהול. המסלול = מה שנבחר בשליחה; שינוי מסלול, מקום
+											     בטור וקציבה - במסך הניהול. -->
+											{#if isUserAdmin}
+												{@const busy = myAdsBusyId === myAdRow.id}
+												{#if st === 'pending'}
+													<form method="POST" action="?/approveMyAd" use:enhance={myAdsAction(myAdRow)}>
+														<input type="hidden" name="id" value={myAdRow.id} />
+														<button type="submit" class="ad-btn ok" disabled={busy} title="אישור ופרסום במסלול שנבחר בשליחה">✅ אשר</button>
+													</form>
+												{:else if st === 'expired'}
+													<!-- פג התוקף: אישור מחדש = תקופה חדשה מהיום, באותו מקום בטור -->
+													<form method="POST" action="?/approveMyAd" use:enhance={myAdsAction(myAdRow)}>
+														<input type="hidden" name="id" value={myAdRow.id} />
+														<button type="submit" class="ad-btn ok" disabled={busy} title="תקופה חדשה מהיום, באותו מקום בטור">🔄 חדש</button>
+													</form>
+												{:else if st === 'paused'}
+													<form method="POST" action="?/resumeMyAd" use:enhance={myAdsAction(myAdRow)}>
+														<input type="hidden" name="id" value={myAdRow.id} />
+														<button type="submit" class="ad-btn ok" disabled={busy} title="הימים השמורים נספרים מהיום">▶ המשך</button>
+													</form>
+												{:else if st === 'live'}
+													<form method="POST" action="?/pauseMyAd"
+													      use:enhance={myAdsAction(myAdRow, { confirm: 'להשהות את הפרסומת? היא תרד מהאתר והימים שנותרו יישמרו לה.' })}>
+														<input type="hidden" name="id" value={myAdRow.id} />
+														<button type="submit" class="ad-btn ghost" disabled={busy} title="יורדת מהאתר, הימים שנותרו נשמרים לה">⏸ השהה</button>
+													</form>
+												{/if}
+												{#if myAdRow.status === 'approved'}
+													<form method="POST" action="?/unapproveMyAd"
+													      use:enhance={myAdsAction(myAdRow, { confirm: 'להוריד את הפרסומת מהאתר ולהחזיר אותה לממתינות?' })}>
+														<input type="hidden" name="id" value={myAdRow.id} />
+														<button type="submit" class="ad-btn ghost" disabled={busy} title="חוזרת לממתינות בלי מחיקה">⬇ הורד</button>
+													</form>
+												{/if}
+												{#if myAdRow.status !== 'rejected'}
+													<form method="POST" action="?/rejectMyAd" use:enhance={myAdsAction(myAdRow, { promptReason: true })}>
+														<input type="hidden" name="id" value={myAdRow.id} />
+														<input type="hidden" name="reason" value="" />
+														<button type="submit" class="ad-btn danger" disabled={busy} title="דחייה עם סיבה (לא חובה)">❌ דחה</button>
+													</form>
+												{/if}
+											{/if}
+											{#if myAdRow.live}
+												<a class="ad-btn ghost" href={`/ads/${myAdRow.id}`} target="_blank" rel="noopener" title="דף הנחיתה באתר">👁 צפה</a>
+											{/if}
+											<a href={`/about/advertise/builder?edit=${myAdRow.id}`} onclick={() => setAdIntent('edit')}
+											   title={tFn("profile.my_ad_edit_title")}
+											   class="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-[11px] transition-colors">
+												{tFn("profile.my_ad_edit")}
+											</a>
+										</span>
 										{#if isSuperAdmin && myAdRow.status === 'approved'}
 											<!-- סופר-אדמין בלבד: סנדיקציה לכל אתרי הרשת בלי לעבור דרך עמוד האישורים -->
 											{@const adSynced = Boolean(myAdRow.syndicatedAt) || syndicatedIds.includes(myAdRow.id)}
@@ -4447,9 +4553,6 @@
 									</div>
 								{/each}
 							</div>
-							{#if myAdsSyndMsg}
-								<p class="mt-2 text-[11px] font-bold m-0 {myAdsSyndOk ? 'text-green-300' : 'text-red-300'}">{myAdsSyndMsg}</p>
-							{/if}
 						</div>
 					{/if}
 
@@ -6943,6 +7046,69 @@
 {/if}
 
 <style>
+	/* קיצורי הניהול ב"הפרסומות שלי" - כפתורים קטנים זה לצד זה, נשברים לשורה בנייד */
+	.ad-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.35rem;
+		flex-shrink: 0;
+	}
+	.ad-actions form {
+		display: contents;
+	}
+	.ad-btn {
+		font: inherit;
+		font-weight: 800;
+		font-size: 0.7rem;
+		line-height: 1.2;
+		border-radius: 0.5rem;
+		padding: 0.35rem 0.55rem;
+		cursor: pointer;
+		text-decoration: none;
+		white-space: nowrap;
+		border: 1px solid transparent;
+		transition: background 0.2s;
+	}
+	.ad-btn:disabled {
+		opacity: 0.6;
+		cursor: wait;
+	}
+	.ad-btn.ok {
+		background: rgba(34, 197, 94, 0.18);
+		border-color: rgba(34, 197, 94, 0.45);
+		color: #86efac;
+	}
+	.ad-btn.ok:hover {
+		background: rgba(34, 197, 94, 0.32);
+	}
+	.ad-btn.ghost {
+		background: rgba(255, 255, 255, 0.06);
+		border-color: rgba(255, 255, 255, 0.15);
+		color: #e2e8f0;
+	}
+	.ad-btn.ghost:hover {
+		background: rgba(255, 255, 255, 0.14);
+	}
+	.ad-btn.danger {
+		background: rgba(239, 68, 68, 0.12);
+		border-color: rgba(239, 68, 68, 0.4);
+		color: #fca5a5;
+	}
+	.ad-btn.danger:hover {
+		background: rgba(239, 68, 68, 0.26);
+	}
+	@media (max-width: 640px) {
+		.ad-row {
+			flex-wrap: wrap;
+		}
+		.ad-actions {
+			width: 100%;
+			justify-content: flex-start;
+		}
+	}
+
 	/* טוסט "בקשתך נקלטה" - עולה מלמטה, ונמוג לקראת ההיעלמות האוטומטית (4 שניות) */
 	@keyframes locToastInOut {
 		0% {
