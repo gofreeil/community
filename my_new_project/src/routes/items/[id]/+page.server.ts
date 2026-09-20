@@ -5,6 +5,7 @@ import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { BOT_UA_RX } from '$lib/server/botUa';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { isPrivateCategory } from '$lib/itemCategories';
+import { categoryConfig } from '$lib/categoryFields';
 import { getDemoItemById } from '$lib/demoUserItems';
 import { buildShareImage } from '$lib/server/shareImage';
 import type { PageServerLoad } from './$types';
@@ -38,6 +39,11 @@ export const load: PageServerLoad = async (event) => {
         const extraFields = (() => {
             try { return JSON.parse(dbItem.extra_fields ?? '{}'); } catch { return {}; }
         })();
+        // "מידע לשדכנים" (group=matchmakers) לעולם לא יוצא לדף הפריט - גם לא לבעלים
+        // ולא לסופר-אדמין: הוא נאסף לצוות השדכנים בלבד ומוצג רק ב-/admin/singles-review.
+        for (const f of categoryConfig[dbItem.category]?.fields ?? []) {
+            if (f.group === 'matchmakers') delete extraFields[f.key];
+        }
         const galleryImages: string[] = Array.isArray(extraFields?.images)
             ? (extraFields.images as unknown[]).filter((s): s is string => typeof s === 'string')
             : (typeof extraFields?.image === 'string' ? [extraFields.image] : []);
