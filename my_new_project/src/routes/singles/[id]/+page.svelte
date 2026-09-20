@@ -474,6 +474,20 @@
                         </button>
                     </div>
                 </section>
+
+                {#if !data.isOwner}
+                    <!-- כל צופה שקיבל את הכרטיס בשיתוף: הרשמה (קוד SMS ב-/login, החשבון נוצר
+                         אוטומטית) ואחריה ישר לטופס יצירת הכרטיס. מחובר → ישר לטופס. -->
+                    <a
+                        href={data.isLoggedIn ? '/add/singles' : `/login?redirect=${encodeURIComponent('/add/singles')}`}
+                        class="mt-4 block w-full rounded-2xl border border-fuchsia-300/40 bg-gradient-to-br from-fuchsia-600/80 to-purple-700/80 p-3 text-center shadow-md hover:scale-[1.01] transition-transform"
+                    >
+                        <span class="block text-white font-black text-base">✨ צור כרטיס פנוי משלך</span>
+                        <span class="block text-white/80 text-xs mt-0.5">
+                            {data.isLoggedIn ? 'דקה אחת - וגם הכרטיס שלך משותף ככה' : 'הרשמה קצרה לאתר, ומיד אחריה יצירת הכרטיס'}
+                        </span>
+                    </a>
+                {/if}
             </div>
         </div>
 

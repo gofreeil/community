@@ -14,6 +14,7 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch {}
     const isLoggedIn = !!session?.user?.id;
+    const viewerId = session?.user?.id as string | undefined;
 
     const id = event.params.id;
     const origin = event.url.origin;
@@ -24,11 +25,13 @@ export const load: PageServerLoad = async (event) => {
     if (dbItem && dbItem.category === 'singles') {
         // ממפים את הפריט האמיתי למבנה single שהדף יודע להציג
         // תמונות ככתובות ולא base64 בנתוני הדף - ראה singlesImages.ts
-        return { single: withSinglesImageUrls(dbItemToProfile(dbItem)), dbItem: stripSinglesItemImages(dbItem), isBot, origin, isLoggedIn };
+        // isOwner: הכפתור "צור כרטיס פנוי משלך" מוצג לכל צופה חוץ מבעל הכרטיס
+        const isOwner = !!viewerId && dbItem.user_id === viewerId;
+        return { single: withSinglesImageUrls(dbItemToProfile(dbItem)), dbItem: stripSinglesItemImages(dbItem), isBot, origin, isLoggedIn, isOwner };
     }
 
     const single = mockSingles.find((s) => s.id === id);
     if (!single) throw error(404, 'הפרופיל לא נמצא');
 
-    return { single, dbItem: null, isBot, origin, isLoggedIn };
+    return { single, dbItem: null, isBot, origin, isLoggedIn, isOwner: false };
 };

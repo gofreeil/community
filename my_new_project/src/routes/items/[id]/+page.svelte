@@ -2654,6 +2654,20 @@
                                         <p class="text-white/70 text-[10px] mt-2 text-center">מקס׳ 3 בקשות ב-24 שעות · ההגנה מבוטים</p>
                                     </div>
                                 {/if}
+                                {#if singlesState !== 'owner'}
+                                    <!-- כל צופה שקיבל את הכרטיס בשיתוף: מסלול להרשמה ואז ליצירת כרטיס משלו.
+                                         אורח → /login עם redirect (שם נרשמים בקוד SMS, החשבון נוצר אוטומטית,
+                                         ואחרי הכניסה ממשיכים ישר לטופס). מחובר → ישר לטופס. -->
+                                    <a
+                                        href={isLoggedIn ? '/add/singles' : `/login?redirect=${encodeURIComponent('/add/singles')}`}
+                                        class="mt-3 block w-full rounded-xl border border-fuchsia-300/40 bg-gradient-to-br from-fuchsia-600/80 to-purple-700/80 p-2.5 text-center shadow-md hover:scale-[1.02] transition-transform"
+                                    >
+                                        <span class="block text-white font-black text-sm">✨ צור כרטיס פנוי משלך</span>
+                                        <span class="block text-white/80 text-[11px] mt-0.5">
+                                            {isLoggedIn ? 'דקה אחת - וגם הכרטיס שלך משותף ככה' : 'הרשמה קצרה לאתר, ומיד אחריה יצירת הכרטיס'}
+                                        </span>
+                                    </a>
+                                {/if}
                             {:else}
                                 {@const waDigits = displayPhone ? String(displayPhone).replace(/\D/g, '').replace(/^0/, '972') : ''}
                                 <div class="rounded-xl border border-white/10 bg-gradient-to-br from-purple-600/90 to-blue-600/90 p-3">
