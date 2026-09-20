@@ -287,12 +287,21 @@
 		return [d, local, intl];
 	}
 
+	// תווית קריאה למקור ייבוא (import_source) - מוצגת כתג בשורה וניתנת לחיפוש ("רכישות")
+	const IMPORT_SOURCE_LABELS: Record<string, string> = {
+		'pg-cellular-2026-09': 'רכישות קבוצתיות · טופס סלולר',
+	};
+	function importSourceLabel(src: string | null | undefined): string {
+		if (!src) return '';
+		return IMPORT_SOURCE_LABELS[src] ?? `ייבוא · ${src}`;
+	}
+
 	// סינון משתמשים
 	const filteredUsers = $derived(() => {
 		let list = data.users ?? [];
 		if (searchQuery) {
 			list = list.filter(u =>
-				heMatches(searchQuery, u.name, u.email, u.id, u.neighborhood, (u as any).city, ...phoneVariants(u.phone))
+				heMatches(searchQuery, u.name, u.email, u.id, u.neighborhood, (u as any).city, importSourceLabel((u as any).import_source), ...phoneVariants(u.phone))
 			);
 		}
 		if (roleFilter !== 'all') {
@@ -1019,6 +1028,12 @@
 									{#if ((user as any).merged_count ?? 1) > 1}
 										<span class="text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full whitespace-nowrap" title="אוחד אוטומטית מחשבונות שחולקים אימייל/טלפון">
 											🔗 מאוחד · {(user as any).merged_count} חשבונות
+										</span>
+									{/if}
+									{#if (user as any).import_source}
+										<!-- מקור ייבוא: משתמש שנוצר/הושלם מגיליון חיצוני (לא נרשם בעצמו) -->
+										<span class="text-xs font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full whitespace-nowrap" title="מקור: {(user as any).import_source}">
+											📥 {importSourceLabel((user as any).import_source)}
 										</span>
 									{/if}
 								</div>

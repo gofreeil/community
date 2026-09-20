@@ -99,6 +99,8 @@ export interface DbUser {
     sms_prefs: SmsPrefs;
     /** מתי נשלח למשתמש SMS "השלם עיר/שכונה בפרופיל" מעמוד הניהול ('' = מעולם לא) */
     sms_profile_nudge_at: string;
+    /** מקור ייבוא ('' = נרשם באתר בעצמו). למשל 'pg-cellular-2026-09' = גיליון הסלולר של רכישות קבוצתיות */
+    import_source: string;
     /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
     merged_ids?: string[];
     /** מספר החשבונות שאוחדו (1 = חשבון יחיד) */
@@ -207,6 +209,8 @@ interface StrapiUpUser {
     sms_prefs?: unknown;
     /** מתי נשלח SMS "השלם פרופיל" מעמוד הניהול (datetime) */
     sms_profile_nudge_at?: string | null;
+    /** מקור ייבוא (למשל 'pg-cellular-2026-09') - משתמש שנוצר/הושלם מגיליון חיצוני */
+    import_source?: string | null;
     createdAt: string;
 }
 
@@ -274,6 +278,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         totp_enabled: !!(u.totp_secret && u.totp_secret.trim()),
         sms_prefs:    normalizeSmsPrefs(u.sms_prefs),
         sms_profile_nudge_at: u.sms_profile_nudge_at ?? '',
+        import_source: u.import_source ?? '',
     };
 }
 
