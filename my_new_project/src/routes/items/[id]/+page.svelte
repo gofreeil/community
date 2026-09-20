@@ -990,15 +990,29 @@
     // שיתוף בוצע לפחות פעם אחת (שומר תאימות עם פונקציות השיתוף)
     let sharedOnce = $state(false);
 
+    // אחרי סיום הבנייה: פאנל "כך הכרטיס יצא" - הכרטיס בתצוגת גולש, עם המלצה
+    // לשתף, אפשרות לערוך שוב, ובקטגוריות בתשלום - קישור לשדרוג החשיפה
+    let donePanel = $state(false);
+    let doneWasNew = $state(false);
+    const isPaidCategory = $derived(!!item?.category && (categoryConfig[item.category]?.priceRow ?? null) !== null);
+
     function finishBuilder() {
         builderMode = false;
+        doneWasNew = isNewItem;
         isNewItem = false;
         editingField = '';
         editingSchedule = false;
+        shareMenuOpen = false;
+        donePanel = true;
         // מנקה את ?builder/?new מהכתובת כדי שרענון יפתח כתצוגת גולש
         if (item?.id) {
             try { history.replaceState(null, '', `/items/${item.id}`); } catch {}
         }
+        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+    }
+    function editAgain() {
+        donePanel = false;
+        builderMode = true;
     }
 
     onMount(async () => {
@@ -1866,6 +1880,7 @@
                     {/if}
                     {#if isNewItem}
                         <p class="text-emerald-300 font-bold text-xs mt-2 text-center">🎉 מזל טוב - הפריט עלה למפה!</p>
+                        <p class="text-amber-200/80 text-[11px] mt-1 text-center leading-snug">כשתסיימו, לחצו "חזרה לתצוגה" - תראו איך הכרטיס יצא ותוכלו לשתף אותו</p>
                     {/if}
                     {#if builderError}
                         <p class="text-red-400 text-xs font-bold mt-1.5">⚠️ {builderError}</p>
@@ -1873,6 +1888,62 @@
                     {#if savingTag}
                         <p class="text-amber-300/80 text-[11px] mt-1.5 text-center">שומר...</p>
                     {/if}
+                </div>
+            {/if}
+
+            <!-- אחרי סיום הבנייה: "כך הכרטיס יצא" - המלצה לשתף, עריכה חוזרת, ושדרוג חשיפה (בתשלום) -->
+            {#if donePanel && !builderMode && canEditPage}
+                <div class="mb-2 rounded-2xl border border-emerald-500/40 bg-gradient-to-l from-emerald-900/25 to-[#0f172a] p-3 shadow-lg relative"
+                    in:fly={{ y: -16, duration: 400 }}>
+                    <button type="button" onclick={() => (donePanel = false)} aria-label="סגור"
+                        class="absolute top-2 start-2 text-gray-500 hover:text-white text-base leading-none px-1">×</button>
+                    <p class="text-emerald-200 font-black text-sm text-center">
+                        {doneWasNew ? '🎉 הכרטיס מוכן - כך הוא נראה לגולשים' : '👀 כך הכרטיס נראה עכשיו לגולשים'}
+                    </p>
+                    <p class="text-gray-300 text-xs text-center mt-1 leading-snug">
+                        מרוצים? מומלץ לשתף אותו עכשיו - שיתוף עם עצמכם בוואטסאפ מראה גם את הקדימון בדיוק כפי שאחרים יראו.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-1.5 mt-2.5">
+                        <button type="button" onclick={shareWhatsApp}
+                            class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#25D366] hover:bg-[#1ebe5b] text-white text-xs font-bold transition-colors">
+                            💬 שיתוף בוואטסאפ
+                        </button>
+                        <button type="button" onclick={shareTelegram}
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-colors">
+                            ✈️ טלגרם
+                        </button>
+                        {#if canNativeShare}
+                            <button type="button" onclick={shareNative}
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-colors">
+                                🔗 רשת אחרת
+                            </button>
+                        {:else}
+                            <button type="button" onclick={shareFacebook}
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-colors">
+                                📘 פייסבוק
+                            </button>
+                        {/if}
+                        <button type="button" onclick={copyLink}
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-colors">
+                            {copied ? '✓ הועתק' : '📋 העתקת קישור'}
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-1.5 mt-2 pt-2 border-t border-white/10">
+                        <button type="button" onclick={editAgain}
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/30 text-xs font-bold transition-all">
+                            ✏️ לערוך שוב
+                        </button>
+                        {#if isPaidCategory}
+                            <a href="/about/advertise"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white text-xs font-bold transition-opacity">
+                                📣 שדרג את החשיפה
+                            </a>
+                        {/if}
+                        <a href="/"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-purple-300 hover:text-purple-200 text-xs font-bold transition-all">
+                            🗺 חזרה למפה
+                        </a>
+                    </div>
                 </div>
             {/if}
 

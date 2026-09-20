@@ -993,21 +993,22 @@
                 clearDraftBackup(DRAFT_KEY);
             }
 
-            if (isPaidFlow) {
-                if (browser) {
-                    // מוגן בנפרד: מכסת localStorage מלאה לא תעצור את המעבר לדף התשלום
-                    // אחרי שהפריט כבר נשמר בשרת (דף התשלום יסתדר גם בלי הבחירה המוקדמת)
-                    try {
-                        localStorage.setItem('pending_ad', JSON.stringify({
-                            priceRow:      effectivePriceRow,
-                            categoryLabel: config.label,
-                            itemLabel:     topLevel.label,
-                            itemId:        result.id,
-                        }));
-                    } catch {}
-                }
-                setTimeout(() => goto('/about/advertise'), 1500);
-            } else if (isSinglesCard && result.id) {
+            if (isPaidFlow && browser) {
+                // קטגוריה בתשלום: לא מנתבים לדף התשלום - קודם רואים את הכרטיס.
+                // הבחירה נשמרת כדי שדף הפרסום יציג "נשמר בהצלחה" כשמגיעים אליו
+                // מכפתור "שדרג את החשיפה" בדף הכרטיס. מוגן בנפרד: מכסת localStorage
+                // מלאה לא תעצור את המעבר אחרי שהפריט כבר נשמר בשרת.
+                try {
+                    localStorage.setItem('pending_ad', JSON.stringify({
+                        priceRow:      effectivePriceRow,
+                        categoryLabel: config.label,
+                        itemLabel:     topLevel.label,
+                        itemId:        result.id,
+                    }));
+                } catch {}
+            }
+
+            if (isSinglesCard && result.id) {
                 // כרטיס פנויים: נשארים במסך "הכרטיס מוכן לשיתוף" - בלי ניתוב אוטומטי
             } else if (result.id) {
                 // זרימה דו-שלבית: הפרטים הראשוניים נשמרו ועלו למפה - עוברים לדף
@@ -1135,13 +1136,14 @@
                     <a href="/singles/{savedId}" class="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-500 text-white text-sm font-bold transition-colors">👀 לצפייה בכרטיס</a>
                     <a href="/messages" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">📬 לאזור האישי</a>
                 </div>
-            {:else if isPaidFlow}
+            {:else if isPaidFlow && !isEditMode}
+                <p class="text-green-200 text-base font-bold mb-1">🎉 הפריט עלה למפה!</p>
+                <p class="text-gray-400 text-sm">עוברים לדף הכרטיס - שם תראו איך הוא יצא, תוכלו לשתף אותו או לערוך שוב.</p>
                 {#if FREE_PROMO_PUBLIC}
-                    <p class="text-green-300 text-base font-black mb-1">🎉 בתקופה הראשונית הפרסום חינם - עם הקוד "{FREE_PROMO_CODE_TEXT}" בדף הבא</p>
+                    <p class="text-green-300 text-sm font-bold mt-2">בתקופה הראשונית הפרסום חינם - עם הקוד "{FREE_PROMO_CODE_TEXT}" בדף השדרוג</p>
                 {:else}
-                    <p class="text-amber-200 text-base font-bold mb-1">שלם {monthlyPrice} ש"ח בחודש על מנת להופיע</p>
+                    <p class="text-amber-200 text-sm font-bold mt-2">שדרוג החשיפה: {monthlyPrice} ש"ח בחודש</p>
                 {/if}
-                <p class="text-gray-400 text-sm">מועבר לדף התשלום...</p>
             {:else if isEditMode}
                 <p class="text-gray-400 text-sm">העדכון נשמר. עוברים לדף הפריט...</p>
             {:else}
