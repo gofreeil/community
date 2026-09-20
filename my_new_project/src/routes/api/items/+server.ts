@@ -97,6 +97,21 @@ async function notifyIndexInvite(userId: string, bizLabel: string) {
 // קטגוריות שדורשות אישור אדמין לפני שעולות לאתר (בדיקת תמונות צניעות וכו').
 const MODERATED_CATEGORIES = new Set(['singles']);
 
+// עריכת כרטיס פנויים שלא נגעה בתמונות לא חוזרת לאישור ולא מייצרת התראה:
+// בדיקת הצניעות היא על התמונות; טקסט שהבעלים משנה בכרטיס שכבר אושר נשאר מאושר.
+// כרטיס שעדיין ממתין נשאר ממתין (ההתראה הקיימת כבר בתיבה - לא שולחים עוד אחת);
+// כרטיס שנדחה או שהתמונות שלו השתנו - חוזר לבדיקה עם התראה, כמו קודם.
+function sameImages(prev: Record<string, unknown>, next: Record<string, unknown>): boolean {
+    if (next.images === undefined) return true; // הטופס לא שלח תמונות - לא נגעו בהן
+    const a = Array.isArray(prev.images) ? prev.images : [];
+    const b = Array.isArray(next.images) ? next.images : [];
+    return a.length === b.length && a.every((img, i) => img === b[i]);
+}
+function moderationAfterEdit(existingStatus: string, imagesUnchanged: boolean): { status?: string; notify: boolean } {
+    if (!imagesUnchanged || existingStatus === 'rejected') return { status: 'pending', notify: true };
+    return { notify: false }; // active נשאר active, pending נשאר pending
+}
+
 // שולח לכל סופר-אדמין הודעה פנימית שכרטיס פנויים חדש ממתין לאישור (בדיקת תמונות).
 // עדכון חוזר של כרטיס שטרם אושר מחליף את ההודעה הקודמת עליו במקום להוסיף עוד אחת,
 // כדי שלא יצטברו אצל האדמין כמה הודעות סרק על אותו כרטיס.
@@ -250,6 +265,9 @@ export const POST: RequestHandler = async (event) => {
                 return singlesImageTokenMatches(singlesImageToken(editId, Number(m[2]), prev), m[3]) ? [prev] : [];
             });
         }
+        const mod = isModerated
+            ? moderationAfterEdit(existing.status, sameImages(prevExtra, submittedExtra))
+            : { notify: false as const };
         try {
             await updateItem(editId, {
                 label:        String(label),
@@ -263,9 +281,9 @@ export const POST: RequestHandler = async (event) => {
                 lat:          coords.lat,
                 lng:          coords.lng,
                 extra_fields: { ...prevExtra, ...submittedExtra },
-                ...(isModerated ? { status: 'pending' } : {}),
+                ...(mod.status ? { status: mod.status } : {}),
             });
-            if (isModerated) {
+            if (mod.notify) {
                 // await חובה: ב-Vercel עבודה לא-מוחכה אחרי ה-return מתה - ההודעה
                 // הישנה הייתה נמחקת בלי שהחדשה נכתבת (או לא נכתבת בכלל)
                 try {
@@ -274,7 +292,7 @@ export const POST: RequestHandler = async (event) => {
                     console.warn('[api/items] singles review notify failed:', e);
                 }
             }
-            return json({ success: true, id: editId, updated: true, pending: isModerated });
+            return json({ success: true, id: editId, updated: true, pending: mod.status === 'pending' });
         } catch (e) {
             console.error('[api/items] edit update failed:', e);
             return json({ success: false, message: 'עדכון הפריט נכשל. נסה שוב בעוד רגע.' }, { status: 500 });
@@ -287,6 +305,12 @@ export const POST: RequestHandler = async (event) => {
             const existing = (await getItemsByUserId(String(userId)))
                 .find(it => it.category === category);
             if (existing) {
+                const prevExtra: Record<string, unknown> = (() => {
+                    try { return existing.extra_fields ? JSON.parse(existing.extra_fields) : {}; } catch { return {}; }
+                })();
+                const mod = MODERATED_CATEGORIES.has(category)
+                    ? moderationAfterEdit(existing.status, sameImages(prevExtra, (extra_fields ?? {}) as Record<string, unknown>))
+                    : { notify: false as const };
                 await updateItem(existing.id, {
                     label:        String(label),
                     description:  String(rest.description ?? ''),
@@ -298,10 +322,10 @@ export const POST: RequestHandler = async (event) => {
                     lat:          coords.lat,
                     lng:          coords.lng,
                     extra_fields: (extra_fields ?? {}) as Record<string, unknown>,
-                    // עריכת כרטיס פנויים מחזירה אותו לאישור מחדש (התמונות עשויות להשתנות)
-                    ...(MODERATED_CATEGORIES.has(category) ? { status: 'pending' } : {}),
+                    // עריכת כרטיס פנויים חוזרת לאישור רק אם התמונות השתנו (moderationAfterEdit)
+                    ...(mod.status ? { status: mod.status } : {}),
                 });
-                if (MODERATED_CATEGORIES.has(category)) {
+                if (mod.notify) {
                     // await חובה: ב-Vercel כל עבודה לא-מוחכה אחרי ה-return מתה, וכאן
                     // ה-return מיד אחריו - בלי await ההתראה לסופר-אדמין לא נכתבת כלל.
                     try {
@@ -310,7 +334,7 @@ export const POST: RequestHandler = async (event) => {
                         console.warn('[api/items] singles review notify failed:', e);
                     }
                 }
-                return json({ success: true, id: existing.id, updated: true, pending: MODERATED_CATEGORIES.has(category) });
+                return json({ success: true, id: existing.id, updated: true, pending: mod.status === 'pending' });
             }
         } catch (e) {
             // אם בדיקת/עדכון הכרטיס הקיים נכשלה - לא נכשיל את המשתמש, ניפול ליצירה רגילה

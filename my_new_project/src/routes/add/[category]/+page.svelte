@@ -356,6 +356,8 @@
     // פנויים: אחרי שמירה לא מנתבים אוטומטית - מציגים "הכרטיס מוכן לשיתוף" עם
     // כפתורי שיתוף (לראות את הקדימון) והסבר על בדיקת הצניעות וההודעה באזור האישי.
     let savedId         = $state('');
+    // כרטיס פנויים שנשמר בלי שינוי תמונות נשאר מאושר - בלי "עובר בדיקת צניעות"
+    let savedPending    = $state(true);
     let shareCopied     = $state(false);
     const isSinglesCard = categoryId === 'singles';
     function singlesShareUrl(): string {
@@ -976,6 +978,7 @@
 
             submitted = true;
             savedId = result.id ? String(result.id) : '';
+            savedPending = result.pending !== false;
 
             // האזור החדש נרשם אצל המנהל כדי שיתווסף לרשימה לכולם. best-effort,
             // ואחרי שהפריט כבר נשמר: תקלת רשת כאן לא נוגעת בפרסום שהצליח.
@@ -1125,6 +1128,7 @@
                         {shareCopied ? '✓ הועתק' : '📋 העתקת קישור'}
                     </button>
                 </div>
+                {#if savedPending}
                 <div class="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4 text-right mb-4">
                     <p class="text-purple-100 text-sm font-bold mb-1.5">🔒 מה קורה עכשיו?</p>
                     <ul class="text-purple-200/90 text-sm leading-relaxed space-y-1 list-disc pr-5">
@@ -1132,6 +1136,7 @@
                         <li>תקבל/י <b>הודעה לאזור האישי</b> ברגע שהכרטיס נבדק - ואושר, או שנדרש בו תיקון.</li>
                     </ul>
                 </div>
+                {/if}
                 <div class="flex flex-wrap justify-center gap-2">
                     <a href="/singles/{savedId}" class="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-500 text-white text-sm font-bold transition-colors">👀 לצפייה בכרטיס</a>
                     <a href="/messages" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold transition-colors">📬 לאזור האישי</a>
