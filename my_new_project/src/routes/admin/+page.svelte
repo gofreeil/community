@@ -123,12 +123,23 @@
 	// ---- SMS "השלימו עיר ושכונה" למי שלא מילא (סופר-אדמין) ----
 	// המודל מציג נוסח לעריכה, כמה נמענים, כפתור בדיקה לעצמי, ושליחה לכולם במנות
 	// (הפעולה בשרת שולחת עד 20 בכל קריאה ומסמנת את מי שהצליח; כאן קוראים שוב עד שנגמר).
-	const SMS_DRAFT =
+	// שני קהלים: "לא השלימו עיר" (דדופ לפי sms_profile_nudge_at) ו"נוספו מייבוא" (דדופ לפי מפתח קמפיין
+	// שנרשם על המשתמש ב-sms_campaigns, כך שקמפיין חדש למיובאים לא נחסם על ידי קודם).
+	const SMS_DRAFT_NO_CITY =
 		'שלום {name}, כאן "קהילה בשכונה" 👋\n' +
 		'בפרופיל שלך חסרים עיר ושכונה, ובלעדיהם האתר לא יודע להציג לך את מה שקורה אצלך.\n' +
 		'ההשלמה לוקחת חצי דקה: https://community.gofreeil.com/profile';
+	const SMS_DRAFT_IMPORTED =
+		'שלום {name}, כאן "יוצאים לחירות" 👋\n' +
+		'בהמשך להרשמתך לרכישה הקבוצתית, פתחנו לך חשבון גם ב"קהילה בשכונה" - גמ"חים, מסירות, טרמפים, מניינים ואירועים ב{city}.\n' +
+		'כניסה בקוד SMS או בגוגל, בלי סיסמה: https://community.gofreeil.com/login?via=pg\n' +
+		'להסרה השב "הסר".';
+	type SmsAudience = 'no_city' | 'imported';
 	let showSmsModal = $state(false);
-	let smsText      = $state(SMS_DRAFT);
+	let smsAudience  = $state<SmsAudience>('no_city');
+	let smsSource    = $state('');   // '' = כל מקורות הייבוא
+	let smsCampaign  = $state('');   // מפתח קמפיין למיובאים (נרשם על המשתמש)
+	let smsText      = $state(SMS_DRAFT_NO_CITY);
 	let smsBusy      = $state(false);
 	let smsStop      = $state(false);
 	let smsLog       = $state<string[]>([]);
@@ -139,20 +150,49 @@
 		if (d.startsWith('972')) d = '0' + d.slice(3);
 		return /^05\d{8}$/.test(d);
 	};
-	// נמענים צפויים: בלי עיר, נייד תקין, לא חסום, לא נשלח להם כבר
+	// מקורות הייבוא שקיימים בפועל אצל המשתמשים (לבחירה במודל)
+	const smsSources = $derived.by(() => {
+		const c: Record<string, number> = {};
+		for (const u of data.users ?? []) { const s = (u as any).import_source as string; if (s) c[s] = (c[s] ?? 0) + 1; }
+		return Object.entries(c).sort((a, b) => b[1] - a[1]);
+	});
+	// נמענים צפויים לפי הקהל שנבחר: נייד תקין, לא חסום, ולא נשלח להם כבר
 	const smsRecipients = $derived(
-		(data.users ?? []).filter((u) =>
-			!(u as any).city?.trim() && !u.banned && !(u as any).sms_profile_nudge_at && isMobile(u.phone)),
+		(data.users ?? []).filter((u) => {
+			if (u.banned || !isMobile(u.phone)) return false;
+			if (smsAudience === 'imported') {
+				const src = (u as any).import_source as string;
+				const sent = ((u as any).sms_campaigns as string[] | undefined) ?? [];
+				return !!src && (!smsSource || src === smsSource) && !sent.includes(smsCampaign);
+			}
+			return !(u as any).city?.trim() && !(u as any).sms_profile_nudge_at;
+		}),
 	);
-	// בלי עיר אבל בלי נייד תקין - אי אפשר להגיע אליהם ב-SMS
+	// בקהל הנבחר, אבל בלי נייד תקין - אי אפשר להגיע אליהם ב-SMS
 	const smsUnreachable = $derived(
-		(data.users ?? []).filter((u) => !(u as any).city?.trim() && !isMobile(u.phone)).length,
+		(data.users ?? []).filter((u) => {
+			if (isMobile(u.phone)) return false;
+			if (smsAudience === 'imported') { const src = (u as any).import_source as string; return !!src && (!smsSource || src === smsSource); }
+			return !(u as any).city?.trim();
+		}).length,
 	);
 
-	function openSmsModal() {
+	function smsDefaultCampaign(): string {
+		const ym = new Date().toISOString().slice(0, 7);
+		return `welcome-${smsSource || 'import'}-${ym}`;
+	}
+	function setSmsAudience(a: SmsAudience) {
+		smsAudience = a;
+		smsText = a === 'imported' ? SMS_DRAFT_IMPORTED : SMS_DRAFT_NO_CITY;
+		if (a === 'imported' && !smsCampaign) smsCampaign = smsDefaultCampaign();
+	}
+	function openSmsModal(audience: SmsAudience = 'no_city') {
 		smsLog = [];
 		smsSentTotal = 0;
 		smsStop = false;
+		smsSource = '';
+		smsCampaign = '';
+		setSmsAudience(audience);
 		showSmsModal = true;
 	}
 
@@ -160,6 +200,9 @@
 		const fd = new FormData();
 		fd.set('message', smsText);
 		fd.set('mode', mode);
+		fd.set('audience', smsAudience);
+		fd.set('source', smsSource);
+		fd.set('campaign', smsCampaign);
 		const res = await fetch('?/smsIncompleteProfiles', {
 			method: 'POST', body: fd, headers: { 'x-sveltekit-action': 'true' },
 		});
@@ -996,11 +1039,20 @@
 				<!-- SMS יזום למי שלא מילא - נפתח מודל עם נוסח לעריכה לפני שליחה -->
 				<button
 					type="button"
-					onclick={openSmsModal}
+					onclick={() => openSmsModal('no_city')}
 					class="px-3 py-1.5 text-sm rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all cursor-pointer"
 					title="שליחת SMS לכל מי שלא מילא עיר ושכונה - הנוסח נפתח לעריכה לפני השליחה"
 				>
-					📱 SMS למי שלא השלים פרטים ({smsRecipients.length})
+					📱 SMS למי שלא השלים פרטים
+				</button>
+				<!-- הודעת "אתה רשום" לכל מי שנוסף מייבוא (import_source) ולא נרשם בעצמו -->
+				<button
+					type="button"
+					onclick={() => openSmsModal('imported')}
+					class="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all cursor-pointer"
+					title="SMS למי שנוסף מייבוא (רכישות קבוצתיות): נוסח לעריכה, בדיקה לעצמך, שליחה במנות, בלי כפילויות"
+				>
+					📥 הודעת "אתה רשום" למיובאים ({smsSources.reduce((s, [, n]) => s + n, 0)})
 				</button>
 			</form>
 
@@ -1292,15 +1344,53 @@
 		dir="rtl"
 	>
 		<div class="w-full max-w-lg rounded-2xl bg-[#0f172a] border border-white/10 p-5 shadow-2xl">
-			<h2 class="text-xl font-bold mb-1">📱 SMS למי שלא השלים פרטים</h2>
+			<h2 class="text-xl font-bold mb-1">📱 SMS קבוצתי</h2>
+
+			<!-- בחירת קהל -->
+			<div class="flex items-center gap-2 flex-wrap mb-2">
+				<button
+					type="button"
+					disabled={smsBusy}
+					onclick={() => setSmsAudience('no_city')}
+					class="px-3 py-1.5 text-sm rounded-lg border transition-all cursor-pointer {smsAudience === 'no_city' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/50' : 'text-gray-300 border-white/15 hover:bg-white/10'}"
+				>
+					לא השלימו עיר ושכונה
+				</button>
+				<button
+					type="button"
+					disabled={smsBusy}
+					onclick={() => setSmsAudience('imported')}
+					class="px-3 py-1.5 text-sm rounded-lg border transition-all cursor-pointer {smsAudience === 'imported' ? 'bg-cyan-500/20 text-cyan-200 border-cyan-500/50' : 'text-gray-300 border-white/15 hover:bg-white/10'}"
+				>
+					📥 נוספו מייבוא (לא נרשמו בעצמם)
+				</button>
+			</div>
+			{#if smsAudience === 'imported'}
+				<div class="flex items-center gap-2 flex-wrap mb-2">
+					<label for="sms-source" class="text-xs text-gray-400">מקור:</label>
+					<select id="sms-source" bind:value={smsSource} disabled={smsBusy}
+						onchange={() => { smsCampaign = smsDefaultCampaign(); }}
+						class="bg-white text-gray-900 border border-white/20 rounded-lg px-2 py-1 text-sm">
+						<option value="">כל המקורות</option>
+						{#each smsSources as [src, n]}
+							<option value={src}>{importSourceLabel(src)} ({n})</option>
+						{/each}
+					</select>
+					<label for="sms-campaign" class="text-xs text-gray-400">מפתח קמפיין:</label>
+					<input id="sms-campaign" bind:value={smsCampaign} disabled={smsBusy} dir="ltr"
+						class="bg-[#070b14] border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-56"
+						title="נרשם על כל נמען שקיבל - שליחה חוזרת עם אותו מפתח מדלגת עליו; מפתח חדש = קמפיין חדש" />
+				</div>
+			{/if}
 			<p class="text-gray-400 text-sm mb-3">
-				נמענים: <span class="text-white font-bold">{smsRecipients.length}</span> משתמשים בלי עיר, עם נייד תקין, שעוד לא קיבלו.
+				נמענים: <span class="text-white font-bold">{smsRecipients.length}</span>
+				{smsAudience === 'imported' ? 'מיובאים עם נייד תקין שעוד לא קיבלו את הקמפיין הזה.' : 'משתמשים בלי עיר, עם נייד תקין, שעוד לא קיבלו.'}
 				{#if smsUnreachable}
 					<span class="text-gray-500">({smsUnreachable} נוספים בלי נייד תקין - לא ניתן להגיע אליהם ב-SMS)</span>
 				{/if}
 			</p>
 
-			<label for="sms-text" class="block text-xs text-gray-400 font-bold mb-1">הנוסח שיישלח (אפשר לערוך; <code>{'{name}'}</code> = שם הנמען)</label>
+			<label for="sms-text" class="block text-xs text-gray-400 font-bold mb-1">הנוסח שיישלח (אפשר לערוך; <code>{'{name}'}</code> = שם הנמען, <code>{'{city}'}</code> = העיר)</label>
 			<textarea
 				id="sms-text"
 				bind:value={smsText}

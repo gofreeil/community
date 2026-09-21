@@ -101,6 +101,8 @@ export interface DbUser {
     sms_profile_nudge_at: string;
     /** מקור ייבוא ('' = נרשם באתר בעצמו). למשל 'pg-cellular-2026-09' = גיליון הסלולר של רכישות קבוצתיות */
     import_source: string;
+    /** מפתחות קמפייני SMS שכבר נשלחו למשתמש (למשל 'welcome-import-2026-09') - כדי לא לשלוח פעמיים */
+    sms_campaigns: string[];
     /** כל מזהי החשבונות האמיתיים שאוחדו לכרטיס זה (כולל ה-id הראשי) */
     merged_ids?: string[];
     /** מספר החשבונות שאוחדו (1 = חשבון יחיד) */
@@ -211,6 +213,8 @@ interface StrapiUpUser {
     sms_profile_nudge_at?: string | null;
     /** מקור ייבוא (למשל 'pg-cellular-2026-09') - משתמש שנוצר/הושלם מגיליון חיצוני */
     import_source?: string | null;
+    /** מפתחות קמפייני SMS שכבר נשלחו למשתמש (json חופשי; מערך מחרוזות) */
+    sms_campaigns?: unknown;
     createdAt: string;
 }
 
@@ -279,6 +283,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         sms_prefs:    normalizeSmsPrefs(u.sms_prefs),
         sms_profile_nudge_at: u.sms_profile_nudge_at ?? '',
         import_source: u.import_source ?? '',
+        sms_campaigns: Array.isArray(u.sms_campaigns) ? u.sms_campaigns.map(String) : [],
     };
 }
 
@@ -1631,6 +1636,23 @@ export async function setCoordinatorOfAnyId(id: string, neighborhoods: string[])
     invalidate('user:');
 }
 
+/** רישום קמפיין SMS שנשלח למשתמשים (מפתח כמו 'welcome-import-2026-09') - כדי לא לשלוח פעמיים.
+ *  קורא את הרשימה הקיימת ומוסיף; כשל ברשומה אחת לא עוצר את השאר. */
+export async function markUsersSmsCampaign(externalIds: string[], campaign: string): Promise<void> {
+    for (const id of externalIds) {
+        try {
+            const user = await findUpUser(id);
+            if (!user) continue;
+            const prev = Array.isArray(user.sms_campaigns) ? user.sms_campaigns.map(String) : [];
+            if (prev.includes(campaign)) continue;
+            await updateStrapiUpUser(user.id, { sms_campaigns: [...prev, campaign] });
+        } catch (e) {
+            console.warn('[db] markUsersSmsCampaign failed:', id, e instanceof Error ? e.message : e);
+        }
+    }
+    invalidate('user:');
+}
+
 /** סימון "נשלח SMS השלמת-פרופיל" על משתמשים (לפי id חיצוני) - כדי לא לשלוח פעמיים */
 export async function markUsersSmsNudged(externalIds: string[]): Promise<void> {
     const now = new Date().toISOString();
@@ -1646,7 +1668,7 @@ export async function markUsersSmsNudged(externalIds: string[]): Promise<void> {
 }
 
 // ---- SMS יזום מהמנהל (הבאקאנד שולח; כאן רק קריאה מוגנת ב-STRAPI_TOKEN) ----
-export interface AdminSmsRecipient { phone: string; name?: string }
+export interface AdminSmsRecipient { phone: string; name?: string; city?: string }
 export interface AdminSmsResult { phone: string; ok: boolean; error?: string }
 
 /** האם בבאקאנד מוגדר ספק SMS (ואיזה) - לפני שמציעים למנהל לשלוח */

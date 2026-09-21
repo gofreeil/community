@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { withUserAvatarUrl } from '$lib/server/userAvatar';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, adminSmsSend, adminSmsStatus, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { finalizeWishDecision } from '$lib/server/wishDecision';
@@ -284,20 +284,29 @@ export const actions: Actions = {
     },
 
     /**
-     * SMS "השלימו עיר ושכונה" למשתמשים שלא מילאו - מנה אחת לכל קריאה (עד 20), הפרונט
-     * קורא שוב עד שנגמר. mode=test → רק לנייד של המנהל עצמו (הנוסח נבדק לפני שליחה לכולם).
-     * נמען: בלי עיר, נייד ישראלי תקין, לא חסום, ולא נשלח לו כבר (sms_profile_nudge_at).
-     * מי שהצליח מסומן מיד - כך גם ריצה שנעצרה באמצע לא שולחת פעמיים.
+     * SMS קבוצתי מעמוד הניהול - מנה אחת לכל קריאה (עד 20), הפרונט קורא שוב עד שנגמר.
+     * mode=test → רק לנייד של המנהל עצמו (הנוסח נבדק לפני שליחה לכולם).
+     * קהלים (audience):
+     *   no_city  - בלי עיר בפרופיל; דדופ לפי sms_profile_nudge_at.
+     *   imported - נוספו מייבוא (import_source), אפשר לסנן למקור אחד; דדופ לפי מפתח קמפיין
+     *              (campaign) שנרשם ב-sms_campaigns של המשתמש - כך קמפיין חדש לא נחסם ע"י קודם.
+     * תמיד: נייד ישראלי תקין, לא חסום. מי שהצליח מסומן מיד - ריצה שנעצרה לא שולחת פעמיים.
      */
     smsIncompleteProfiles: async (event) => {
         const session = await event.locals.auth();
         requireSuperAdmin(session);
 
         const form = await event.request.formData();
-        const message = form.get('message')?.toString().trim() ?? '';
-        const mode    = form.get('mode')?.toString() === 'test' ? 'test' : 'batch';
+        const message  = form.get('message')?.toString().trim() ?? '';
+        const mode     = form.get('mode')?.toString() === 'test' ? 'test' : 'batch';
+        const audience = form.get('audience')?.toString() === 'imported' ? 'imported' : 'no_city';
+        const source   = form.get('source')?.toString().trim() ?? '';        // '' = כל המקורות
+        const campaign = form.get('campaign')?.toString().trim().slice(0, 60) ?? '';
         if (!message) return fail(400, { smsError: 'חסר נוסח ההודעה' });
         if (message.length > 600) return fail(400, { smsError: 'ההודעה ארוכה מדי (עד 600 תווים)' });
+        if (audience === 'imported' && !/^[a-z0-9-]{3,60}$/i.test(campaign)) {
+            return fail(400, { smsError: 'חסר מפתח קמפיין תקין (אותיות/ספרות/מקף) - לפיו נמנעת שליחה כפולה' });
+        }
 
         const isMobile = (p: string | null | undefined) => {
             let d = (p ?? '').replace(/\D/g, '');
@@ -313,25 +322,33 @@ export const actions: Actions = {
             if (mode === 'test') {
                 const me = session?.user?.id ? await getUserById(session.user.id as string) : undefined;
                 if (!isMobile(me?.phone)) return fail(400, { smsError: 'בפרופיל שלך אין נייד תקין לשליחת בדיקה' });
-                const [r] = await adminSmsSend([{ phone: me!.phone, name: me?.name ?? '' }], message);
+                const [r] = await adminSmsSend([{ phone: me!.phone, name: me?.name ?? '', city: me?.city ?? '' }], message);
                 if (!r?.ok) return fail(502, { smsError: `שליחת הבדיקה נכשלה: ${r?.error ?? 'unknown'}` });
                 return { smsResult: { mode: 'test', sent: 1, failed: 0, remaining: 0, provider: status.provider } };
             }
 
             const users = await getAllUsersRaw();
-            const pending = users.filter((u) =>
-                !u.city?.trim() && !u.banned && !u.sms_profile_nudge_at && isMobile(u.phone));
+            const pending = users.filter((u) => {
+                if (u.banned || !isMobile(u.phone)) return false;
+                if (audience === 'imported') {
+                    return !!u.import_source && (!source || u.import_source === source) && !u.sms_campaigns.includes(campaign);
+                }
+                return !u.city?.trim() && !u.sms_profile_nudge_at;
+            });
             const batch = pending.slice(0, perCall);
             if (!batch.length) {
                 return { smsResult: { mode: 'batch', sent: 0, failed: 0, remaining: 0, provider: status.provider } };
             }
 
             const results = await adminSmsSend(
-                batch.map((u) => ({ phone: u.phone, name: u.name ?? '' })), message,
+                batch.map((u) => ({ phone: u.phone, name: u.name ?? '', city: u.city ?? '' })), message,
             );
             const okPhones = new Set(results.filter((r) => r.ok).map((r) => r.phone));
             const okIds = batch.filter((u) => okPhones.has(u.phone)).map((u) => u.id);
-            if (okIds.length) await markUsersSmsNudged(okIds);
+            if (okIds.length) {
+                if (audience === 'imported') await markUsersSmsCampaign(okIds, campaign);
+                else await markUsersSmsNudged(okIds);
+            }
 
             const failed = results.filter((r) => !r.ok);
             return {
