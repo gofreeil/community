@@ -1636,6 +1636,18 @@ export async function setCoordinatorOfAnyId(id: string, neighborhoods: string[])
     invalidate('user:');
 }
 
+/** האם רשומת המשתמש בבאקאנד כוללת שדה מסוים (למשל 'sms_campaigns') - כלומר הסכמה החדשה כבר פרוסה.
+ *  משמש כשער בטיחות לפני קמפיין: בלי השדה, סימון "נשלח" נכשל בשקט והמנה הבאה שולחת שוב לאותם אנשים. */
+export async function userSchemaHasField(field: string): Promise<boolean> {
+    try {
+        const arr = await findStrapiUpUsers({ 'pagination[limit]': '1' });
+        const u = arr[0] as Record<string, unknown> | undefined;
+        return !!u && field in u;
+    } catch {
+        return false;
+    }
+}
+
 /** רישום קמפיין SMS שנשלח למשתמשים (מפתח כמו 'welcome-import-2026-09') - כדי לא לשלוח פעמיים.
  *  קורא את הרשימה הקיימת ומוסיף; כשל ברשומה אחת לא עוצר את השאר. */
 export async function markUsersSmsCampaign(externalIds: string[], campaign: string): Promise<void> {

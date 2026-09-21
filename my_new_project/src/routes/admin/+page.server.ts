@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { withUserAvatarUrl } from '$lib/server/userAvatar';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, userSchemaHasField, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { finalizeWishDecision } from '$lib/server/wishDecision';
@@ -318,6 +318,12 @@ export const actions: Actions = {
             const status = await adminSmsStatus();
             if (!status.enabled) return fail(503, { smsError: 'בבאקאנד לא מוגדר ספק SMS (SMSGATE / TRACCAR / TWILIO)' });
             const perCall = Math.max(1, Math.min(20, status.maxPerCall || 20));
+
+            // שער בטיחות: בלי השדה sms_campaigns בבאקאנד, הסימון "נשלח" נכשל בשקט והמנה
+            // הבאה שולחת שוב לאותם אנשים. עוצרים לפני שנשלחת הודעה אחת.
+            if (audience === 'imported' && mode !== 'test' && !(await userSchemaHasField('sms_campaigns'))) {
+                return fail(503, { smsError: 'הבאקאנד עדיין לא פרוס עם שדה sms_campaigns - בלי רישום "נשלח" ההודעה תצא פעמיים. נסה שוב בעוד כמה דקות.' });
+            }
 
             if (mode === 'test') {
                 const me = session?.user?.id ? await getUserById(session.user.id as string) : undefined;
