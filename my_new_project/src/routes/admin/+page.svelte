@@ -335,6 +335,7 @@
 		'pg-cellular-2026-09': 'רכישות קבוצתיות · טופס סלולר',
 		'pg-fuel-2026-09':     'רכישות קבוצתיות · טופס דלקן',
 		'pg-fuel-b-2026-09':   'רכישות קבוצתיות · טופס דלקן ב׳',
+		'pg-car-insurance-2026-09': 'רכישות קבוצתיות · טופס ביטוח רכב',
 	};
 	function importSourceLabel(src: string | null | undefined): string {
 		if (!src) return '';
