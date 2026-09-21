@@ -290,6 +290,7 @@
 	// תווית קריאה למקור ייבוא (import_source) - מוצגת כתג בשורה וניתנת לחיפוש ("רכישות")
 	const IMPORT_SOURCE_LABELS: Record<string, string> = {
 		'pg-cellular-2026-09': 'רכישות קבוצתיות · טופס סלולר',
+		'pg-fuel-2026-09':     'רכישות קבוצתיות · טופס דלקן',
 	};
 	function importSourceLabel(src: string | null | undefined): string {
 		if (!src) return '';
