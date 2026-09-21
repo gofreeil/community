@@ -18,7 +18,7 @@
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { mapSearchState } from "$lib/mapSearchState.svelte";
     import { getCoordsFor, jitterCoord, areaForPin, cityCenters } from "$lib/neighborhoodCoords";
-    import { canonicalCity } from "$lib/neighborhoodsData";
+    import { canonicalCity, normalizeNeighborhoodName } from "$lib/neighborhoodsData";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { isOpenNow } from "$lib/openingHours";
     import { logoForService, serviceColor } from "$lib/serviceTypes";
@@ -1333,6 +1333,33 @@
         if (!layers.length) return false;
         const pts = layers.map((l: any) => l.getLatLng());
 
+        // קריאות עזרה (isHelp) תמיד נשארות בתצוגה - גם אם הן "חריגות" מרחקית.
+        const helpPts = layers.filter((l: any) => l.options?.isHelp).map((l: any) => l.getLatLng());
+
+        // שכונה נבחרת עם נקודת-מרכז משלה: התצוגה מעוגנת בשכונה, לא בפריטים.
+        // פריטים ברמת העיר (בלי שכונה ובלי פין) מוצגים בכל שכונות העיר ונערמים על
+        // מרכז העיר; כשהם הרוב, ההתאמה-לפי-חציון נמשכה אליהם והמפה נפתחה במרכז
+        // ירושלים (בית הנשיא) במקום בקרית משה - ופריטי השכונה עצמה נחתכו כ"חריגים".
+        // לכן: כשיש שכונה, נכללים רק פינים במרחק הליכה ממרכזה (יחד עם המרכז עצמו,
+        // כדי שהשכונה תמיד תהיה בתמונה). אם אין אף פין כזה - פשוט מתמקדים בשכונה.
+        const nbCenter = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
+        const cityCenter = cityCenters[canonicalCity(neighborhoodState.city)];
+        const nbPrecise = !!normalizeNeighborhoodName(neighborhoodState.neighborhood)
+            && (!cityCenter || nbCenter[0] !== cityCenter[0] || nbCenter[1] !== cityCenter[1]);
+        if (nbPrecise) {
+            const lngK = Math.cos((nbCenter[0] * Math.PI) / 180);
+            const NB_RADIUS_DEG = 0.0135; // ~1.5 ק"מ - רדיוס שכונה
+            const nearNb = pts.filter((p: any) =>
+                Math.hypot(p.lat - nbCenter[0], (p.lng - nbCenter[1]) * lngK) <= NB_RADIUS_DEG);
+            if (!nearNb.length && !helpPts.length) {
+                labelsMinZoom = Math.max(LABELS_MIN_ZOOM, 16);
+                leafletMap.setView(nbCenter, 15, { animate });
+                applyPinScale();
+                return true;
+            }
+            return fitToPoints([leafletL.latLng(nbCenter[0], nbCenter[1]), ...nearNb, ...helpPts], animate);
+        }
+
         // התאמה לפי "ליבת הצפיפות" ולא לפי כל המרקרים: מרקר חריג בודד ורחוק (כתובת
         // שלא אותרה / פריט בקצה הישוב) גרם למפה להיפתח מוקטנת מדי, כי fitBounds ניסה
         // להכיל גם אותו. משמיטים חריגים סטטיסטיים לפי מרחק מהחציון (עמיד לחריגים),
@@ -1349,10 +1376,11 @@
         const cutoff = Math.max(medDist * 4, 0.003);
         const core = pts.filter((p: any) => dist(p) <= cutoff);
 
-        // קריאות עזרה (isHelp) תמיד נשארות בתצוגה - גם אם הן "חריגות" מרחקית.
-        const helpPts = layers.filter((l: any) => l.options?.isHelp).map((l: any) => l.getLatLng());
-        const fitPts = [...(core.length ? core : pts), ...helpPts];
+        return fitToPoints([...(core.length ? core : pts), ...helpPts], animate);
+    }
 
+    // התאמת המפה לקבוצת נקודות (fitBounds) + עדכון סף השמות וקנה-המידה של הפינים.
+    function fitToPoints(fitPts: any[], animate: boolean): boolean {
         const bounds = leafletL.latLngBounds(fitPts);
         const FIT_MAX_ZOOM = 17;
         const padding = [30, 30];
