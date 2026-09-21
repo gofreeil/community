@@ -426,15 +426,29 @@ export async function findStrapiUpUsersAll(
     params: Record<string, string> = {},
     jwt?: string,
 ): Promise<unknown[]> {
+    // users-permissions (/api/users) מכבד רק start/limit ברמה העליונה ומתעלם מ-pagination[...] -
+    // אז עם pagination[...] כל "עמוד" החזיר את *כל* המשתמשים. כל עוד היו פחות מ-1000 זה עבר
+    // בשקט (מנה אחת "חלקית"); ברגע שעברנו 1000 (ייבוא 22.9.2026) הלולאה רצה 5,000 עמודים של
+    // 1.3MB בכל טעינת רשימה והפילה את השרת (עומס 2.9, דף הבית 19 שניות).
     const out: unknown[] = [];
+    const seen = new Set<unknown>();
     for (let page = 0; page < ALL_MAX_PAGES; page++) {
         const batch = await findStrapiUpUsers({
             ...params,
-            'pagination[start]': String(page * ALL_PAGE_SIZE),
-            'pagination[limit]': String(ALL_PAGE_SIZE),
+            start: String(page * ALL_PAGE_SIZE),
+            limit: String(ALL_PAGE_SIZE),
         }, jwt);
-        out.push(...batch);
-        if (batch.length < ALL_PAGE_SIZE) return out;
+        // הגנה כפולה: מנה גדולה מהמבוקש = השרת התעלם מהעימוד והחזיר הכל; מנה שחוזרת על
+        // רשומות שכבר ראינו = start לא כובד. בשני המקרים עוצרים אחרי מנה אחת.
+        const ids = batch.map((u) => (u as { id?: unknown })?.id);
+        const repeated = ids.some((id) => id != null && seen.has(id));
+        for (const u of batch) {
+            const id = (u as { id?: unknown })?.id;
+            if (id != null && seen.has(id)) continue;
+            if (id != null) seen.add(id);
+            out.push(u);
+        }
+        if (batch.length < ALL_PAGE_SIZE || batch.length > ALL_PAGE_SIZE || repeated) return out;
     }
     console.warn(`[Strapi] findStrapiUpUsersAll hit the ${ALL_MAX_PAGES}-page safety bound`);
     return out;
