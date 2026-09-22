@@ -18,15 +18,12 @@ export const POST: RequestHandler = async (event) => {
 
     const requesterId = session.user.id as string;
 
-    let body: { role?: string; agreed?: boolean } = {};
+    let body: { role?: string } = {};
     try { body = await event.request.json(); } catch { /* empty */ }
 
     const role = String(body?.role ?? '').trim() as SinglesAccessRole;
     if (!SINGLES_ACCESS_ROLES.includes(role)) {
-        return json({ success: false, message: 'יש לבחור מי מבקש/ת לצפות' }, { status: 400 });
-    }
-    if (body?.agreed !== true) {
-        return json({ success: false, message: 'יש לאשר את ההתחייבות לדיסקרטיות' }, { status: 400 });
+        return json({ success: false, message: 'בקשת גישה לא תקינה' }, { status: 400 });
     }
 
     try {
@@ -56,7 +53,6 @@ export const POST: RequestHandler = async (event) => {
             extra_fields: {
                 role,
                 role_label: ROLE_LABEL[role],
-                agreed_terms: true,
                 status: 'pending',
                 requested_at: new Date().toISOString(),
                 requester_snapshot: {

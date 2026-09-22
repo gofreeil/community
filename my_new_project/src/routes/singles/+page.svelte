@@ -36,10 +36,7 @@
         goto(`/items/${id}`);
     }
 
-    // ── שער גישה: הלוח סגור לצפייה. הורים/שדכנים מבקשים גישה; מפרסם כרטיס נכנס אוטומטית ──
-    type AccessRole = 'single' | 'parent' | 'matchmaker';
-    let gateRole = $state<AccessRole | null>(null);
-    let gateAgreed = $state(false);
+    // ── שער גישה: הלוח סגור לצפייה. שדכנים מבקשים גישה; מפרסם כרטיס נכנס אוטומטית ──
     let gateSubmitting = $state(false);
     let gateSent = $state(false);
     let gateError = $state('');
@@ -47,14 +44,12 @@
     async function submitAccessRequest() {
         gateError = '';
         if (isGuest) { goto('/login?next=' + encodeURIComponent('/singles')); return; }
-        if (!gateRole) { gateError = $_('extras.s_gate_need_role'); return; }
-        if (!gateAgreed) { gateError = $_('extras.s_gate_need_terms'); return; }
         gateSubmitting = true;
         try {
             const res = await fetch('/api/singles-access', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: gateRole, agreed: true }),
+                body: JSON.stringify({ role: 'matchmaker' }),
             });
             const out = await res.json().catch(() => ({}));
             if (res.ok && out?.success) {
@@ -313,27 +308,10 @@
                             <div class="flex-1 h-px bg-white/10"></div>
                         </div>
 
-                        <!-- מסלול ב: בקשת גישה (הורה / שדכן שאין לו כרטיס) -->
+                        <!-- מסלול ב: בקשת גישה לשדכנים (אין להם כרטיס משלהם) -->
                         <div class="rounded-2xl bg-white/5 border border-white/10 px-4 py-4">
                             <p class="text-white font-bold text-sm">{$_('extras.s_gate_request_title')}</p>
-                            <p class="text-gray-400 text-xs mt-1 mb-4">{$_('extras.s_gate_request_sub')}</p>
-
-                            <p class="text-pink-200 font-bold text-xs mb-2">{$_('extras.s_gate_role_label')}</p>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                {#each [['single','s_gate_role_single'],['parent','s_gate_role_parent'],['matchmaker','s_gate_role_matchmaker']] as [role, key]}
-                                    <button type="button"
-                                        onclick={() => gateRole = role as AccessRole}
-                                        class="px-4 py-2 rounded-full text-sm font-bold border-2 transition-colors {gateRole === role ? 'bg-pink-500/30 border-pink-400 text-white' : 'bg-white/5 border-white/20 text-gray-200 hover:border-pink-400/70'}">
-                                        {gateRole === role ? '✓ ' : ''}{$_('extras.' + key)}
-                                    </button>
-                                {/each}
-                            </div>
-
-                            <p class="text-pink-200 font-bold text-xs mb-2">{$_('extras.s_gate_terms_label')}</p>
-                            <label class="flex items-start gap-2 mb-4 cursor-pointer rounded-xl bg-white/5 border border-white/10 px-3 py-2.5">
-                                <input type="checkbox" bind:checked={gateAgreed} class="mt-0.5 accent-pink-500 w-5 h-5 flex-shrink-0" />
-                                <span class="text-gray-200 text-xs leading-snug">{$_('extras.s_gate_terms')}</span>
-                            </label>
+                            <p class="text-gray-400 text-xs mt-1 mb-3">{$_('extras.s_gate_request_sub')}</p>
 
                             {#if gateError}
                                 <p class="text-red-400 text-xs mb-2">{gateError}</p>
