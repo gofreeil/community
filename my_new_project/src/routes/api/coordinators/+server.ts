@@ -3,6 +3,8 @@
 // רשימת רכזי השכונות (ציבורי) - נצרך ע"י neighborhoods.gofreeil.com
 // מחזיר לכל רכז: שם, טלפון, תמונה, עיר, שכונות, מספר תושבים רשומים,
 // ומספר הפריטים שכבר על המפה (בעלי קואורדינטות) בשכונותיו.
+// בנוסף registeredUsers — סך כל הרשומים באתר (משתמשים מאוחדים, כמו
+// "משתמשים" בלוח הניהול) — למונה "תושבים פעילים" בדף הבית של ועדי השכונות.
 // ============================================================
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -24,8 +26,11 @@ function phoneFromEmail(email: string | null | undefined): string {
 
 export const GET: RequestHandler = async () => {
     let coordinators: unknown[] = [];
+    // null = השליפה נכשלה (שלא ייקלט כ"אפס רשומים" אצל הצרכן)
+    let registeredUsers: number | null = null;
     try {
         const [users, items] = await Promise.all([getAllUsers(), getAllItems()]);
+        registeredUsers = users.length;
 
         coordinators = users
             .filter(u => (u.coordinator_of?.length ?? 0) > 0)
@@ -71,7 +76,7 @@ export const GET: RequestHandler = async () => {
         console.warn('[api/coordinators] failed:', e);
     }
 
-    return json({ coordinators }, {
+    return json({ coordinators, registeredUsers }, {
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Cache-Control': 'public, max-age=300',
