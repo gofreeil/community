@@ -2097,27 +2097,6 @@
                             {/if}
                         </div>
                     {/if}
-                    {#if showUnvaccinated || smokerAnswer || showEthicsCharter}
-                        <!-- תוויות חיצוניות (לא חלק מטבלת הפרטים) -->
-                        <div class="flex flex-wrap items-center gap-1.5">
-                            {#if showUnvaccinated}
-                                <span class="inline-flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 text-xs font-bold px-2.5 py-0.5 w-fit">
-                                    💉 לא מחוסן
-                                </span>
-                            {/if}
-                            {#if smokerAnswer}
-                                <span class="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 text-gray-200 text-xs font-bold px-2.5 py-0.5 w-fit">
-                                    {smokerAnswer.includes('לא') ? '🚭' : '🚬'} {smokerAnswer}
-                                </span>
-                            {/if}
-                            {#if showEthicsCharter}
-                                <span class="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 text-emerald-200 text-xs font-bold px-2.5 py-0.5 w-fit" title="מוקאפ - בקרוב">
-                                    📜 חתום על אמנת המוסר
-                                </span>
-                            {/if}
-                        </div>
-                    {/if}
-
                     <!-- תת-כותרת/תיאור (מרכז) + כפתור שיתוף מרובע קטן בצד שמאל -->
                     <div class="flex items-start gap-2">
                         <!-- ימין (RTL): מרווח לאיזון מרכוז התת-כותרת ברוחב כפתור השיתוף -->
@@ -2559,6 +2538,27 @@
                             onSaved={(k, v) => (liveExtra = { ...liveExtra, [k]: v })} />
                     {:else}
                         {@render extraFieldsBlock()}
+                    {/if}
+
+                    {#if showUnvaccinated || smokerAnswer || showEthicsCharter}
+                        <!-- תוויות חיצוניות (לא חלק מטבלת הפרטים) - מתחת ל"פרטים נוספים" -->
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            {#if showUnvaccinated}
+                                <span class="inline-flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 text-xs font-bold px-2.5 py-0.5 w-fit">
+                                    💉 לא מחוסן
+                                </span>
+                            {/if}
+                            {#if smokerAnswer}
+                                <span class="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 text-gray-200 text-xs font-bold px-2.5 py-0.5 w-fit">
+                                    {smokerAnswer.includes('לא') ? '🚭' : '🚬'} {smokerAnswer}
+                                </span>
+                            {/if}
+                            {#if showEthicsCharter}
+                                <span class="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 text-emerald-200 text-xs font-bold px-2.5 py-0.5 w-fit" title="מוקאפ - בקרוב">
+                                    📜 חתום על אמנת המוסר
+                                </span>
+                            {/if}
+                        </div>
                     {/if}
 
                     <!-- כפתור השיתוף עבר לצד שמאל של התת-כותרת (כפתור מרובע קטן) -->
