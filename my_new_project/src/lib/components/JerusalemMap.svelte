@@ -913,7 +913,21 @@
 
         // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
         if (inHood.length > 0) {
+            // המכסה (MAX_MARKERS) נותנת קדימות לפריטים שיושבים בשכונה עצמה - ורק אחריהם,
+            // לפי תאריך, לפריטים ברמת העיר (בלי שכונה ובלי פין, שנערמים על מרכז העיר
+            // ומוצגים בכל שכונות העיר). אחרת ייבוא גדול של פריטי-עיר חדשים דחק את
+            // פריטי השכונה הוותיקים (כולל משכן "יוצאים לחירות") אל מחוץ למכסה והם נעלמו.
+            const nbCenter = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
+            const lngK = Math.cos((nbCenter[0] * Math.PI) / 180);
+            const NB_RADIUS_DEG = 0.0135; // ~1.5 ק"מ
+            const inNb = (d: { lat?: number | null; lng?: number | null; neighborhood?: string; city?: string }) => {
+                const [lat, lng] = d.lat != null && d.lng != null
+                    ? [d.lat, d.lng]
+                    : getCoordsFor(d.neighborhood, d.city);
+                return Math.hypot(lat - nbCenter[0], (lng - nbCenter[1]) * lngK) <= NB_RADIUS_DEG;
+            };
             const sorted = [...inHood].sort((a, b) =>
+                (Number(inNb(b)) - Number(inNb(a))) ||
                 (b.created_at || '').localeCompare(a.created_at || '')
             ).slice(0, MAX_MARKERS);
 
