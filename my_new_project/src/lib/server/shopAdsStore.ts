@@ -20,7 +20,7 @@
 import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete } from './strapiClient.js';
 import { invalidate } from './cache.js';
 import { AD_SLOT_COUNT } from '../adSlots.js';
-import { DEFAULT_AD_STYLE } from '../adStyle.js';
+import { DEFAULT_AD_STYLE, type AdStyle } from '../adStyle.js';
 import {
     SHOP_URL,
     SHOP_AD_SITES,
@@ -29,6 +29,7 @@ import {
     shopAdGradient,
     hasOverride,
     SHOP_AD_CTA_MAX,
+    bandHeightFor,
     type ShopAdSite,
     type ShopAdsConfig,
     type ShopAdOverride,
@@ -201,6 +202,12 @@ interface AdContent {
     companyName: string;
     /** מיקום וזום התמונה - ברירת המחדל, או מה שנערך ידנית */
     fit: { x: number; y: number; z: number };
+    /**
+     * עיצוב הכרטיס. הרצועה הצבעונית מטפסת לפי אורך תת-הכותרת (כלל
+     * הברזל ב-shopAds.ts): הטקסט מקבל מקום כלפי מעלה, בתוך אזור
+     * התמונה שגובהו קבוע, והכרטיס לא מתארך.
+     */
+    adStyle: AdStyle;
 }
 
 /**
@@ -212,10 +219,14 @@ function adContent(p: ShopProduct, index: number, site: ShopAdSite, ov?: ShopAdO
     const priceWas = p.oldPrice && p.oldPrice > p.price ? shekel(p.oldPrice) : '';
     const priceFull = priceWas ? `${priceNow} במקום ${priceWas}` : priceNow;
     const colorIndex = typeof ov?.gradientIndex === 'number' ? ov.gradientIndex : index;
+    // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
+    const subtitle = trim(ov?.subtitle ?? (p.store || priceFull), SHOP_AD_CTA_MAX * 2);
     return {
         title:     trim(ov?.title ?? p.name, 42),
-        // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
-        subtitle:  trim(ov?.subtitle ?? (p.store || priceFull), SHOP_AD_CTA_MAX * 2),
+        // כלל הברזל: תת-כותרת ארוכה מקבלת מקום בכך שהרצועה הצבעונית
+        // מטפסת לתוך אזור התמונה (שגובהו קבוע) - לא בהארכת הכרטיס.
+        adStyle:   { ...DEFAULT_AD_STYLE, bandHeight: bandHeightFor(subtitle) },
+        subtitle,
         hoverText: trim(ov?.hoverText ?? (p.desc || `${p.name} - בחנות החירות`), 160),
         // המחיר הנוכחי בלבד: "במקום ₪129" היה מגלגל את הרצועה לשתי שורות
         // ומגביה את הכרטיס ביחס לשאר. ההשוואה מופיעה בדף הנחיתה.
@@ -263,6 +274,8 @@ export interface ShopAdDraft {
     gradient: string;
     mainImage: string;
     fit: { x: number; y: number; z: number };
+    /** גובה הרצועה הצבעונית באחוזים - נגזר מאורך תת-הכותרת */
+    bandHeight: number;
     /** היעד של הכרטיס - דף המוצר בחנות */
     href: string;
     /** האם הכרטיס נערך ידנית */
@@ -296,6 +309,7 @@ export function buildShopAdDrafts(
             gradient:    c.gradient,
             mainImage:   c.mainImage,
             fit:         { ...c.fit },
+            bandHeight:  c.adStyle.bandHeight,
             href:        productUrl(p),
             edited:      hasOverride(ov),
         };
@@ -545,10 +559,10 @@ function internalLanding(site: ShopAdSite, c: AdContent, order: number, product:
     if (site.siteTag) base._site = site.siteTag;
     if (site.underscoreKeys) {
         base._mainImageFit = fit;
-        base._adStyle = { ...DEFAULT_AD_STYLE };
+        base._adStyle = { ...c.adStyle };
     } else {
         base.mainImageFit = fit;
-        base.adStyle = { ...DEFAULT_AD_STYLE };
+        base.adStyle = { ...c.adStyle };
     }
     return base;
 }
@@ -605,7 +619,7 @@ async function syncSite(
                 logo:            '',
                 main_image:      c.mainImage,
                 main_image_fit:  { ...c.fit },
-                ad_style:        { ...DEFAULT_AD_STYLE },
+                ad_style:        { ...c.adStyle },
                 landing:         c.landing,
                 submitted_by:    { id: '', email: '', name: '' },
                 submitted_at:    existing?.submittedAt ?? now,

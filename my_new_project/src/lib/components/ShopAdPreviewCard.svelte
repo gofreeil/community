@@ -18,6 +18,7 @@
         gradient,
         mainImage,
         fit,
+        bandHeight = DEFAULT_AD_STYLE.bandHeight,
     }: {
         title: string;
         subtitle?: string;
@@ -26,9 +27,11 @@
         gradient: string;
         mainImage: string;
         fit: AdImageFit;
+        /** גובה הרצועה הצבעונית - עולה עם אורך הטקסט, בלי להאריך את הכרטיס */
+        bandHeight?: number;
     } = $props();
 
-    const st = DEFAULT_AD_STYLE;
+    let st = $derived({ ...DEFAULT_AD_STYLE, bandHeight });
 </script>
 
 <div class="w-36 overflow-hidden rounded-lg shadow-lg relative bg-gray-900" style={adStyleVars(st)}>

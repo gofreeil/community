@@ -344,6 +344,7 @@
                             gradient={v.gradient}
                             mainImage={v.mainImage}
                             fit={v.fit}
+                            bandHeight={v.bandHeight}
                         />
                         <figcaption class="w-36 mt-1.5 text-[11px] text-gray-500 leading-snug">
                             <button type="button" onclick={() => (editing === d.product ? (editing = null) : openEdit(d, i))}
