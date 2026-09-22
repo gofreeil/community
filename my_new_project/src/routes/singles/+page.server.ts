@@ -57,7 +57,10 @@ export const load: PageServerLoad = async (event) => {
                 .find((i) => i.category === 'singles' && i.status !== 'deleted');
             if (ownItem) {
                 // תמונות ככתובות ולא base64 - ראה singlesImages.ts
-                selfProfile = await withCharterAutoDetectOne(withSinglesImageUrls(dbItemToProfile(ownItem)));
+                selfProfile = await withCharterAutoDetectOne(
+                    withSinglesImageUrls(dbItemToProfile(ownItem)),
+                    session.user.email,
+                );
                 selfStatus = ownItem.status;
             }
         } catch (e) {

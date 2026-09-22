@@ -2,7 +2,7 @@ import { redirect, error } from '@sveltejs/kit';
 import { getDbItemByIdFresh, getDbItemById, getUserById, getUserByEmail } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { withSinglesImageUrls } from '$lib/server/singlesImages';
-import { withCharterAutoDetectOne } from '$lib/server/charterSignatures';
+import { withCharterAutoDetectOne, ownerEmail } from '$lib/server/charterSignatures';
 import { parseMatch, sideOf, type MatchData } from '$lib/server/singlesMatch';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import type { PageServerLoad } from './$types';
@@ -11,7 +11,10 @@ import type { PageServerLoad } from './$types';
 // הזיהוי האוטומטי של חתימה על אמנת המוסר משתמש בטלפון לפני שהוא מוסר מהתוצאה.
 async function limitedCard(item: Awaited<ReturnType<typeof getDbItemById>>) {
     if (!item) return null;
-    const p = await withCharterAutoDetectOne(withSinglesImageUrls(dbItemToProfile(item)));
+    const p = await withCharterAutoDetectOne(
+        withSinglesImageUrls(dbItemToProfile(item)),
+        await ownerEmail(item.user_id),
+    );
     if (!p) return null;
     return {
         id: p.id,

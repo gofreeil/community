@@ -1,6 +1,6 @@
 // (redirect/error לא בשימוש יותר: שער הפנויים הוסר - ראו הערה בגוף ה-load)
 import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
-import { isCharterSigned } from '$lib/server/charterSignatures';
+import { isCharterSigned, ownerEmail } from '$lib/server/charterSignatures';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
 import { BOT_UA_RX } from '$lib/server/botUa';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
@@ -119,7 +119,7 @@ export const load: PageServerLoad = async (event) => {
             const ethicsAlreadySet = extraFields.ethics_charter != null && extraFields.ethics_charter !== '' && extraFields.ethics_charter !== '0';
             if (!ethicsAlreadySet) {
                 try {
-                    if (await isCharterSigned(dbItem.phone)) extraFields.ethics_charter = true;
+                    if (await isCharterSigned(dbItem.phone, await ownerEmail(dbItem.user_id))) extraFields.ethics_charter = true;
                 } catch (e) {
                     console.warn('[items/load] charter auto-detect failed', e instanceof Error ? e.message : e);
                 }
