@@ -172,7 +172,16 @@
         </div>
 
         <fieldset class="mb-4">
-            <legend class="text-xs font-bold text-gray-400 mb-2">האתרים שבהם הפרסומת תופיע</legend>
+            <legend class="text-xs font-bold text-gray-400 mb-2">
+                <span class="flex items-center gap-2">
+                    האתרים שבהם הפרסומת תופיע
+                    <button type="button" onclick={() => (sites = data.sites.map(s => s.id))}
+                            class="px-2 py-0.5 rounded-md bg-white/5 border border-white/15 text-[11px] font-bold text-gray-300 hover:bg-white/10"
+                            title="סימון כל אתרי הרשת">
+                        כולם
+                    </button>
+                </span>
+            </legend>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {#each data.sites as site (site.id)}
                     <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2 cursor-pointer">
