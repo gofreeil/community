@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getItemsByCategory, getUserById, getUserByEmail, getItemsByUserId } from '$lib/server/db';
-import { dbItemToProfile } from '$lib/singlesMap';
+import { dbItemToProfile, stripMatchmakerOnly, stripMatchmakerItemFields } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
@@ -94,17 +94,23 @@ export const load: PageServerLoad = async (event) => {
     try {
         const items = await getItemsByCategory('singles');
         // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו.
-        // כרטיסים שסומנו "רק לשדכנים שלנו" לא מופיעים בלוח הפומבי (רק צוות
-        // השדכנים רואה אותם בדף /admin/singles-review ומפנה אותם בדיסקרטיות).
+        // כרטיסים שסומנו "רק לשדכנים שלנו" לא מופיעים בלוח הפומבי - אבל שדכן/ית
+        // מערכת מאושר/ת כן רואה אותם בלוח (הוא צריך את כל הכרטיסים כדי לשדך).
+        // "מידע לשדכנים בלבד" מנוקה מנתוני הדף לכל מי שאינו שדכן מאושר.
         // התמונות יוצאות ככתובות לנתיב מוגן-קאש ולא כ-base64 בתוך נתוני הדף:
         // כך היה הדף שוקל ~4MB ולוקח ~18 שניות למשתמש מחובר (singlesImages.ts).
+        const isMatchmaker = matchmakerStatus === 'approved';
         const profiles = await withCharterAutoDetect(
             items
                 .map(dbItemToProfile)
-                .filter((p) => p.visibility !== 'matchmakers')
-                .map(withSinglesImageUrls),
+                .filter((p) => isMatchmaker || p.visibility !== 'matchmakers')
+                .map(withSinglesImageUrls)
+                .map((p) => (isMatchmaker ? p : stripMatchmakerOnly(p))),
         );
-        return { ...base, gated: false, accessStatus: 'granted' as const, items: items.map(stripSinglesItemImages), profiles };
+        const safeItems = items
+            .map(stripSinglesItemImages)
+            .map((it) => (isMatchmaker ? it : stripMatchmakerItemFields(it)));
+        return { ...base, gated: false, accessStatus: 'granted' as const, items: safeItems, profiles };
     } catch (e) {
         console.warn('[singles] load failed:', e instanceof Error ? e.message : e);
         return { ...base, gated: false, accessStatus: 'granted' as const, items: [], profiles: [] };

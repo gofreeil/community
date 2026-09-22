@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { PageData } from './$types';
     import { religiosityLabel, statusLabel } from '$lib/singlesMock';
+    import MatchmakerNotes from '$lib/components/MatchmakerNotes.svelte';
     import { onMount } from 'svelte';
     let { data }: { data: PageData } = $props();
 
@@ -348,6 +349,9 @@
                         <p class="text-gray-300 text-base italic leading-relaxed">{s.inspiration}</p>
                     </section>
                 {/if}
+
+                <!-- מידע לשדכנים בלבד: השרת מחזיר את התשובות רק לשדכן/ית מאושר/ת -->
+                <MatchmakerNotes answers={s.matchmakerAnswers ?? []} />
 
                 <!-- פרטי קשר - רק דרך השדכן/חבר -->
                 <section class="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5">

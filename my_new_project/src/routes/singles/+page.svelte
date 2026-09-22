@@ -18,9 +18,12 @@
         data.currentUserGender === 'male' ? 'female'
         : data.currentUserGender === 'female' ? 'male'
         : null);
-    // סופר-אדמין יכול לעקוף את הנעילה ולבחון את לוח הגברים/הנשים.
+    // סופר-אדמין ושדכן/ית מערכת מאושר/ת עוקפים את הנעילה - הם צריכים את שני
+    // הלוחות כדי לשדך (השרת גם שולח להם את הכרטיסים הדיסקרטיים ואת המידע לשדכנים).
+    const isMatchmaker = $derived(data.matchmakerStatus === 'approved');
+    const seesBothBoards = $derived(data.isSuperAdmin || isMatchmaker);
     let adminGender = $state<Gender>('all');
-    const filter = $derived<Gender>(data.isSuperAdmin ? adminGender : (lockedFilter ?? 'all'));
+    const filter = $derived<Gender>(seesBothBoards ? adminGender : (lockedFilter ?? 'all'));
 
     // אורח (לא מחובר) - טשטוש תמונות + חסימת כניסה לדף פרופיל
     const isGuest: boolean = $derived(!data.currentUserId);
@@ -445,21 +448,29 @@
                 >{$_('extras.s_rel_general')}</button>
             </div>
 
-            {#if data.isSuperAdmin}
+            {#if seesBothBoards}
                 <div class="flex justify-center items-center gap-2 mt-3 flex-wrap">
-                    <span class="text-amber-300 text-xs font-bold">{$_('extras.s_admin_test_board')}</span>
+                    {#if data.isSuperAdmin}
+                        <span class="text-amber-300 text-xs font-bold">{$_('extras.s_admin_test_board')}</span>
+                    {:else}
+                        <span class="text-purple-300 text-xs font-bold">💘 תצוגת שדכן/ית · שני הלוחות</span>
+                    {/if}
                     {#each [['all', $_('extras.s_admin_all')], ['male', $_('extras.s_admin_male')], ['female', $_('extras.s_admin_female')]] as [val, lbl]}
                         <button
                             onclick={() => adminGender = val as Gender}
                             class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {adminGender === val ? 'bg-amber-500/20 text-amber-100 border-amber-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
                         >{lbl}</button>
                     {/each}
-                    <a href="/admin/singles-review" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">{$_('extras.s_admin_review')}</a>
+                    {#if data.isSuperAdmin}
+                        <a href="/admin/singles-review" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">{$_('extras.s_admin_review')}</a>
+                    {:else}
+                        <a href="/singles/matchmaker" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-purple-400/60 bg-purple-500/15 text-purple-200 hover:bg-purple-500/25 transition-colors">🔮 כלים לשדכן</a>
+                    {/if}
                 </div>
             {/if}
 
             <div class="flex justify-center items-center gap-3 mt-3 flex-wrap">
-                {#if lockedFilter && !data.isSuperAdmin}
+                {#if lockedFilter && !seesBothBoards}
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow">
                         <span>{lockedFilter === 'male' ? $_('extras.s_locked_male') : $_('extras.s_locked_female')}</span>
                         <span class="text-white/80">{$_('extras.s_locked_note')}</span>

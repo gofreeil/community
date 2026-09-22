@@ -10,6 +10,7 @@
     import type { PageData } from './$types';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import ItemShareHead from "$lib/components/ItemShareHead.svelte";
+    import MatchmakerNotes from "$lib/components/MatchmakerNotes.svelte";
     import { productSchema, eventSchema } from "$lib/seo";
     import { formatOpeningHours, formatOpeningHoursLines, DAY_SHORT } from "$lib/openingHours";
     import { gmachTypeLabel } from "$lib/gmachTypes";
@@ -2602,6 +2603,9 @@
                             {/if}
                             <!-- מקטע "קישורים" הועבר אל מתחת לתמונה בעמודה הימנית -->
                         </div>
+
+                        <!-- מידע לשדכנים בלבד: השרת מחזיר תשובות רק לשדכן/ית מאושר/ת -->
+                        <MatchmakerNotes answers={data.matchmakerAnswers ?? []} />
 
                         <!-- Actions (compact, full width) -->
                         <div class="grid grid-cols-1 gap-1.5">

@@ -2,6 +2,7 @@
 import { getDbItemById, getItemsByCategory, getUserByAnyId } from '$lib/server/db';
 import { isCharterSigned, ownerEmail } from '$lib/server/charterSignatures';
 import { isSuperAdmin, isCoordinatorOfArea } from '$lib/server/auth';
+import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import { BOT_UA_RX } from '$lib/server/botUa';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { isPrivateCategory } from '$lib/itemCategories';
@@ -39,10 +40,23 @@ export const load: PageServerLoad = async (event) => {
         const extraFields = (() => {
             try { return JSON.parse(dbItem.extra_fields ?? '{}'); } catch { return {}; }
         })();
-        // "מידע לשדכנים" (group=matchmakers) לעולם לא יוצא לדף הפריט - גם לא לבעלים
-        // ולא לסופר-אדמין: הוא נאסף לצוות השדכנים בלבד ומוצג רק ב-/admin/singles-review.
-        for (const f of categoryConfig[dbItem.category]?.fields ?? []) {
-            if (f.group === 'matchmakers') delete extraFields[f.key];
+        // "מידע לשדכנים" (group=matchmakers) לא יוצא לדף הפריט לאף צופה רגיל - גם לא
+        // לבעלים. שדכן/ית מערכת מאושר/ת (ו סופר-אדמין) כן רואה אותו, אבל לא בתוך
+        // extraFields אלא ברשימה נפרדת (matchmakerAnswers) שרק הבלוק הייעודי מציג.
+        const matchmakerFields = (categoryConfig[dbItem.category]?.fields ?? []).filter((f) => f.group === 'matchmakers');
+        const matchmakerAnswers = matchmakerFields
+            .map((f) => ({ key: f.key, label: f.label, value: String(extraFields[f.key] ?? '').trim() }))
+            .filter((a) => a.value !== '');
+        for (const f of matchmakerFields) delete extraFields[f.key];
+
+        // הרשאת שדכן נבדקת רק על כרטיסי פנויים ורק לצופה מחובר (קריאת Strapi נוספת)
+        let viewerIsMatchmaker = false;
+        if (dbItem.category === 'singles' && viewerId && matchmakerAnswers.length > 0) {
+            try {
+                viewerIsMatchmaker = (await getMatchmakerStatus(viewerId, isSuperAdmin(session))) === 'approved';
+            } catch (e) {
+                console.warn('[items/load] matchmaker status failed:', e instanceof Error ? e.message : e);
+            }
         }
         const galleryImages: string[] = Array.isArray(extraFields?.images)
             ? (extraFields.images as unknown[]).filter((s): s is string => typeof s === 'string')
@@ -155,7 +169,7 @@ export const load: PageServerLoad = async (event) => {
         // רשומות פרטיות (הודעות, משוב, בקשות, משאלות) לעולם אינן דף פריט ציבורי -
         // דף הפריט היה חושף label/description/extra_fields/user_id לכל גולש שמנחש id.
         if ((dbItem.status === 'deleted' || isPrivateCategory(dbItem.category)) && !canEditActivities) {
-            return { origin, item: null };
+            return { origin, item: null, matchmakerAnswers: [] };
         }
 
         const item = {
@@ -216,7 +230,15 @@ export const load: PageServerLoad = async (event) => {
             });
         }
 
-        return { origin, isLoggedIn: !!viewerId, viewerId, item, share };
+        return {
+            origin,
+            isLoggedIn: !!viewerId,
+            viewerId,
+            item,
+            share,
+            // התשובות "לשדכנים בלבד" - יוצאות מהשרת רק לשדכן/ית מאושר/ת
+            matchmakerAnswers: viewerIsMatchmaker && !botOgPreview ? matchmakerAnswers : [],
+        };
     }
 
     // Fallback ל-static data הקיים
@@ -237,5 +259,5 @@ export const load: PageServerLoad = async (event) => {
         };
     }
 
-    return { origin, item: null };
+    return { origin, item: null, matchmakerAnswers: [] };
 };

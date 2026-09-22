@@ -11,6 +11,30 @@ import { categoryConfig } from './categoryFields';
 // לעמוד סקירת השדכנים בלי לגעת במיפוי.
 const MATCHMAKER_FIELDS = (categoryConfig.singles?.fields ?? []).filter(f => f.group === 'matchmakers');
 
+/** מפתחות שדות "מידע לשדכנים" — השרת מסיר אותם מנתוני הדף למי שאינו שדכן מאושר */
+export const MATCHMAKER_FIELD_KEYS = MATCHMAKER_FIELDS.map((f) => f.key);
+
+/**
+ * מסיר מהפרופיל את התשובות ש"רק שדכן רואה". עד 22.9.2026 dbItemToProfile החזיר
+ * אותן בכל מקום, וכל צופה בלוח/בכרטיס קיבל אותן בתוך נתוני הדף (גם אם לא הוצגו).
+ * כל load שמחזיר פרופילים חייב לעבור דרך כאן, אלא אם הצופה שדכן מאושר.
+ */
+export function stripMatchmakerOnly<T extends SingleProfile>(p: T): T {
+    return { ...p, matchmakerAnswers: [], matchPartnerCharacter: '', matchSelfAdvantage: '' };
+}
+
+/** אותו ניקוי על הרשומה הגולמית (extra_fields) שחוזרת לצד הלקוח */
+export function stripMatchmakerItemFields(item: DbItem): DbItem {
+    if (!item.extra_fields) return item;
+    try {
+        const ef = JSON.parse(item.extra_fields) as Record<string, unknown>;
+        for (const k of MATCHMAKER_FIELD_KEYS) delete ef[k];
+        return { ...item, extra_fields: JSON.stringify(ef) };
+    } catch {
+        return item;
+    }
+}
+
 function calcAge(birth: string): string {
     if (!birth) return '';
     const d = new Date(birth);
