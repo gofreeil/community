@@ -7,8 +7,16 @@
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
     const SLOT_NUMBERS = Array.from({ length: AD_SLOT_COUNT }, (_, i) => i + 1);
-    const POS_NAMES = ['עליונה', 'שנייה', 'שלישית', 'תחתונה'];
-    const GROUP_LETTERS = ['א', 'ב', 'ג', 'ד'];
+    // הטור מציג ארבעה כרטיסים בכל רגע ומחליף אותם כל 7 שניות. לכן 16
+    // המקומות הם ארבעה "מסכים" של ארבעה, והשאלה היחידה שמעניינת את המנהל
+    // היא באיזה גובה המוצר יישב בכל מסך.
+    const PER_SCREEN = 4;
+    const SCREENS = AD_SLOT_COUNT / PER_SCREEN;
+    const POS_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי'];
+    /** תיאור מלא של מקום: "מסך 1 מתוך 4 · שלישי מלמעלה" */
+    function slotLabel(n: number): string {
+        return `מסך ${slotGroup(n)} מתוך ${SCREENS} · ${POS_NAMES[slotRow(n) - 1]} מלמעלה`;
+    }
 
     // הטופס נטען מההגדרות השמורות, ונטען מחדש אחרי כל פעולה שמחזירה
     // הגדרות מעודכנות (שמירה/סנכרון) - אחרת המסך היה מציג ערכים ישנים.
@@ -116,13 +124,11 @@
                        class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm" />
             </label>
             <label class="block">
-                <span class="block text-xs font-bold text-gray-400 mb-1">המקום הראשון</span>
+                <span class="block text-xs font-bold text-gray-400 mb-1">איפה יישב המוצר הראשון</span>
                 <select name="firstSlot" bind:value={firstSlot}
                         class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm">
                     {#each SLOT_NUMBERS as n}
-                        <option value={n}>
-                            {n} - רביעייה {GROUP_LETTERS[slotGroup(n) - 1]}, {POS_NAMES[slotRow(n) - 1]}
-                        </option>
+                        <option value={n}>מקום {n} · {slotLabel(n)}</option>
                     {/each}
                 </select>
             </label>
@@ -130,19 +136,44 @@
                 <span class="block text-xs font-bold text-gray-400 mb-1">קפיצה בין מוצר למוצר</span>
                 <input type="number" name="step" bind:value={step} min="1" max={AD_SLOT_COUNT}
                        class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm" />
-                <span class="block text-[11px] text-gray-500 mt-1">4 = אותה קומה בכל רביעייה</span>
+                <span class="block text-[11px] text-gray-500 mt-1">4 = אותו גובה בכל מסך</span>
             </label>
         </div>
 
-        <div class="rounded-xl border px-3 py-2.5 mb-4 text-sm
-                    {previewSameFloor ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-200'
-                                      : 'border-amber-500/40 bg-amber-500/10 text-amber-200'}">
-            המקומות שייבחרו: <strong>{previewSlots.join(', ') || '-'}</strong>
-            {#if previewSameFloor}
-                — כולם במשבצת ה{POS_NAMES[slotRow(previewSlots[0] ?? 1) - 1]} בתוך הרביעייה, כלומר אותה קומה בטור.
-            {:else}
-                — המקומות האלה נופלים בקומות שונות. קפיצה של 4 שומרת על קומה אחת.
-            {/if}
+        <!-- תרשים הלוח: ארבעה מסכים של ארבעה כרטיסים, כמו שהטור מציג אותם
+             בסבב. המקומות שנבחרו מסומנים - ככה רואים בעין אחת שהם באותו גובה
+             ולא צריך להבין מה זה "מקום 7". -->
+        <div class="rounded-xl border px-3 py-3 mb-4
+                    {previewSameFloor ? 'border-emerald-500/30 bg-emerald-500/5'
+                                      : 'border-amber-500/40 bg-amber-500/10'}">
+            <p class="text-xs text-gray-400 mb-2">
+                כך נראה הטור: ארבעה כרטיסים בכל רגע, והם מתחלפים כל 7 שניות.
+            </p>
+            <div class="flex gap-3 overflow-x-auto pb-1">
+                {#each Array.from({ length: SCREENS }, (_, g) => g) as g}
+                    <div class="shrink-0">
+                        <div class="text-[10px] text-gray-500 text-center mb-1">מסך {g + 1}</div>
+                        <div class="flex flex-col gap-1">
+                            {#each Array.from({ length: PER_SCREEN }, (_, r) => g * PER_SCREEN + r + 1) as n}
+                                <div class="w-16 h-7 rounded-md flex items-center justify-center text-[11px] font-black border
+                                            {previewSlots.includes(n)
+                                                ? 'bg-emerald-500/30 border-emerald-400/60 text-emerald-100'
+                                                : 'bg-white/5 border-white/10 text-gray-500'}">
+                                    {previewSlots.includes(n) ? `🛒 ${n}` : n}
+                                </div>
+                            {/each}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+            <p class="text-sm mt-2 {previewSameFloor ? 'text-emerald-200' : 'text-amber-200'}">
+                המוצרים יישבו במקומות <strong>{previewSlots.join(', ') || '-'}</strong>
+                {#if previewSameFloor}
+                    — {POS_NAMES[slotRow(previewSlots[0] ?? 1) - 1]} מלמעלה בכל מסך, כלומר תמיד באותו גובה.
+                {:else}
+                    — בגבהים שונים בכל מסך. קפיצה של 4 שומרת על גובה אחיד.
+                {/if}
+            </p>
         </div>
 
         <fieldset class="mb-4">
