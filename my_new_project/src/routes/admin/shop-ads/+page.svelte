@@ -5,7 +5,7 @@
     import {
         SHOP_URL, SERIES_COUNT, SLOTS_PER_VIEW, SLOTS_PER_SERIES,
         seriesOf, seriesSlots,
-        GRADIENT_COUNT, shopAdGradient, SHOP_AD_ZOOM_MIN, SHOP_AD_ZOOM_MAX,
+        GRADIENT_COUNT, shopAdGradient, SHOP_AD_ZOOM_MIN, SHOP_AD_ZOOM_MAX, SHOP_AD_CTA_MAX,
     } from '$lib/shopAds';
     import ShopAdPreviewCard from '$lib/components/ShopAdPreviewCard.svelte';
 
@@ -376,8 +376,8 @@
                                        class="w-full rounded-lg bg-black/30 border border-white/10 px-2.5 py-1.5 text-white text-sm" />
                             </label>
                             <label class="block mb-2">
-                                <span class="block text-[11px] font-bold text-gray-400 mb-1">רצועה תחתונה (עד 48)</span>
-                                <input name="cta" bind:value={edit.cta} maxlength="48"
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">רצועה תחתונה (עד {SHOP_AD_CTA_MAX} - שורה אחת)</span>
+                                <input name="cta" bind:value={edit.cta} maxlength={SHOP_AD_CTA_MAX}
                                        class="w-full rounded-lg bg-black/30 border border-white/10 px-2.5 py-1.5 text-white text-sm" />
                             </label>
                             <label class="block mb-2">

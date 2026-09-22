@@ -195,6 +195,13 @@ export function normalizeShopAdsConfig(raw: unknown): ShopAdsConfig {
     };
 }
 
+/**
+ * תקרת הטקסט ברצועה התחתונה. זה השדה היחיד בכרטיס שמשפיע על גובהו
+ * (התמונה מעליו ביחס קבוע), ולכן טקסט שגולש לשורה שנייה מגביה את
+ * הכרטיס ומוציא אותו מהשורה מול האחרים.
+ */
+export const SHOP_AD_CTA_MAX = 22;
+
 /** גבולות הזום של התמונה במשבצת - כמו בבילדר של הפרסומות */
 export const SHOP_AD_ZOOM_MIN = 0.4;
 export const SHOP_AD_ZOOM_MAX = 2;
@@ -222,7 +229,7 @@ export function normalizeOverride(raw: unknown): ShopAdOverride {
     const out: ShopAdOverride = {
         title:     str(o.title, 42),
         subtitle:  str(o.subtitle, 60),
-        cta:       str(o.cta, 48),
+        cta:       str(o.cta, SHOP_AD_CTA_MAX),
         hoverText: str(o.hoverText, 160),
         gradientIndex: clamp(o.gradientIndex, 0, GRADIENT_COUNT - 1, true),
         fit,

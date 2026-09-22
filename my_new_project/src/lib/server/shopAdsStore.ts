@@ -28,6 +28,7 @@ import {
     preferredSlots,
     shopAdGradient,
     hasOverride,
+    SHOP_AD_CTA_MAX,
     type ShopAdSite,
     type ShopAdsConfig,
     type ShopAdOverride,
@@ -207,15 +208,18 @@ interface AdContent {
  * נגזר מהמוצר, וממשיך להתעדכן לבד כשהמחיר או התיאור בחנות משתנים.
  */
 function adContent(p: ShopProduct, index: number, site: ShopAdSite, ov?: ShopAdOverride): AdContent {
-    const price = p.oldPrice && p.oldPrice > p.price
-        ? `${shekel(p.price)} במקום ${shekel(p.oldPrice)}`
-        : shekel(p.price);
+    const priceNow = shekel(p.price);
+    const priceWas = p.oldPrice && p.oldPrice > p.price ? shekel(p.oldPrice) : '';
+    const priceFull = priceWas ? `${priceNow} במקום ${priceWas}` : priceNow;
     const colorIndex = typeof ov?.gradientIndex === 'number' ? ov.gradientIndex : index;
     return {
-        title:     trim(ov?.title    ?? p.name, 42),
-        subtitle:  ov?.subtitle  ? trim(ov.subtitle, 60) : (p.store ? trim(`${price} · ${p.store}`, 60) : price),
+        title:     trim(ov?.title ?? p.name, 42),
+        // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
+        subtitle:  trim(ov?.subtitle ?? (p.store || priceFull), SHOP_AD_CTA_MAX * 2),
         hoverText: trim(ov?.hoverText ?? (p.desc || `${p.name} - בחנות החירות`), 160),
-        cta:       trim(ov?.cta ?? `${price} · לצפייה בחנות`, 48),
+        // המחיר הנוכחי בלבד: "במקום ₪129" היה מגלגל את הרצועה לשתי שורות
+        // ומגביה את הכרטיס ביחס לשאר. ההשוואה מופיעה בדף הנחיתה.
+        cta:       trim(ov?.cta ?? `${priceNow} · לצפייה בחנות`, SHOP_AD_CTA_MAX),
         gradient:  shopAdGradient(colorIndex, site.gradient),
         fit:       ov?.fit ? { ...ov.fit } : { ...SHOP_AD_FIT },
         mainImage: p.image,
@@ -226,7 +230,7 @@ function adContent(p: ShopProduct, index: number, site: ShopAdSite, ov?: ShopAdO
             extended:   '',
             image:      p.image,
             advantages: [
-                price,
+                priceFull,
                 p.store ? `נמכר על ידי ${trim(p.store, 40)}` : 'נמכר על ידי מוכר מהקהילה',
                 '90% ממחיר המכירה נשאר אצל המוכר',
             ],
