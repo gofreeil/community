@@ -38,7 +38,51 @@
     // תוך כדי הקלדה - עוד לפני השמירה, וודאי לפני שזה עולה לאתרים.
     const GRADIENTS = Array.from({ length: GRADIENT_COUNT }, (_, i) => i);
     let editing = $state<string | null>(null);
-    let edit = $state({ title: '', subtitle: '', cta: '', hoverText: '', gradientIndex: 0, fitY: 45, fitZ: 0.6 });
+    let edit = $state({ title: '', subtitle: '', cta: '', hoverText: '', gradientIndex: 0, fitX: 50, fitY: 45, fitZ: 0.6 });
+
+    // ----- מידות המשבצת והתמונה, לחישוב זום אמיתי -----
+    // המשבצת בטור היא 144x450. z נמדד יחסית ל-cover: k = max(W/w, H/h) * z,
+    // ולכן "כל התמונה נכנסת" הוא z = min(W/w,H/h) / max(W/w,H/h). לתמונה
+    // מרובעת זה 0.32 - מתחת לרצפה של 0.4 שכל אתרי הרשת אוכפים, ולכן
+    // המחשבון נעצר ברצפה ומראה בכנות כמה באמת נראה.
+    const SLOT_W = 144;
+    const SLOT_H = 450;
+    /** המידות הטבעיות של תמונת המוצר שנמדדה (0 = טרם נמדדה) */
+    let imgW = $state(0);
+    let imgH = $state(0);
+
+    /** מודד את התמונה של הכרטיס שנפתח לעריכה */
+    function measure(src: string) {
+        imgW = 0;
+        imgH = 0;
+        if (typeof Image === 'undefined' || !src) return;
+        const probe = new Image();
+        probe.onload = () => { imgW = probe.naturalWidth; imgH = probe.naturalHeight; };
+        probe.src = src;
+    }
+
+    /** הזום שבו כל התמונה נכנסת למשבצת (לפני הרצפה של 0.4) */
+    let containZoom = $derived(
+        imgW && imgH
+            ? Math.min(SLOT_W / imgW, SLOT_H / imgH) / Math.max(SLOT_W / imgW, SLOT_H / imgH)
+            : 0,
+    );
+    /** כמה מרוחב התמונה ומגובהה באמת נראה בזום הנוכחי, באחוזים */
+    let coverage = $derived.by(() => {
+        if (!imgW || !imgH) return null;
+        const k = Math.max(SLOT_W / imgW, SLOT_H / imgH) * edit.fitZ;
+        return {
+            w: Math.min(100, Math.round((SLOT_W / (imgW * k)) * 100)),
+            h: Math.min(100, Math.round((SLOT_H / (imgH * k)) * 100)),
+        };
+    });
+    /** התאמה אוטומטית: הכי הרבה מהמוצר שאפשר להראות, וממורכז */
+    function autoFit() {
+        if (!containZoom) return;
+        edit.fitZ = Math.round(Math.max(SHOP_AD_ZOOM_MIN, Math.min(SHOP_AD_ZOOM_MAX, containZoom)) * 100) / 100;
+        edit.fitX = 50;
+        edit.fitY = 50;
+    }
 
     /** מאיזה צבע בפלטה הכרטיס צבוע - כדי שהבורר ייפתח על הצבע הנוכחי */
     function gradientIndexOf(gradient: string, fallback: number): number {
@@ -54,9 +98,11 @@
             cta: d.cta,
             hoverText: d.hoverText,
             gradientIndex: gradientIndexOf(d.gradient, index),
+            fitX: d.fit.x,
             fitY: d.fit.y,
             fitZ: d.fit.z,
         };
+        measure(d.mainImage);
     }
 
     /** הכרטיס כפי שהוא ברגע זה: בעריכה - מה שבטופס, אחרת - מה שנשמר */
@@ -68,7 +114,7 @@
             subtitle: edit.subtitle,
             cta: edit.cta,
             gradient: shopAdGradient(edit.gradientIndex, 'tailwind'),
-            fit: { x: 50, y: edit.fitY, z: edit.fitZ },
+            fit: { x: edit.fitX, y: edit.fitY, z: edit.fitZ },
         };
     }
 
@@ -351,12 +397,42 @@
                             </div>
                             <input type="hidden" name="gradientIndex" value={edit.gradientIndex} />
 
+                            <!-- כוונון התמונה. אי אפשר להחליף אותה (היא נמשכת
+                                 מהמוצר בחנות), אבל אפשר להחליט איזה חלק ממנה
+                                 ייראה במשבצת הצרה. -->
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[11px] font-bold text-gray-400">כוונון התמונה</span>
+                                <button type="button" onclick={autoFit} disabled={!containZoom}
+                                        class="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-[11px] font-bold hover:bg-emerald-500/30 disabled:opacity-40"
+                                        title="מחשב את הזום שבו נראה הכי הרבה מהמוצר, וממרכז אותו">
+                                    ✨ התאם למוצר
+                                </button>
+                            </div>
+                            {#if imgW && imgH}
+                                <p class="text-[11px] text-gray-500 mb-2">
+                                    התמונה {imgW}×{imgH}, המשבצת {SLOT_W}×{SLOT_H}.
+                                    {#if coverage}
+                                        נראה ממנה <strong class="{coverage.w < 70 ? 'text-amber-300' : 'text-emerald-300'}">{coverage.w}%</strong> מהרוחב
+                                        ו-<strong class="{coverage.h < 70 ? 'text-amber-300' : 'text-emerald-300'}">{coverage.h}%</strong> מהגובה.
+                                    {/if}
+                                    {#if containZoom && containZoom < SHOP_AD_ZOOM_MIN}
+                                        <br />כל התמונה לא נכנסת למשבצת (צריך זום {containZoom.toFixed(2)}, והמינימום הוא {SHOP_AD_ZOOM_MIN}).
+                                    {/if}
+                                </p>
+                            {/if}
                             <label class="block mb-2">
                                 <span class="block text-[11px] font-bold text-gray-400 mb-1">
-                                    זום התמונה ({edit.fitZ.toFixed(2)})
+                                    זום ({edit.fitZ.toFixed(2)}) — קטן = רואים יותר מהמוצר
                                 </span>
                                 <input type="range" name="fitZ" bind:value={edit.fitZ}
                                        min={SHOP_AD_ZOOM_MIN} max={SHOP_AD_ZOOM_MAX} step="0.05"
+                                       class="w-full accent-amber-500" />
+                            </label>
+                            <label class="block mb-2">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">
+                                    מיקום אופקי ({edit.fitX}%)
+                                </span>
+                                <input type="range" name="fitX" bind:value={edit.fitX} min="0" max="100" step="1"
                                        class="w-full accent-amber-500" />
                             </label>
                             <label class="block mb-3">

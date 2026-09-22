@@ -132,7 +132,7 @@ export const actions: Actions = {
             cta:           fd.get('cta'),
             hoverText:     fd.get('hoverText'),
             gradientIndex: num('gradientIndex'),
-            fit:           { x: 50, y: num('fitY') ?? 45, z: num('fitZ') ?? 0.6 },
+            fit:           { x: num('fitX') ?? 50, y: num('fitY') ?? 45, z: num('fitZ') ?? 0.6 },
         });
         try {
             await saveShopAdOverride(productId, patch);

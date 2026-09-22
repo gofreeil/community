@@ -87,6 +87,31 @@ function absoluteShopUrl(path: string): string {
 }
 
 /**
+ * החנות מחזירה את הטקסטים מוברחים ל-HTML (&quot; &amp; ...), כי בדפי
+ * החנות הם נכנסים ל-innerHTML. כאן הם נכנסים לכרטיס ולדף הנחיתה של
+ * Svelte, שמבריח בעצמו כל טקסט - ולכן בלי הפענוח הזה מוצר בשם
+ * ספר "להתמודד" היה מופיע על הפרסומת כ-ספר &quot;להתמודד&quot;.
+ * הפענוח מכסה את חמש הישויות שהחנות מייצרת ואת ההפניות המספריות.
+ */
+function decodeHtml(raw: string): string {
+    if (!raw || !raw.includes('&')) return raw;
+    return raw
+        .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(Number(d)))
+        .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        // אחרון: אחרת &amp;quot; היה מתפענח פעמיים
+        .replace(/&amp;/g, '&');
+}
+
+/** טקסט מהחנות: מפוענח ונקי מרווחים מיותרים */
+function shopText(v: unknown): string {
+    return decodeHtml(String(v ?? '')).trim();
+}
+
+/**
  * המוצרים האחרונים שאושרו בחנות. ההזנה הציבורית כבר ממוינת לפי מועד
  * האישור (חדש→ישן); מסננים כאן מוצר בלי תמונה (הכרטיס בטור הוא תמונה),
  * מוצר שהמוכר הסתיר או הגביל לשכונות, ומוצר שאזל.
@@ -112,13 +137,13 @@ export async function fetchNewestShopProducts(count: number): Promise<ShopProduc
         out.push({
             documentId,
             id:            Number(p.id) || 0,
-            name:          String(p.name ?? '').trim(),
-            desc:          String(p.desc ?? '').trim(),
+            name:          shopText(p.name),
+            desc:          shopText(p.desc),
             price:         Number(p.price) || 0,
             oldPrice:      p.oldPrice != null ? Number(p.oldPrice) : null,
-            store:         String(p.store ?? '').trim(),
-            storePhone:    String(p.storePhone ?? '').trim(),
-            storeWhatsapp: String(p.storeWhatsapp ?? '').trim(),
+            store:         shopText(p.store),
+            storePhone:    shopText(p.storePhone),
+            storeWhatsapp: shopText(p.storeWhatsapp),
             image,
             approvedAt:    String(p.approvedAt ?? ''),
             quantity:      p.quantity != null ? Number(p.quantity) : null,
