@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount, untrack } from "svelte";
-    import { page } from "$app/state";
     import CameraCapture from "$lib/components/CameraCapture.svelte";
     import { locale, t } from "svelte-i18n";
     import { get } from "svelte/store";
@@ -261,11 +260,8 @@
             ? ((item as { extraFields: { smoker: string } }).extraFields.smoker).trim()
             : ''
     );
-    // מוקאפ בלבד (עד שנעבוד על זה בהרחבה): מוצג כשהשדה ethics_charter מסומן, או עם ?mockup=1 בכתובת
-    const showEthicsCharter = $derived(item?.category === 'singles' && (
-        isTruthyFlag((item as { extraFields?: Record<string, unknown> } | null)?.extraFields?.ethics_charter)
-        || page.url.searchParams.get('mockup') === '1'
-    ));
+    // פנויים: חתימה על אמנת המוסר - מסומנת בטופס (checkbox), עם קישור לאמנה עצמה
+    const showEthicsCharter = $derived(item?.category === 'singles' && isTruthyFlag((item as { extraFields?: Record<string, unknown> } | null)?.extraFields?.ethics_charter));
 
     const age = $derived.by<number | null>(() => {
         const ef = (item as { extraFields?: Record<string, unknown> } | null)?.extraFields;
@@ -2554,9 +2550,10 @@
                                 </span>
                             {/if}
                             {#if showEthicsCharter}
-                                <span class="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 text-emerald-200 text-xs font-bold px-2.5 py-0.5 w-fit" title="מוקאפ - בקרוב">
+                                <a href="https://chachmim.gofreeil.com/heichal-hamaaseh/ethical-code" target="_blank" rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 text-emerald-200 text-xs font-bold px-2.5 py-0.5 w-fit hover:bg-emerald-500/25 transition-colors">
                                     📜 חתום על אמנת המוסר
-                                </span>
+                                </a>
                             {/if}
                         </div>
                     {/if}

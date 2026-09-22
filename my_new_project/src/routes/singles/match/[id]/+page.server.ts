@@ -19,6 +19,7 @@ function limitedCard(item: Awaited<ReturnType<typeof getDbItemById>>) {
         religiosity: p.religiosity,
         maritalStatus: p.maritalStatus,
         smoker: p.smoker,
+        ethicsCharter: p.ethicsCharter,
         education: p.education,
         interests: p.interests,
         description: p.description,

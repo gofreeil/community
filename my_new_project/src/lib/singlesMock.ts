@@ -36,6 +36,8 @@ export interface SingleProfile {
     unvaccinated?: boolean;
     /** תשובה לשאלה "מעשן/ת?" - מוצגת בגלוי על הכרטיס */
     smoker?: string;
+    /** חתום/ה על אמנת המוסר - מוצג על הכרטיס רק אם המפרסם סימן אותה במפורש */
+    ethicsCharter?: boolean;
 }
 
 // תצוגת רמה דתית - מותאם למגדר

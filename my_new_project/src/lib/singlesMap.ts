@@ -80,6 +80,8 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
     // תווית "לא מחוסן": מוצגת רק אם המפרסם סימן במפורש (checkbox נשמר כ-'1').
     // כרטיסים ישנים / מי שלא סימן — הערך ריק, ולכן לא מוצג דבר.
     const unvaccinated = String(ef.unvaccinated ?? '').trim() !== '' && String(ef.unvaccinated) !== '0';
+    // חתימה על אמנת המוסר: מוצגת רק אם המפרסם סימן במפורש (checkbox נשמר כ-'1')
+    const ethicsCharter = String(ef.ethics_charter ?? '').trim() !== '' && String(ef.ethics_charter) !== '0';
 
     return {
         id: String(item.id),
@@ -111,5 +113,6 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
             .filter(a => a.value !== ''),
         unvaccinated,
         smoker: String(ef.smoker ?? '').trim(),
+        ethicsCharter,
     };
 }

@@ -526,6 +526,11 @@
                                 {me.smoker.includes('לא') ? '🚭' : '🚬'} {me.smoker}
                             </span>
                         {/if}
+                        {#if me.ethicsCharter}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 text-xs font-bold mb-2.5">
+                                📜 חתום על אמנת המוסר
+                            </span>
+                        {/if}
                         {#if me.description}
                             <p class="text-gray-300 text-sm leading-relaxed mb-3">{me.description}</p>
                         {/if}
@@ -645,6 +650,11 @@
                         {#if person.smoker}
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-gray-200 border border-white/15 text-xs font-bold mb-2.5">
                                 {person.smoker.includes('לא') ? '🚭' : '🚬'} {person.smoker}
+                            </span>
+                        {/if}
+                        {#if person.ethicsCharter}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/40 text-xs font-bold mb-2.5">
+                                📜 חתום על אמנת המוסר
                             </span>
                         {/if}
                         <p class="text-gray-300 text-sm leading-relaxed mb-3">{person.description}</p>

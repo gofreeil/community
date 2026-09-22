@@ -10,7 +10,7 @@
         id: string; nickname: string; gender: Gender; age: string; city: string;
         // maritalStatus/education/interests/images אופציונליים גם ב-SingleProfile —
         // הכרטיס מהשרת מגיע איתם כ-undefined אפשרי, והתבנית ממילא עטופה ב-{#if}
-        religiosity: string; maritalStatus?: string; smoker?: string; education?: string; interests?: string;
+        religiosity: string; maritalStatus?: string; smoker?: string; ethicsCharter?: boolean; education?: string; interests?: string;
         description: string; lookingFor: string; inspiration: string;
         images?: string[]; avatar: string;
     };
@@ -83,6 +83,7 @@
                 {#if card.religiosity}<span class="text-[11px] font-bold text-cyan-200 bg-cyan-500/10 border border-cyan-400/25 rounded-full px-2 py-0.5">{relLabel(card.religiosity, card.gender)}</span>{/if}
                 {#if card.maritalStatus}<span class="text-[11px] font-bold text-gray-300 bg-white/5 border border-white/10 rounded-full px-2 py-0.5">{card.maritalStatus}</span>{/if}
                 {#if card.smoker}<span class="text-[11px] font-bold text-gray-300 bg-white/5 border border-white/10 rounded-full px-2 py-0.5">{card.smoker.includes('לא') ? '🚭' : '🚬'} {card.smoker}</span>{/if}
+                {#if card.ethicsCharter}<span class="text-[11px] font-bold text-emerald-200 bg-emerald-500/10 border border-emerald-400/25 rounded-full px-2 py-0.5">📜 חתום על אמנת המוסר</span>{/if}
                 {#if card.education}<span class="text-[11px] font-bold text-gray-300 bg-white/5 border border-white/10 rounded-full px-2 py-0.5">🎓 {card.education}</span>{/if}
             </div>
 

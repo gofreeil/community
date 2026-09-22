@@ -1213,6 +1213,12 @@
                                 {trOr($_, cfFieldKey(categoryId, field, 'ph'), field.placeholder ?? '')}
                             </span>
                         </label>
+                        {#if field.key === 'ethics_charter'}
+                            <a href="https://chachmim.gofreeil.com/heichal-hamaaseh/ethical-code" target="_blank" rel="noopener noreferrer"
+                                class="inline-block mt-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 underline underline-offset-2">
+                                📜 קראו את אמנת המוסר וחתמו עליה כאן
+                            </a>
+                        {/if}
 
                     {:else if field.type === 'toggle' && field.options}
                         <div class="relative mx-auto w-full max-w-[280px]">
