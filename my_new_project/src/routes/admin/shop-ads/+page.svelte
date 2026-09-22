@@ -139,7 +139,7 @@
                                       : 'border-amber-500/40 bg-amber-500/10 text-amber-200'}">
             המקומות שייבחרו: <strong>{previewSlots.join(', ') || '-'}</strong>
             {#if previewSameFloor}
-                — כולם במיקום ה{POS_NAMES[slotRow(previewSlots[0] ?? 1) - 1]} בתוך הרביעייה, כלומר אותה קומה בטור.
+                — כולם במשבצת ה{POS_NAMES[slotRow(previewSlots[0] ?? 1) - 1]} בתוך הרביעייה, כלומר אותה קומה בטור.
             {:else}
                 — המקומות האלה נופלים בקומות שונות. קפיצה של 4 שומרת על קומה אחת.
             {/if}
