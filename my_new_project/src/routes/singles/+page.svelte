@@ -314,22 +314,25 @@
                         </div>
 
                         <!-- מסלול ב: בקשת גישה (הורה / שדכן שאין לו כרטיס) -->
-                        <div>
-                            <p class="text-white font-bold text-sm mb-2">{$_('extras.s_gate_request_title')}</p>
-                            <p class="text-gray-400 text-xs mb-3">{$_('extras.s_gate_role_label')}</p>
+                        <div class="rounded-2xl bg-white/5 border border-white/10 px-4 py-4">
+                            <p class="text-white font-bold text-sm">{$_('extras.s_gate_request_title')}</p>
+                            <p class="text-gray-400 text-xs mt-1 mb-4">{$_('extras.s_gate_request_sub')}</p>
+
+                            <p class="text-pink-200 font-bold text-xs mb-2">{$_('extras.s_gate_role_label')}</p>
                             <div class="flex flex-wrap gap-2 mb-4">
                                 {#each [['single','s_gate_role_single'],['parent','s_gate_role_parent'],['matchmaker','s_gate_role_matchmaker']] as [role, key]}
                                     <button type="button"
                                         onclick={() => gateRole = role as AccessRole}
-                                        class="px-4 py-2 rounded-full text-sm font-bold border transition-colors {gateRole === role ? 'bg-pink-500/25 border-pink-400 text-pink-100' : 'bg-white/5 border-white/10 text-gray-300 hover:border-pink-400/50'}">
-                                        {$_('extras.' + key)}
+                                        class="px-4 py-2 rounded-full text-sm font-bold border-2 transition-colors {gateRole === role ? 'bg-pink-500/30 border-pink-400 text-white' : 'bg-white/5 border-white/20 text-gray-200 hover:border-pink-400/70'}">
+                                        {gateRole === role ? '✓ ' : ''}{$_('extras.' + key)}
                                     </button>
                                 {/each}
                             </div>
 
-                            <label class="flex items-start gap-2 mb-4 cursor-pointer">
-                                <input type="checkbox" bind:checked={gateAgreed} class="mt-1 accent-pink-500 w-4 h-4 flex-shrink-0" />
-                                <span class="text-gray-300 text-xs leading-snug">{$_('extras.s_gate_terms')}</span>
+                            <p class="text-pink-200 font-bold text-xs mb-2">{$_('extras.s_gate_terms_label')}</p>
+                            <label class="flex items-start gap-2 mb-4 cursor-pointer rounded-xl bg-white/5 border border-white/10 px-3 py-2.5">
+                                <input type="checkbox" bind:checked={gateAgreed} class="mt-0.5 accent-pink-500 w-5 h-5 flex-shrink-0" />
+                                <span class="text-gray-200 text-xs leading-snug">{$_('extras.s_gate_terms')}</span>
                             </label>
 
                             {#if gateError}
