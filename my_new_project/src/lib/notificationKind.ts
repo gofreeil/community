@@ -34,3 +34,20 @@ export function notificationChannel(type: string | null | undefined): Notificati
 export function isSystemNotification(type: string | null | undefined): boolean {
     return notificationChannel(type) === 'system';
 }
+
+/**
+ * היעד שאליו מובילה התראה לפי סוגה, כשלא נשמר לה link מפורש ב-extra_fields.
+ * אותה מפה משמשת את תצוגת ההתראות בהדר ואת כרטיסי ההודעות בדף הפרופיל.
+ */
+export const MSG_TYPE_LINKS: Record<string, string> = {
+    coordinator_request:  '/admin#coord-requests',
+    location_request:     '/admin#pending-neighborhoods',
+    neighborhood_request: '/admin#pending-neighborhoods',
+    singles_review:       '/admin/singles-review',
+    ad_submission:        '/admin/ads-review',
+    wish_request:         '/admin#pending-wishes',
+    design_help_request:  '/admin/ads-review',
+    new_user:             '/admin?tab=users',
+    singles_access:       '/admin/singles-review',
+    matchmaker_request:   '/admin/singles-review',
+};

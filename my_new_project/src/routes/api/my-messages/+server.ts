@@ -1,5 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { getMessagesByUserId, getItemsByCategoryAndStatus } from '$lib/server/db';
+import { getMessagesByUserId, getItemsByCategoryAndStatus, getItemsByCategory } from '$lib/server/db';
+import { MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
+import { MSG_TYPE_LINKS } from '$lib/notificationKind';
 import { reconcileAdMessages } from '$lib/server/adNotifications';
 import { reconcileCoordinatorMessages } from '$lib/server/coordinatorNotifications';
 import { isSinglesReviewHandled, toPendingSinglesRefs, type PendingSinglesRef } from '$lib/singlesReviewHandled';
@@ -7,6 +9,10 @@ import { isSinglesReviewHandled, toPendingSinglesRefs, type PendingSinglesRef } 
 // מחזיר את ההודעות החיות (items category='message') של המשתמש המחובר.
 // משמש את הבאדג' ב-Header לספירת הודעות שלא טופלו - אותה מערכת כמו תיבת ההודעות בפרופיל
 // (להבדיל מ-/api/messages הישן שפנה ל-collection 'messages' שלא נפרס ולכן תמיד החזיר ריק).
+const efType = (m: { extra_fields?: string | null }): string => {
+    try { return String(JSON.parse(m.extra_fields || '{}')?.type ?? ''); } catch { return ''; }
+};
+
 export const GET: RequestHandler = async ({ locals }) => {
     const session = await locals.auth?.();
     if (!session?.user?.id) return json([]);
@@ -33,6 +39,29 @@ export const GET: RequestHandler = async ({ locals }) => {
             try { pendingSingles = toPendingSinglesRefs(await getItemsByCategoryAndStatus('singles', 'pending')); } catch { /* שקט */ }
         }
 
+        // בקשת גישה ללוח הפנויים / בקשת שדכנות שכבר הוכרעה: התראה ישנה (בלי
+        // request_id) לא סומנה כ-handled, ודף הפרופיל מוריד אותה להיסטוריה ברגע
+        // שאין בקשה ממתינה מסוגה. בלי אותה בדיקה כאן הבאדג' הציג מספר שהתיבה
+        // עצמה כבר לא מראה - בדיוק הפער שגרם ל"יש התראה ואין מה לפתוח".
+        // הקריאות נעשות רק כשבאמת יש התראה כזו, כדי לא להוסיף round-trip לכולם.
+        const hasAccess = msgs.some((m) => efType(m) === 'singles_access');
+        const hasMatchmaker = msgs.some((m) => efType(m) === 'matchmaker_request');
+        const countPendingReq = (items: { extra_fields?: string | null }[]) =>
+            items.filter((r) => {
+                try { return String(JSON.parse(r.extra_fields || '{}').status ?? 'pending') === 'pending'; }
+                catch { return false; }
+            }).length;
+        let accessPending: number | null = null;
+        let matchmakerPending: number | null = null;
+        if (hasAccess || hasMatchmaker) {
+            const [accessRes, mmRes] = await Promise.allSettled([
+                hasAccess ? getItemsByCategory('singles_access') : Promise.resolve([]),
+                hasMatchmaker ? getItemsByCategory(MATCHMAKER_REQUEST_CATEGORY) : Promise.resolve([]),
+            ]);
+            if (hasAccess && accessRes.status === 'fulfilled') accessPending = countPendingReq(accessRes.value);
+            if (hasMatchmaker && mmRes.status === 'fulfilled') matchmakerPending = countPendingReq(mmRes.value);
+        }
+
         const now = Date.now();
         const visible = msgs.filter((m) => {
             // מצב שנשמר חוצה-מכשירים (extra_fields/status) — כדי שהבאדג' יהיה זהה בכל מכשיר:
@@ -49,15 +78,25 @@ export const GET: RequestHandler = async ({ locals }) => {
                 const createdMs = new Date(m.created_at ?? '').getTime() || 0;
                 if (isSinglesReviewHandled(String(ef?.item_id ?? ''), createdMs, pendingSingles)) return false;
             }
+            if (ef?.type === 'singles_access' && accessPending === 0) return false;
+            if (ef?.type === 'matchmaker_request' && matchmakerPending === 0) return false;
             return true;
         });
 
-        // type נחשף כדי שהבאדג' בהדר יוכל להפריד בין התראות מערכת (ניהול) להתראות
-        // פרטיות - בלי לשלוף שוב את כל ההודעות בצד הלקוח
+        // type/icon/link נחשפים כדי שההדר יוכל גם להפריד בין התראות מערכת לפרטיות
+        // וגם להציג בלחיצה *על מה* ההתראות, בלי לשלוף שוב את כל ההודעות
         return json(visible.map(m => {
-            let type = '';
-            try { type = String(JSON.parse(m.extra_fields || '{}')?.type ?? ''); } catch { /* הודעה ישנה */ }
-            return { id: m.id, label: m.label, created_at: m.created_at, type };
+            let ef: Record<string, unknown> = {};
+            try { ef = JSON.parse(m.extra_fields || '{}') ?? {}; } catch { /* הודעה ישנה */ }
+            const type = String(ef?.type ?? '');
+            return {
+                id: m.id,
+                label: m.label,
+                created_at: m.created_at,
+                type,
+                icon: m.icon ?? '',
+                link: String(ef?.link ?? '') || MSG_TYPE_LINKS[type] || '',
+            };
         }));
     } catch (e) {
         console.warn('[my-messages] fetch failed:', e);

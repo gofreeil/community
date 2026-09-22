@@ -7,6 +7,7 @@
     import { page } from '$app/state';
     import { mapSearchState } from "$lib/mapSearchState.svelte";
     import { isSystemNotification } from "$lib/notificationKind";
+    import { createClickOutside } from "$lib/actions/clickOutside";
 
     interface Props {
         currentUser?: any;
@@ -37,6 +38,10 @@
     let unreadSystem = $state(0);
     let unreadPrivate = $state(0);
     const badgeNum = (n: number) => (n > 99 ? '99+' : String(n));
+    // ההתראות שנספרות בפועל - הרשימה שמאחורי המספר, כדי שלחיצה על הבאדג'
+    // תראה *על מה* ההתראות במקום לשלוח לחפש אותן בדף הפרופיל
+    type LiveMsg = { id: number | string; label?: string; created_at?: string; type?: string; icon?: string; link?: string };
+    let liveMsgs = $state<LiveMsg[]>([]);
     let unreadLabel = $derived(badgeNum(unreadMessages));
     let systemLabel = $derived(badgeNum(unreadSystem));
     let privateLabel = $derived(badgeNum(unreadPrivate));
@@ -69,6 +74,7 @@
             if (sn && sn > now) return false;
             return true;
         });
+        liveMsgs = live as LiveMsg[];
         unreadMessages = live.length;
         unreadSystem = live.filter((m: any) => isSystemNotification(m?.type)).length;
         unreadPrivate = unreadMessages - unreadSystem;
@@ -78,7 +84,47 @@
     const MSG_SYSTEM_HREF  = '/profile?tab=messages&filter=system';
     const MSG_PRIVATE_HREF = '/profile?tab=messages&filter=private';
 
-    function resetUnread() { unreadMessages = 0; unreadSystem = 0; unreadPrivate = 0; }
+    function resetUnread() { unreadMessages = 0; unreadSystem = 0; unreadPrivate = 0; liveMsgs = []; }
+
+    // כששני הערוצים פעילים מוצגים שני באדג'ים נפרדים (אדום/ירוק) ולצידם הסכום.
+    // כשכל ההתראות מערוץ אחד, באדג' אחד בצבע הערוץ אומר את הכול - שני עיגולים
+    // על אותה התראה אחת רק נראו כמו שתי התראות.
+    let onlyChannel = $derived(
+        unreadSystem > 0 && unreadPrivate === 0 ? 'system'
+        : unreadPrivate > 0 && unreadSystem === 0 ? 'private'
+        : ''
+    );
+    let mixedChannels = $derived(unreadSystem > 0 && unreadPrivate > 0);
+    let totalTone = $derived(
+        onlyChannel === 'system' ? 'from-rose-500 to-red-600'
+        : onlyChannel === 'private' ? 'from-emerald-500 to-green-600'
+        : 'from-indigo-500 to-violet-600'
+    );
+
+    // הפאנל שנפתח מהבאדג': איזה ערוץ מוצג כרגע ('' = סגור)
+    let openChannel = $state<'' | 'all' | 'system' | 'private'>('');
+    const notifOutside = createClickOutside(() => (openChannel = ''));
+    function toggleChannel(ch: 'all' | 'system' | 'private') {
+        openChannel = openChannel === ch ? '' : ch;
+    }
+    let panelMsgs = $derived(
+        openChannel === '' ? []
+        : openChannel === 'all' ? liveMsgs
+        : liveMsgs.filter((m) => isSystemNotification(m.type) === (openChannel === 'system'))
+    );
+    let panelHref = $derived(
+        openChannel === 'system' ? MSG_SYSTEM_HREF
+        : openChannel === 'private' ? MSG_PRIVATE_HREF
+        : '/profile?tab=messages&filter=all'
+    );
+    function msgTime(iso?: string) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toLocaleString(_loc ?? 'he', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    // סגירת הפאנל בניווט, שלא יישאר פתוח מעל הדף הבא
+    beforeNavigate(() => { openChannel = ''; });
 
     async function fetchUnreadMessages() {
         if (!currentUser) { resetUnread(); lastMsgs = []; return; }
@@ -288,6 +334,13 @@
 	$effect(() => locale.subscribe(l => (_loc = l)));
 	const tFn = (k: string, options?: { values?: Record<string, unknown> }) => { void _loc; return get(t)(k, options as any); };
 
+	// כותרת הבאדג' הכולל - תלויה ב-tFn, ולכן מוגדרת אחריו
+	let totalTitle = $derived(
+		onlyChannel === 'system' ? tFn("chrome.unread_system", { values: { n: unreadSystem } })
+		: onlyChannel === 'private' ? tFn("chrome.unread_private", { values: { n: unreadPrivate } })
+		: tFn("chrome.unread_messages", { values: { n: unreadMessages } })
+	);
+
 	// סגור תמונת preview של אודות בזמן ניווט
 	beforeNavigate(() => {
 		const preview = document.getElementById('about-preview') as HTMLElement | null;
@@ -301,6 +354,56 @@
 	});
 
 </script>
+
+{#snippet notifPanel()}
+    <!-- פאנל ההתראות: מה שמאחורי המספר - כותרת, זמן וקישור ישיר ליעד של כל התראה -->
+    <div
+        class="absolute top-full mt-2 left-0 z-[1200] w-[min(20rem,calc(100vw-1.5rem))]
+               rounded-2xl border border-white/15 bg-[#0f172a] shadow-2xl overflow-hidden"
+        dir="rtl"
+    >
+        <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-white/10">
+            <span class="text-xs font-black text-white">
+                {openChannel === 'system'
+                    ? tFn("chrome.notif_panel_system")
+                    : openChannel === 'private'
+                        ? tFn("chrome.notif_panel_private")
+                        : tFn("chrome.notif_panel_all")}
+            </span>
+            <button
+                type="button"
+                onclick={() => (openChannel = '')}
+                class="text-gray-400 hover:text-white text-xs leading-none px-1 cursor-pointer"
+                aria-label={tFn("chrome.close")}
+            >✕</button>
+        </div>
+        <div class="max-h-[60vh] overflow-y-auto divide-y divide-white/5">
+            {#each panelMsgs.slice(0, 8) as m (m.id)}
+                <a
+                    href={m.link || '/profile?tab=messages'}
+                    class="flex items-start gap-2 px-3 py-2.5 hover:bg-white/5 transition-colors"
+                >
+                    <span class="text-base leading-none mt-0.5" aria-hidden="true">{m.icon || '🔔'}</span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-[12px] font-bold text-white leading-snug break-words">{m.label}</span>
+                        <span class="block text-[10px] text-gray-400 mt-0.5">{msgTime(m.created_at)}</span>
+                    </span>
+                    <span
+                        class="mt-1 h-2 w-2 rounded-full flex-shrink-0 {isSystemNotification(m.type)
+                            ? 'bg-rose-500'
+                            : 'bg-emerald-500'}"
+                        aria-hidden="true"
+                    ></span>
+                </a>
+            {/each}
+        </div>
+        <a
+            href={panelHref}
+            class="block px-3 py-2 text-center text-[11px] font-black text-violet-300 hover:text-white
+                   hover:bg-white/5 border-t border-white/10 transition-colors"
+        >{tFn("chrome.notif_panel_all_link")}</a>
+    </div>
+{/snippet}
 
 <header use:headerHeight
     class="sticky top-0 z-[1100] border-b-2 md:border-b-4 border-blue-600 shadow-lg backdrop-blur-lg"
@@ -392,7 +495,7 @@
                         </div>
 
                         {#if currentUser}
-                            <div class="relative group flex-shrink-0">
+                            <div class="relative group flex-shrink-0" use:notifOutside>
                                 <a href="/profile" class="block relative h-9 w-9" aria-label={tFn("chrome.to_personal_area", { values: { name: currentUser.username ?? tFn("default_user") } })}>
                                     {#if currentUser.avatar_url}
                                         <img
@@ -415,41 +518,54 @@
                                                 style="filter: drop-shadow(0 0 3px {headerRingColor}88);" />
                                     </svg>
                                 </a>
-                                <!-- ספירה כוללת - במקום ובתפקיד הקודמים, בצבע חדש -->
+                                <!-- ספירה כוללת - במקום הקודם; צבועה לפי הערוץ כשכל
+                                     ההתראות מאותו סוג, ולחיצה פותחת את רשימתן -->
                                 {#if unreadMessages > 0}
-                                    <span
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleChannel('all')}
+                                        aria-expanded={openChannel === 'all'}
                                         class="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1
-                                               bg-gradient-to-br from-indigo-500 to-violet-600
+                                               bg-gradient-to-br {totalTone}
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[10px]
-                                               font-black leading-none shadow-lg pointer-events-none"
-                                        aria-label={tFn("chrome.unread_messages", { values: { n: unreadMessages } })}
-                                    >{unreadLabel}</span>
+                                               font-black leading-none shadow-lg cursor-pointer
+                                               hover:scale-110 transition-transform"
+                                        title={totalTitle}
+                                        aria-label={totalTitle}
+                                    >{unreadLabel}</button>
                                 {/if}
-                                <!-- קיצורי דרך סביב התמונה: מערכת (אדום) ופרטי (ירוק) -->
-                                {#if unreadSystem > 0}
-                                    <a
-                                        href={MSG_SYSTEM_HREF}
+                                <!-- קיצורי דרך נפרדים סביב התמונה - רק כששני הערוצים פעילים -->
+                                {#if mixedChannels}
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleChannel('system')}
+                                        aria-expanded={openChannel === 'system'}
                                         class="absolute -bottom-1.5 -left-1.5 min-w-[17px] h-[17px] px-1
                                                bg-gradient-to-br from-rose-500 to-red-600
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[9px]
-                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                               font-black leading-none shadow-lg cursor-pointer
+                                               hover:scale-110 transition-transform"
                                         title={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
                                         aria-label={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
-                                    >{systemLabel}</a>
-                                {/if}
-                                {#if unreadPrivate > 0}
-                                    <a
-                                        href={MSG_PRIVATE_HREF}
+                                    >{systemLabel}</button>
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleChannel('private')}
+                                        aria-expanded={openChannel === 'private'}
                                         class="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1
                                                bg-gradient-to-br from-emerald-500 to-green-600
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[9px]
-                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                               font-black leading-none shadow-lg cursor-pointer
+                                               hover:scale-110 transition-transform"
                                         title={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
                                         aria-label={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
-                                    >{privateLabel}</a>
+                                    >{privateLabel}</button>
+                                {/if}
+                                {#if openChannel !== ''}
+                                    {@render notifPanel()}
                                 {/if}
                             </div>
                         {:else}
@@ -635,6 +751,7 @@
                             <!-- תמונת פרופיל עם hover -->
                             <div
                                 class="relative flex-shrink-0"
+                                use:notifOutside
                                 role="presentation"
                                 onmouseenter={() => showProfileTooltip = true}
                                 onmouseleave={() => showProfileTooltip = false}
@@ -668,41 +785,54 @@
                                                 style="filter: drop-shadow(0 0 4px {headerRingColor}88);" />
                                     </svg>
                                 </a>
-                                <!-- ספירה כוללת - במקום ובתפקיד הקודמים, בצבע חדש -->
+                                <!-- ספירה כוללת - במקום הקודם; צבועה לפי הערוץ כשכל
+                                     ההתראות מאותו סוג, ולחיצה פותחת את רשימתן -->
                                 {#if unreadMessages > 0}
-                                    <span
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleChannel('all')}
+                                        aria-expanded={openChannel === 'all'}
                                         class="absolute -bottom-1 -left-1 min-w-[22px] h-[22px] px-1.5
-                                               bg-gradient-to-br from-indigo-500 to-violet-600
+                                               bg-gradient-to-br {totalTone}
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[11px]
-                                               font-black leading-none shadow-lg pointer-events-none"
-                                        aria-label={tFn("chrome.unread_messages", { values: { n: unreadMessages } })}
-                                    >{unreadLabel}</span>
+                                               font-black leading-none shadow-lg cursor-pointer
+                                               hover:scale-110 transition-transform"
+                                        title={totalTitle}
+                                        aria-label={totalTitle}
+                                    >{unreadLabel}</button>
                                 {/if}
-                                <!-- קיצורי דרך סביב התמונה: מערכת (אדום) ופרטי (ירוק) -->
-                                {#if unreadSystem > 0}
-                                    <a
-                                        href={MSG_SYSTEM_HREF}
+                                <!-- קיצורי דרך נפרדים סביב התמונה - רק כששני הערוצים פעילים -->
+                                {#if mixedChannels}
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleChannel('system')}
+                                        aria-expanded={openChannel === 'system'}
                                         class="absolute -top-1 -left-1 min-w-[20px] h-[20px] px-1.5
                                                bg-gradient-to-br from-rose-500 to-red-600
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[10px]
-                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                               font-black leading-none shadow-lg cursor-pointer
+                                               hover:scale-110 transition-transform"
                                         title={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
                                         aria-label={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
-                                    >{systemLabel}</a>
-                                {/if}
-                                {#if unreadPrivate > 0}
-                                    <a
-                                        href={MSG_PRIVATE_HREF}
+                                    >{systemLabel}</button>
+                                    <button
+                                        type="button"
+                                        onclick={() => toggleChannel('private')}
+                                        aria-expanded={openChannel === 'private'}
                                         class="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1.5
                                                bg-gradient-to-br from-emerald-500 to-green-600
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[10px]
-                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                               font-black leading-none shadow-lg cursor-pointer
+                                               hover:scale-110 transition-transform"
                                         title={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
                                         aria-label={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
-                                    >{privateLabel}</a>
+                                    >{privateLabel}</button>
+                                {/if}
+                                {#if openChannel !== ''}
+                                    {@render notifPanel()}
                                 {/if}
                             </div>
                         </div>

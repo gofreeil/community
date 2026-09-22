@@ -13,6 +13,10 @@ export const he = {
         unread_messages: "{n} הודעות חדשות",
         unread_system: "{n} התראות מערכת – ממתינות לטיפול",
         unread_private: "{n} התראות פרטיות – הודעות אליי",
+        notif_panel_all: "ההתראות שלי",
+        notif_panel_system: "התראות מערכת",
+        notif_panel_private: "התראות פרטיות",
+        notif_panel_all_link: "לכל ההודעות באזור האישי ←",
         online_now: "{n} משתמשים מחוברים כעת",
         my_profile_tooltip: "👤 לפרופיל שלי",
 
@@ -50,6 +54,10 @@ export const en = {
         unread_messages: "{n} new messages",
         unread_system: "{n} system alerts awaiting action",
         unread_private: "{n} personal notifications for you",
+        notif_panel_all: "My notifications",
+        notif_panel_system: "System alerts",
+        notif_panel_private: "Personal notifications",
+        notif_panel_all_link: "Open all messages →",
         online_now: "{n} users online right now",
         my_profile_tooltip: "👤 My profile",
 
@@ -87,6 +95,10 @@ export const ru = {
         unread_messages: "Новых сообщений: {n}",
         unread_system: "Системных уведомлений: {n} — ждут обработки",
         unread_private: "Личных уведомлений: {n}",
+        notif_panel_all: "Мои уведомления",
+        notif_panel_system: "Системные уведомления",
+        notif_panel_private: "Личные уведомления",
+        notif_panel_all_link: "Все сообщения в личном кабинете →",
         online_now: "Пользователей онлайн: {n}",
         my_profile_tooltip: "👤 Мой профиль",
 
