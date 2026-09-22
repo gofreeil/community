@@ -301,7 +301,7 @@ export const categoryConfig: Record<string, CategoryConfig> = {
             { key: 'marital_status', label: 'מצב משפחתי',           type: 'select',   required: false, options: ['רווק/ה', 'גרוש/ה', 'אלמן/ה', 'פרוד/ה'], default: 'רווק/ה' },
             { key: 'smoker',       label: 'מעשן/ת?',                 type: 'select',   required: false, options: ['לא מעשן/ת', 'מעשן/ת'], hint: 'התשובה תוצג בגלוי על הכרטיס.' },
             { key: 'unvaccinated', label: 'תווית לכרטיס (לא חובה)',   type: 'checkbox', required: false, placeholder: 'הצג תווית "לא מחוסן" על הכרטיס', hint: 'סמנו רק אם תרצו — התווית "לא מחוסן" תופיע על הכרטיס. אם לא תסמנו, לא יוצג דבר.' },
-            { key: 'ethics_charter', label: 'אמנת המוסר (לא חובה)',   type: 'checkbox', required: false, placeholder: 'קראתי וחתמתי על אמנת המוסר', hint: 'התווית "חתום על אמנת המוסר" תופיע בגלוי על הכרטיס.' },
+            { key: 'ethics_charter', label: 'אמנת המוסר (לא חובה)',   type: 'checkbox', required: false, placeholder: 'קראתי וחתמתי על אמנת המוסר', hint: 'התווית "חתום על אמנת המוסר" תופיע בגלוי על הכרטיס. כבר חתמתם באתר חכמי העדה? אין צורך לסמן - זה יזוהה אצלכם אוטומטית לפי אותו מספר טלפון.' },
             { key: 'education',   label: 'מקצוע / תעסוקה / השכלה',  type: 'text',     required: false, placeholder: 'תואר / ישיבה / מקצוע...' },
             { key: 'interests',   label: 'תחומי עניין',              type: 'textarea', required: false, placeholder: 'ספורט, מוזיקה, בישול...' },
             { key: 'description', label: 'קצת עליי',                type: 'textarea', required: true,  placeholder: 'כמה מילים על עצמך (לא יוצג שם)' },

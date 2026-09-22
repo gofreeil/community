@@ -4,6 +4,7 @@ import { dbItemToProfile } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
+import { withCharterAutoDetect, withCharterAutoDetectOne } from '$lib/server/charterSignatures';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -56,7 +57,7 @@ export const load: PageServerLoad = async (event) => {
                 .find((i) => i.category === 'singles' && i.status !== 'deleted');
             if (ownItem) {
                 // תמונות ככתובות ולא base64 - ראה singlesImages.ts
-                selfProfile = withSinglesImageUrls(dbItemToProfile(ownItem));
+                selfProfile = await withCharterAutoDetectOne(withSinglesImageUrls(dbItemToProfile(ownItem)));
                 selfStatus = ownItem.status;
             }
         } catch (e) {
@@ -94,10 +95,12 @@ export const load: PageServerLoad = async (event) => {
         // השדכנים רואה אותם בדף /admin/singles-review ומפנה אותם בדיסקרטיות).
         // התמונות יוצאות ככתובות לנתיב מוגן-קאש ולא כ-base64 בתוך נתוני הדף:
         // כך היה הדף שוקל ~4MB ולוקח ~18 שניות למשתמש מחובר (singlesImages.ts).
-        const profiles = items
-            .map(dbItemToProfile)
-            .filter((p) => p.visibility !== 'matchmakers')
-            .map(withSinglesImageUrls);
+        const profiles = await withCharterAutoDetect(
+            items
+                .map(dbItemToProfile)
+                .filter((p) => p.visibility !== 'matchmakers')
+                .map(withSinglesImageUrls),
+        );
         return { ...base, gated: false, accessStatus: 'granted' as const, items: items.map(stripSinglesItemImages), profiles };
     } catch (e) {
         console.warn('[singles] load failed:', e instanceof Error ? e.message : e);

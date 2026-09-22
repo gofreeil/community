@@ -3,6 +3,7 @@ import { getDbItemById } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
+import { withCharterAutoDetectOne } from '$lib/server/charterSignatures';
 import { BOT_UA_RX } from '$lib/server/botUa';
 import type { PageServerLoad } from './$types';
 
@@ -27,7 +28,8 @@ export const load: PageServerLoad = async (event) => {
         // תמונות ככתובות ולא base64 בנתוני הדף - ראה singlesImages.ts
         // isOwner: הכפתור "צור כרטיס פנוי משלך" מוצג לכל צופה חוץ מבעל הכרטיס
         const isOwner = !!viewerId && dbItem.user_id === viewerId;
-        return { single: withSinglesImageUrls(dbItemToProfile(dbItem)), dbItem: stripSinglesItemImages(dbItem), isBot, origin, isLoggedIn, isOwner };
+        const single = await withCharterAutoDetectOne(withSinglesImageUrls(dbItemToProfile(dbItem)));
+        return { single, dbItem: stripSinglesItemImages(dbItem), isBot, origin, isLoggedIn, isOwner };
     }
 
     const single = mockSingles.find((s) => s.id === id);

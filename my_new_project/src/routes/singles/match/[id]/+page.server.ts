@@ -2,14 +2,17 @@ import { redirect, error } from '@sveltejs/kit';
 import { getDbItemByIdFresh, getDbItemById, getUserById, getUserByEmail } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
 import { withSinglesImageUrls } from '$lib/server/singlesImages';
+import { withCharterAutoDetectOne } from '$lib/server/charterSignatures';
 import { parseMatch, sideOf, type MatchData } from '$lib/server/singlesMatch';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
 import type { PageServerLoad } from './$types';
 
 // כרטיס "פרטים ראשונים" שמוצג לצד השני — בלי טלפון ובלי פרטי השדכן.
-function limitedCard(item: Awaited<ReturnType<typeof getDbItemById>>) {
+// הזיהוי האוטומטי של חתימה על אמנת המוסר משתמש בטלפון לפני שהוא מוסר מהתוצאה.
+async function limitedCard(item: Awaited<ReturnType<typeof getDbItemById>>) {
     if (!item) return null;
-    const p = withSinglesImageUrls(dbItemToProfile(item));
+    const p = await withCharterAutoDetectOne(withSinglesImageUrls(dbItemToProfile(item)));
+    if (!p) return null;
     return {
         id: p.id,
         nickname: p.nickname,
@@ -64,7 +67,7 @@ export const load: PageServerLoad = async (event) => {
     if (side) {
         const otherSide = side === 'a' ? 'b' : 'a';
         const otherCardId = m[otherSide].card_id;
-        const otherCard = limitedCard(await getDbItemById(otherCardId));
+        const otherCard = await limitedCard(await getDbItemById(otherCardId));
         return {
             role: 'single' as const,
             matchId: item.id,
@@ -81,15 +84,16 @@ export const load: PageServerLoad = async (event) => {
         getDbItemById(m.a.card_id),
         getDbItemById(m.b.card_id),
     ]);
+    const [aCard, bCard] = await Promise.all([limitedCard(cardA), limitedCard(cardB)]);
     return {
         role: 'matchmaker' as const,
         matchId: item.id,
         stage: m.stage,
         matchmakerName: m.matchmaker_name,
-        aCard: limitedCard(cardA),
+        aCard,
         aResponse: m.a.response,
         aPhone: cardA?.phone || '',
-        bCard: limitedCard(cardB),
+        bCard,
         bResponse: m.b.response,
         bPhone: cardB?.phone || '',
     };
