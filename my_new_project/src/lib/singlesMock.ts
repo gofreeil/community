@@ -34,6 +34,8 @@ export interface SingleProfile {
     matchmakerAnswers?: { key: string; label: string; value: string }[];
     /** תווית "לא מחוסן" - מוצגת על הכרטיס רק אם המפרסם סימן אותה במפורש */
     unvaccinated?: boolean;
+    /** תשובה לשאלה "מעשן/ת?" - מוצגת בגלוי על הכרטיס */
+    smoker?: string;
 }
 
 // תצוגת רמה דתית - מותאם למגדר

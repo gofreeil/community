@@ -291,6 +291,11 @@
                                     לא מחוסן
                                 </span>
                             {/if}
+                            {#if s.smoker}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/20 text-xs font-bold">
+                                    {s.smoker.includes('לא') ? '🚭' : '🚬'} {s.smoker}
+                                </span>
+                            {/if}
                             {#if s.status}
                                 <span class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/20 text-xs font-bold">
                                     {statusLabel(s.status)}

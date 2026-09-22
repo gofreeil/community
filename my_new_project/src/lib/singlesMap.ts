@@ -110,5 +110,6 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
             .map(f => ({ key: f.key, label: f.label, value: String(ef[f.key] ?? '').trim() }))
             .filter(a => a.value !== ''),
         unvaccinated,
+        smoker: String(ef.smoker ?? '').trim(),
     };
 }

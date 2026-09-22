@@ -255,6 +255,12 @@
     // פנויים: תוויות חיצוניות (מחוץ לטבלה) - "לא מחוסן", "חתום על אמנת המוסר"
     const isTruthyFlag = (v: unknown) => v != null && v !== '' && v !== '0' && v !== 0 && v !== false && v !== 'false';
     const showUnvaccinated = $derived(item?.category === 'singles' && isTruthyFlag((item as { extraFields?: Record<string, unknown> } | null)?.extraFields?.unvaccinated));
+    // פנויים: תשובת "מעשן/ת?" - מוצגת בגלוי לצד התוויות האחרות
+    const smokerAnswer = $derived<string>(
+        item?.category === 'singles' && typeof (item as { extraFields?: { smoker?: unknown } } | null)?.extraFields?.smoker === 'string'
+            ? ((item as { extraFields: { smoker: string } }).extraFields.smoker).trim()
+            : ''
+    );
     // מוקאפ בלבד (עד שנעבוד על זה בהרחבה): מוצג כשהשדה ethics_charter מסומן, או עם ?mockup=1 בכתובת
     const showEthicsCharter = $derived(item?.category === 'singles' && (
         isTruthyFlag((item as { extraFields?: Record<string, unknown> } | null)?.extraFields?.ethics_charter)
@@ -1699,7 +1705,7 @@
 
 <!-- Hidden keys (rendered in dedicated sections, complex types, or internal-only) -->
 {#snippet extraFieldsBlock()}
-    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video', 'visibility', 'extra_contacts', 'inspiration', 'unvaccinated', 'ethics_charter'])}
+    {@const HIDDEN_KEYS = new Set(['condition', 'category', 'tags', 'images', 'image', 'menu_images', 'map_image', 'service_type', 'price', 'website', 'whatsapp', 'telegram', 'facebook', 'instagram', 'youtube', 'tiktok', 'nickname', 'age', 'birth_date', 'sector', 'gender', 'type', 'activities', 'links', 'gmach_type', 'gmach_types', 'place_status', 'location', 'option_id', 'last_seen', 'hours', 'phone_public', 'hours_public', 'arrival_video', 'visibility', 'extra_contacts', 'inspiration', 'unvaccinated', 'ethics_charter', 'smoker'])}
     {@const LABELS_HE: Record<string, string> = {
         nickname: 'שם או כינוי',
         gender: 'מין',
@@ -2091,12 +2097,17 @@
                             {/if}
                         </div>
                     {/if}
-                    {#if showUnvaccinated || showEthicsCharter}
+                    {#if showUnvaccinated || smokerAnswer || showEthicsCharter}
                         <!-- תוויות חיצוניות (לא חלק מטבלת הפרטים) -->
                         <div class="flex flex-wrap items-center gap-1.5">
                             {#if showUnvaccinated}
                                 <span class="inline-flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 text-xs font-bold px-2.5 py-0.5 w-fit">
                                     💉 לא מחוסן
+                                </span>
+                            {/if}
+                            {#if smokerAnswer}
+                                <span class="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 text-gray-200 text-xs font-bold px-2.5 py-0.5 w-fit">
+                                    {smokerAnswer.includes('לא') ? '🚭' : '🚬'} {smokerAnswer}
                                 </span>
                             {/if}
                             {#if showEthicsCharter}
