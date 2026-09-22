@@ -227,6 +227,13 @@
                class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-bold hover:bg-white/10">
                 פרופיל
             </a>
+            {#if isSuperAdmin}
+                <a href="/admin/shop-ads"
+                   class="px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 text-xs font-bold hover:bg-emerald-500/25"
+                   title="המוצרים החדשים של חנות החירות בטור הפרסומות של כל אתרי הרשת">
+                    🛒 מוצרי החנות
+                </a>
+            {/if}
             <button type="button"
                     onclick={() => { invalidateAll(); lastRefresh = Date.now(); }}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs font-bold hover:bg-amber-500/25"
