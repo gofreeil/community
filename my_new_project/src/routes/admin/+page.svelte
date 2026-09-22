@@ -445,6 +445,13 @@
 					{/if}
 				</button>
 				<button
+					onclick={() => goto('/admin/shop-ads')}
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-200 hover:bg-teal-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
+					title="המוצרים החדשים של חנות החירות בטור הפרסומות של כל אתרי הרשת"
+				>
+					🛒 מוצרי החנות
+				</button>
+				<button
 					onclick={() => goto('/admin/statistics')}
 					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
 				>
