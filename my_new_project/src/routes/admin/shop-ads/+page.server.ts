@@ -9,6 +9,7 @@ import {
     syncShopAds,
     removeShopAds,
     syncShopAdsIfStale,
+    buildShopAdDrafts,
     type SiteSyncResult,
 } from '$lib/server/shopAdsStore';
 import { SHOP_AD_SITES, preferredSlots, sameSeries, seriesOf } from '$lib/shopAds';
@@ -33,17 +34,21 @@ export const load: PageServerLoad = async (event) => {
     });
 
     const config = await readShopAdsConfig();
+    const wanted = preferredSlots(config);
     const [productsRes, placementRes] = await Promise.allSettled([
-        fetchNewestShopProducts(preferredSlots(config).length),
+        fetchNewestShopProducts(wanted.length),
         getShopAdsPlacement(config),
     ]);
+    const products = productsRes.status === 'fulfilled' ? productsRes.value : [];
 
     return {
         config,
-        wanted: preferredSlots(config),
+        wanted,
+        // הטיוטה: הכרטיסים כפי שייכתבו, לתצוגה מקדימה לפני הסנכרון
+        drafts: buildShopAdDrafts(products, wanted),
         sameSeries: sameSeries(preferredSlots(config)),
         sites: SHOP_AD_SITES,
-        products:  productsRes.status  === 'fulfilled' ? productsRes.value  : [],
+        products,
         placement: placementRes.status === 'fulfilled' ? placementRes.value : [],
         shopError: productsRes.status === 'rejected'
             ? (productsRes.reason instanceof Error ? productsRes.reason.message : String(productsRes.reason))

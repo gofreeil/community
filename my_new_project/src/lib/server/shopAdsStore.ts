@@ -41,6 +41,14 @@ const PR_CATEGORY    = 'pr_ad';
 /** תקרת התמונות המוטבעות באתר הדירוג הציבורי (MAX_AD_TOTAL_BYTES שלו) */
 const PR_MAX_IMAGE_BYTES = 600 * 1024;
 
+/**
+ * מיקום וזום התמונה במשבצת. המשבצת צרה וגבוהה (144x450) ותמונת מוצר
+ * היא בדרך כלל מרובעת, ולכן z קטן מ-1: מראים כמעט את כל רוחב התמונה
+ * במקום לחתוך ממנה שני שלישים. y=45 מרים אותה מעט מעל המרכז, הרחק
+ * מרצועת ה-CTA. התצוגה המקדימה במסך הניהול משתמשת באותו ערך.
+ */
+export const SHOP_AD_FIT = { x: 50, y: 45, z: 0.6 } as const;
+
 /** הקטגוריה הפנימית שבה נשמרות ההגדרות. status1='inactive' כדי שלא
  *  תיכנס לרשימות/למפה של האתר, שמושכות רק פריטים פעילים. */
 const CONFIG_CATEGORY = '__shop_ads_config';
@@ -197,6 +205,54 @@ function adContent(p: ShopProduct, index: number, site: ShopAdSite): AdContent {
             products:   [],
         },
     };
+}
+
+/** טיוטת הכרטיס שתיכתב - למסך הניהול, לפני שמסנכרנים */
+export interface ShopAdDraft {
+    /** מזהה המוצר בחנות */
+    product: string;
+    /** המקום המבוקש בטור (1-based) */
+    slot: number;
+    productName: string;
+    price: number;
+    store: string;
+    title: string;
+    subtitle: string;
+    cta: string;
+    hoverText: string;
+    /** זוג מחלקות Tailwind - הכרטיס בתצוגה המקדימה נבנה איתן */
+    gradient: string;
+    mainImage: string;
+    fit: { x: number; y: number; z: number };
+    /** היעד של הכרטיס - דף המוצר בחנות */
+    href: string;
+}
+
+/**
+ * מה בדיוק ייכתב, בלי לכתוב. עובר באותו adContent שהסנכרון משתמש בו,
+ * ולכן הטיוטה במסך הניהול היא הדבר עצמו ולא שחזור שלו.
+ * הגרדיאנט נלקח בצורת Tailwind, כי כך התצוגה המקדימה מרנדרת.
+ */
+export function buildShopAdDrafts(products: ShopProduct[], wanted: number[]): ShopAdDraft[] {
+    const site = SHOP_AD_SITES.find(s => s.id === 'community') ?? SHOP_AD_SITES[0];
+    return products.map((p, i) => {
+        const c = adContent(p, i, site);
+        return {
+            product:     p.documentId,
+            slot:        wanted[i] ?? 0,
+            productName: p.name,
+            price:       p.price,
+            store:       p.store,
+            title:       c.title,
+            subtitle:    c.subtitle,
+            cta:         c.cta,
+            hoverText:   c.hoverText,
+            gradient:    c.gradient,
+            mainImage:   c.mainImage,
+            fit:         { ...SHOP_AD_FIT },
+            href:        productUrl(p),
+        };
+    });
 }
 
 // ============================================================
@@ -429,7 +485,7 @@ function submittedColumns(c: AdContent, landing: Record<string, unknown>, now: s
 
 /** המפתחות הפנימיים ב-landing, בשמות שהאתר היעד קורא */
 function internalLanding(site: ShopAdSite, c: AdContent, order: number, product: string, now: string) {
-    const fit = { x: 50, y: 45, z: 0.6 };
+    const fit = { ...SHOP_AD_FIT };
     const base: Record<string, unknown> = {
         ...c.landing,
         _order:                 order,
@@ -500,7 +556,7 @@ async function syncSite(
                 gradient:        c.gradient,
                 logo:            '',
                 main_image:      c.mainImage,
-                main_image_fit:  { x: 50, y: 45, z: 0.6 },
+                main_image_fit:  { ...SHOP_AD_FIT },
                 ad_style:        { ...DEFAULT_AD_STYLE },
                 landing:         c.landing,
                 submitted_by:    { id: '', email: '', name: '' },

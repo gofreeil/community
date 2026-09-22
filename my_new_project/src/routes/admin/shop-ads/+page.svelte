@@ -6,6 +6,7 @@
         SHOP_URL, SERIES_COUNT, SLOTS_PER_VIEW, SLOTS_PER_SERIES,
         seriesOf, seriesSlots,
     } from '$lib/shopAds';
+    import ShopAdPreviewCard from '$lib/components/ShopAdPreviewCard.svelte';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -222,31 +223,43 @@
         </form>
     </div>
 
-    <!-- ===== המוצרים ===== -->
+    <!-- ===== הטיוטה: הכרטיסים כפי שייראו בטור ===== -->
     <section class="mb-6">
-        <h2 class="text-lg font-black text-white mb-3">המוצרים שיעלו ({data.products.length})</h2>
-        {#if data.products.length === 0}
+        <div class="flex flex-wrap items-baseline gap-2 mb-1">
+            <h2 class="text-lg font-black text-white">טיוטת הפרסומות ({data.drafts.length})</h2>
+            <span class="text-xs text-gray-500">כך בדיוק ייראה הכרטיס בטור - בגודל אמיתי</span>
+        </div>
+        <p class="text-xs text-gray-400 mb-3">
+            שום דבר מזה לא עלה לאוויר עד שתלחץ "סנכרן עכשיו".
+        </p>
+        {#if data.drafts.length === 0}
             <p class="text-sm text-gray-400">
                 אין מוצרים מתאימים. מוצר נכנס לפרסום אם הוא מאושר בחנות, יש לו תמונה, יש מלאי, והתצוגה שלו "מופיע".
             </p>
         {:else}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {#each data.products as p, i (p.documentId)}
-                    <article class="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
-                        <div class="aspect-[4/3] bg-black/40 overflow-hidden">
-                            <img src={p.image} alt={p.name} class="w-full h-full object-cover" loading="lazy" />
+            <div class="flex flex-wrap gap-4">
+                {#each data.drafts as d (d.product)}
+                    <figure class="m-0">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-[11px] font-black text-white bg-white/10 rounded-full px-2 py-0.5">
+                                מקום {d.slot || '-'}
+                            </span>
+                            <span class="text-[11px] text-gray-500 truncate max-w-[6rem]">{d.store}</span>
                         </div>
-                        <div class="p-3">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[11px] font-black text-white bg-white/10 rounded-full px-2 py-0.5">
-                                    מקום {data.wanted[i] ?? '-'}
-                                </span>
-                                <span class="text-[11px] text-gray-500">{p.store}</span>
-                            </div>
-                            <h3 class="text-sm font-bold text-white leading-tight mb-1">{p.name}</h3>
-                            <p class="text-xs text-emerald-300 font-bold">₪{p.price}</p>
-                        </div>
-                    </article>
+                        <ShopAdPreviewCard
+                            title={d.title}
+                            subtitle={d.subtitle}
+                            cta={d.cta}
+                            gradient={d.gradient}
+                            mainImage={d.mainImage}
+                            fit={d.fit}
+                        />
+                        <figcaption class="w-36 mt-1.5 text-[11px] text-gray-500 leading-snug">
+                            בריחוף: {d.hoverText}
+                            <a href={d.href} target="_blank" rel="noopener noreferrer"
+                               class="block text-blue-300 hover:text-blue-200 mt-0.5">לדף המוצר ↗</a>
+                        </figcaption>
+                    </figure>
                 {/each}
             </div>
         {/if}
