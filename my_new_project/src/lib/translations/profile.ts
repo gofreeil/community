@@ -76,6 +76,9 @@ export const he = {
         // ===== הודעות אישיות =====
         messages_title: "הודעות אישיות",
         unread_count: "{n} הודעות שלא נקראו",
+        msg_ch_all: "הכול",
+        msg_ch_system: "מערכת",
+        msg_ch_private: "פרטיות",
         from_system: "מערכת",
         from_admin: "מנהל",
         now: "עכשיו",
@@ -595,6 +598,9 @@ export const en = {
         // ===== Personal messages =====
         messages_title: "Personal messages",
         unread_count: "{n} unread messages",
+        msg_ch_all: "All",
+        msg_ch_system: "System",
+        msg_ch_private: "Personal",
         from_system: "System",
         from_admin: "Admin",
         now: "Now",
@@ -1112,6 +1118,9 @@ export const ru = {
         // ===== Личные сообщения =====
         messages_title: "Личные сообщения",
         unread_count: "Непрочитанных сообщений: {n}",
+        msg_ch_all: "Все",
+        msg_ch_system: "Системные",
+        msg_ch_private: "Личные",
         from_system: "Система",
         from_admin: "Администратор",
         now: "Сейчас",

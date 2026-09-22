@@ -6,6 +6,7 @@
     import { onMount } from "svelte";
     import { page } from '$app/state';
     import { mapSearchState } from "$lib/mapSearchState.svelte";
+    import { isSystemNotification } from "$lib/notificationKind";
 
     interface Props {
         currentUser?: any;
@@ -29,9 +30,16 @@
     // ערך פתיחה עד לתשובת ה-ping הראשונה: הגולש עצמו + היסט התצוגה (+2) שמוחל ב-/api/ping
     let onlineUsers = $state(3);
 
-    // מספר הודעות שלא נקראו - להצגת עיגול התראה על תמונת הפרופיל (כמו בדף הפרופיל)
+    // מספר הודעות שלא נקראו - להצגת עיגול התראה על תמונת הפרופיל (כמו בדף הפרופיל).
+    // בנוסף לספירה הכוללת נספרות בנפרד התראות מערכת (בקשות שמחכות לטיפול ניהולי)
+    // והתראות פרטיות (מה שנוגע למשתמש עצמו) - שני קיצורי דרך נפרדים סביב התמונה.
     let unreadMessages = $state(0);
-    let unreadLabel = $derived(unreadMessages > 99 ? '99+' : String(unreadMessages));
+    let unreadSystem = $state(0);
+    let unreadPrivate = $state(0);
+    const badgeNum = (n: number) => (n > 99 ? '99+' : String(n));
+    let unreadLabel = $derived(badgeNum(unreadMessages));
+    let systemLabel = $derived(badgeNum(unreadSystem));
+    let privateLabel = $derived(badgeNum(unreadPrivate));
 
     // אותם מפתחות localStorage כמו דף הפרופיל - כדי שהספירה תהיה עקבית עם תיבת ההודעות
     function loadMsgSet(key: string): Set<string> {
@@ -54,23 +62,32 @@
         const archived = loadMsgSet('msgs_archived_v1');
         const snoozed  = loadMsgMap('msgs_snoozed_v1');
         const now = Date.now();
-        unreadMessages = msgs.filter((m: any) => {
+        const live = msgs.filter((m: any) => {
             const id = `db-${m.id}`;
             if (deleted.has(id) || archived.has(id)) return false;
             const sn = snoozed[id];
             if (sn && sn > now) return false;
             return true;
-        }).length;
+        });
+        unreadMessages = live.length;
+        unreadSystem = live.filter((m: any) => isSystemNotification(m?.type)).length;
+        unreadPrivate = unreadMessages - unreadSystem;
     }
 
+    // קיצורי הדרך של הבאדג'ים: פותחים את תיבת ההודעות בפרופיל מסוננת לערוץ
+    const MSG_SYSTEM_HREF  = '/profile?tab=messages&filter=system';
+    const MSG_PRIVATE_HREF = '/profile?tab=messages&filter=private';
+
+    function resetUnread() { unreadMessages = 0; unreadSystem = 0; unreadPrivate = 0; }
+
     async function fetchUnreadMessages() {
-        if (!currentUser) { unreadMessages = 0; lastMsgs = []; return; }
+        if (!currentUser) { resetUnread(); lastMsgs = []; return; }
         try {
             // /api/my-messages = הודעות חיות (category='message'); הישן /api/messages הוא collection מת
             const res = await fetch('/api/my-messages');
-            if (!res.ok) { unreadMessages = 0; return; }
+            if (!res.ok) { resetUnread(); return; }
             const msgs = await res.json();
-            if (!Array.isArray(msgs)) { unreadMessages = 0; return; }
+            if (!Array.isArray(msgs)) { resetUnread(); return; }
             lastMsgs = msgs;
             computeUnread(msgs);
         } catch { /* ignore */ }
@@ -79,7 +96,7 @@
     // חישוב מיידי מתוך המטמון - נקרא כשהמשתמש קורא/מטפל בהודעה (אירוע 'msgs:changed'),
     // כדי שהעיגול ייעלם מיד במקום להמתין עד 30 שנ' לפול הבא של fetchUnreadMessages.
     function recomputeUnread() {
-        if (!currentUser) { unreadMessages = 0; return; }
+        if (!currentUser) { resetUnread(); return; }
         computeUnread(lastMsgs);
     }
 
@@ -375,8 +392,8 @@
                         </div>
 
                         {#if currentUser}
-                            <a href="/profile" class="relative group flex-shrink-0" aria-label={tFn("chrome.to_personal_area", { values: { name: currentUser.username ?? tFn("default_user") } })}>
-                                <div class="relative h-9 w-9">
+                            <div class="relative group flex-shrink-0">
+                                <a href="/profile" class="block relative h-9 w-9" aria-label={tFn("chrome.to_personal_area", { values: { name: currentUser.username ?? tFn("default_user") } })}>
                                     {#if currentUser.avatar_url}
                                         <img
                                             src={currentUser.avatar_url}
@@ -397,18 +414,44 @@
                                                 stroke-dashoffset={headerRingC * (1 - Math.min(headerCompletion, 100) / 100)}
                                                 style="filter: drop-shadow(0 0 3px {headerRingColor}88);" />
                                     </svg>
-                                </div>
-                                <!-- עיגול הודעות שלא נקראו -->
+                                </a>
+                                <!-- ספירה כוללת - במקום ובתפקיד הקודמים, בצבע חדש -->
                                 {#if unreadMessages > 0}
                                     <span
                                         class="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1
-                                               bg-orange-500 border-2 border-[#0f172a] rounded-full
+                                               bg-gradient-to-br from-indigo-500 to-violet-600
+                                               border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[10px]
-                                               font-black leading-none shadow-lg"
+                                               font-black leading-none shadow-lg pointer-events-none"
                                         aria-label={tFn("chrome.unread_messages", { values: { n: unreadMessages } })}
                                     >{unreadLabel}</span>
                                 {/if}
-                            </a>
+                                <!-- קיצורי דרך סביב התמונה: מערכת (אדום) ופרטי (ירוק) -->
+                                {#if unreadSystem > 0}
+                                    <a
+                                        href={MSG_SYSTEM_HREF}
+                                        class="absolute -bottom-1.5 -left-1.5 min-w-[17px] h-[17px] px-1
+                                               bg-gradient-to-br from-rose-500 to-red-600
+                                               border-2 border-[#0f172a] rounded-full
+                                               flex items-center justify-center text-white text-[9px]
+                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                        title={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
+                                        aria-label={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
+                                    >{systemLabel}</a>
+                                {/if}
+                                {#if unreadPrivate > 0}
+                                    <a
+                                        href={MSG_PRIVATE_HREF}
+                                        class="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1
+                                               bg-gradient-to-br from-emerald-500 to-green-600
+                                               border-2 border-[#0f172a] rounded-full
+                                               flex items-center justify-center text-white text-[9px]
+                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                        title={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
+                                        aria-label={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
+                                    >{privateLabel}</a>
+                                {/if}
+                            </div>
                         {:else}
                             <a
                                 href="/profile"
@@ -590,15 +633,18 @@
                         {@const userName = currentUser.username ?? "U"}
                         <div class="flex items-center gap-3">
                             <!-- תמונת פרופיל עם hover -->
-                            <a
-                                href="/profile"
+                            <div
                                 class="relative flex-shrink-0"
-                                aria-label={tFn("chrome.to_personal_area", { values: { name: userName } })}
+                                role="presentation"
                                 onmouseenter={() => showProfileTooltip = true}
                                 onmouseleave={() => showProfileTooltip = false}
                                 onmousemove={handleProfileMouseMove}
                             >
-                                <div class="relative h-14 w-14">
+                                <a
+                                    href="/profile"
+                                    class="block relative h-14 w-14"
+                                    aria-label={tFn("chrome.to_personal_area", { values: { name: userName } })}
+                                >
                                     {#if currentUser.avatar_url}
                                         <img
                                             src={currentUser.avatar_url}
@@ -621,18 +667,44 @@
                                                 stroke-dashoffset={headerRingC * (1 - Math.min(headerCompletion, 100) / 100)}
                                                 style="filter: drop-shadow(0 0 4px {headerRingColor}88);" />
                                     </svg>
-                                </div>
-                                <!-- עיגול הודעות שלא נקראו -->
+                                </a>
+                                <!-- ספירה כוללת - במקום ובתפקיד הקודמים, בצבע חדש -->
                                 {#if unreadMessages > 0}
                                     <span
                                         class="absolute -bottom-1 -left-1 min-w-[22px] h-[22px] px-1.5
-                                               bg-orange-500 border-2 border-[#0f172a] rounded-full
+                                               bg-gradient-to-br from-indigo-500 to-violet-600
+                                               border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[11px]
-                                               font-black leading-none shadow-lg"
+                                               font-black leading-none shadow-lg pointer-events-none"
                                         aria-label={tFn("chrome.unread_messages", { values: { n: unreadMessages } })}
                                     >{unreadLabel}</span>
                                 {/if}
-                            </a>
+                                <!-- קיצורי דרך סביב התמונה: מערכת (אדום) ופרטי (ירוק) -->
+                                {#if unreadSystem > 0}
+                                    <a
+                                        href={MSG_SYSTEM_HREF}
+                                        class="absolute -top-1 -left-1 min-w-[20px] h-[20px] px-1.5
+                                               bg-gradient-to-br from-rose-500 to-red-600
+                                               border-2 border-[#0f172a] rounded-full
+                                               flex items-center justify-center text-white text-[10px]
+                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                        title={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
+                                        aria-label={tFn("chrome.unread_system", { values: { n: unreadSystem } })}
+                                    >{systemLabel}</a>
+                                {/if}
+                                {#if unreadPrivate > 0}
+                                    <a
+                                        href={MSG_PRIVATE_HREF}
+                                        class="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1.5
+                                               bg-gradient-to-br from-emerald-500 to-green-600
+                                               border-2 border-[#0f172a] rounded-full
+                                               flex items-center justify-center text-white text-[10px]
+                                               font-black leading-none shadow-lg hover:scale-110 transition-transform"
+                                        title={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
+                                        aria-label={tFn("chrome.unread_private", { values: { n: unreadPrivate } })}
+                                    >{privateLabel}</a>
+                                {/if}
+                            </div>
                         </div>
                     {:else}
                         <a

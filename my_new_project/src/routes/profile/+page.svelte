@@ -2,6 +2,7 @@
 	import { enhance, deserialize } from "$app/forms";
 	import { isSinglesReviewHandled, type PendingSinglesRef } from "$lib/singlesReviewHandled";
 	import { locationDecisionMessage } from "$lib/locationDecisionText";
+	import { isSystemNotification } from "$lib/notificationKind";
 	import CameraCapture from "$lib/components/CameraCapture.svelte";
 	import { beforeNavigate, goto, invalidateAll } from "$app/navigation";
 	import { signOut, signIn } from "@auth/sveltekit/client";
@@ -2392,6 +2393,45 @@
 	let finalUnreadCount = $derived(
 		finalDisplayedMessages.filter((m) => !m.read).length,
 	);
+	// הפרדת ההתראות לשני ערוצים - מערכת (בקשות שמחכות לטיפול ניהולי) מול פרטיות
+	// (מה שנוגע למשתמש עצמו). אותו סיווג בדיוק שמשמש את הבאדג'ים בהדר.
+	let msgChannel = $state<"all" | "system" | "private">("all");
+	let systemUnreadCount = $derived(
+		finalDisplayedMessages.filter(
+			(m) => !m.read && isSystemNotification((m as { kind?: string }).kind),
+		).length,
+	);
+	let privateUnreadCount = $derived(finalUnreadCount - systemUnreadCount);
+	// הרשימה שמוצגת בפועל בתיבה, אחרי בחירת הערוץ בשורת הסינון
+	// קיצור הדרך מהבאדג'ים שסביב תמונת הפרופיל בהדר: /profile?tab=messages&filter=…
+	// $effect (ולא onMount) כדי שגם לחיצה על באדג' מתוך דף הפרופיל עצמו - ניווט
+	// פנימי שלא מרכיב את הדף מחדש - תחליף את הערוץ המוצג.
+	let _lastFilterParam = "";
+	$effect(() => {
+		const ch = page.url.searchParams.get("filter") ?? "";
+		if (ch === _lastFilterParam) return;
+		_lastFilterParam = ch;
+		if (ch !== "system" && ch !== "private" && ch !== "all") return;
+		msgChannel = ch;
+		showMessages = true;
+		_msgsAutoOpened = true;
+		mobileTab = "messages";
+		setTimeout(() => {
+			document
+				.getElementById("sec-messages")
+				?.scrollIntoView({ behavior: "smooth", block: "start" });
+		}, 150);
+	});
+
+	let channelMessages = $derived(
+		msgChannel === "all"
+			? finalDisplayedMessages
+			: finalDisplayedMessages.filter(
+					(m) =>
+						isSystemNotification((m as { kind?: string }).kind) ===
+						(msgChannel === "system"),
+				),
+	);
 
 	let ringColor = $derived(
 		profileCompletion >= 100
@@ -3120,7 +3160,7 @@
 				<span class="text-xl leading-none">{tab.icon}</span>
 				<span class="text-center">{tab.label}</span>
 				{#if tab.id === "messages" && finalUnreadCount > 0}
-					<span class="absolute top-1 left-1 min-w-[16px] h-[16px] px-1 rounded-full bg-orange-500 border border-[#0f172a] text-white text-[9px] font-black leading-none flex items-center justify-center">{finalUnreadCount}</span>
+					<span class="absolute top-1 left-1 min-w-[16px] h-[16px] px-1 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 border border-[#0f172a] text-white text-[9px] font-black leading-none flex items-center justify-center">{finalUnreadCount}</span>
 				{:else if tab.id === "items" && data.items.length > 0}
 					<span class="absolute top-1 left-1 min-w-[16px] h-[16px] px-1 rounded-full bg-purple-500 border border-[#0f172a] text-white text-[9px] font-black leading-none flex items-center justify-center">{data.items.length}</span>
 				{/if}
@@ -3142,7 +3182,7 @@
 				<span class="text-base leading-none">{sc.icon}</span>
 				<span>{sc.label}</span>
 				{#if sc.id === "messages" && finalUnreadCount > 0}
-					<span class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-black leading-none flex items-center justify-center">{finalUnreadCount}</span>
+					<span class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[10px] font-black leading-none flex items-center justify-center">{finalUnreadCount}</span>
 				{:else if sc.id === "items" && data.items.length > 0}
 					<span class="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-purple-500 text-white text-[10px] font-black leading-none flex items-center justify-center">{data.items.length}</span>
 				{/if}
@@ -3675,6 +3715,28 @@
 				role="presentation"
 				onclick={(e) => e.stopPropagation()}
 			>
+				<!-- הפרדה בין התראות מערכת להתראות פרטיות - אותם צבעים כמו בהדר -->
+				{#if finalDisplayedMessages.length > 0 || msgChannel !== "all"}
+					<div class="flex flex-wrap items-center gap-2">
+						{#each [{ id: "all", label: tFn("profile.msg_ch_all"), n: finalUnreadCount, on: "bg-gradient-to-br from-indigo-500 to-violet-600 border-violet-400/60 text-white" }, { id: "system", label: tFn("profile.msg_ch_system"), n: systemUnreadCount, on: "bg-gradient-to-br from-rose-500 to-red-600 border-rose-400/60 text-white" }, { id: "private", label: tFn("profile.msg_ch_private"), n: privateUnreadCount, on: "bg-gradient-to-br from-emerald-500 to-green-600 border-emerald-400/60 text-white" }] as ch}
+							<button
+								type="button"
+								onclick={() => (msgChannel = ch.id as "all" | "system" | "private")}
+								aria-pressed={msgChannel === ch.id}
+								class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-black transition-all cursor-pointer
+									{msgChannel === ch.id
+									? ch.on
+									: 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}"
+							>
+								<span>{ch.label}</span>
+								<span
+									class="min-w-[18px] h-[18px] px-1 rounded-full text-[10px] leading-none flex items-center justify-center
+										{msgChannel === ch.id ? 'bg-black/25' : 'bg-white/10'}">{ch.n}</span
+								>
+							</button>
+						{/each}
+					</div>
+				{/if}
 				{#if lrNotice}
 					<!-- משוב אישור/דחייה בתוך הדף (במקום alert של הדפדפן) -->
 					<div
@@ -3693,7 +3755,7 @@
 						</button>
 					</div>
 				{/if}
-				{#each finalDisplayedMessages as msg}
+				{#each channelMessages as msg}
 					{@const isDraft = (msg as { isDraft?: boolean }).isDraft}
 					{@const msgLr = (msg as LrMsg).lr ? (msg as LrMsg) : null}
 					{@const msgAd = (msg as AdMsg).adSubId ? (msg as AdMsg) : null}
@@ -4175,7 +4237,7 @@
 				{/each}
 
 				<!-- מצב ריק: אין הודעות פעילות → 0 שלא נקראו + קישור להיסטוריה -->
-				{#if finalDisplayedMessages.length === 0}
+				{#if channelMessages.length === 0}
 					<div class="flex flex-col items-center text-center py-6 gap-3">
 						<div class="text-4xl">📭</div>
 						<p class="font-bold text-gray-300">{tFn("profile.unread_count", { n: 0 })}</p>

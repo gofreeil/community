@@ -11,6 +11,8 @@ export const he = {
         personal_area: "האזור האישי",
         to_personal_area: "לאזור האישי – {name}",
         unread_messages: "{n} הודעות חדשות",
+        unread_system: "{n} התראות מערכת – ממתינות לטיפול",
+        unread_private: "{n} התראות פרטיות – הודעות אליי",
         online_now: "{n} משתמשים מחוברים כעת",
         my_profile_tooltip: "👤 לפרופיל שלי",
 
@@ -46,6 +48,8 @@ export const en = {
         personal_area: "Personal area",
         to_personal_area: "Go to your personal area – {name}",
         unread_messages: "{n} new messages",
+        unread_system: "{n} system alerts awaiting action",
+        unread_private: "{n} personal notifications for you",
         online_now: "{n} users online right now",
         my_profile_tooltip: "👤 My profile",
 
@@ -81,6 +85,8 @@ export const ru = {
         personal_area: "Личный кабинет",
         to_personal_area: "В личный кабинет – {name}",
         unread_messages: "Новых сообщений: {n}",
+        unread_system: "Системных уведомлений: {n} — ждут обработки",
+        unread_private: "Личных уведомлений: {n}",
         online_now: "Пользователей онлайн: {n}",
         my_profile_tooltip: "👤 Мой профиль",
 

@@ -52,7 +52,13 @@ export const GET: RequestHandler = async ({ locals }) => {
             return true;
         });
 
-        return json(visible.map(m => ({ id: m.id, label: m.label, created_at: m.created_at })));
+        // type נחשף כדי שהבאדג' בהדר יוכל להפריד בין התראות מערכת (ניהול) להתראות
+        // פרטיות - בלי לשלוף שוב את כל ההודעות בצד הלקוח
+        return json(visible.map(m => {
+            let type = '';
+            try { type = String(JSON.parse(m.extra_fields || '{}')?.type ?? ''); } catch { /* הודעה ישנה */ }
+            return { id: m.id, label: m.label, created_at: m.created_at, type };
+        }));
     } catch (e) {
         console.warn('[my-messages] fetch failed:', e);
         return json([]);
