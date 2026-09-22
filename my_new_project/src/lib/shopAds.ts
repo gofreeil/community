@@ -4,10 +4,12 @@
 // ארבעת המוצרים האחרונים שאושרו בחנות (shop.gofreeil.com) עולים
 // אוטומטית כפרסומות בטור הימני של *כל* אתרי הרשת, במקומות 3, 7, 11, 15.
 //
-// למה דווקא המספרים האלה: הטור מציג 16 מקומות בקבוצות של 4
-// (1-4, 5-8, 9-12, 13-16) שמתחלפות בסבב. 3, 7, 11 ו-15 הם המקום
-// השלישי בכל אחת מארבע הקבוצות - כלומר *אותה קומה* בטור, בכל סיבוב
-// של הסבב. מוצר אחד נראה בכל רגע נתון, תמיד באותו גובה.
+// למה דווקא המספרים האלה: הטור מציג 16 מקומות, ארבעה בכל פעם
+// (1-4, 5-8, 9-12, 13-16), ומחליף אותם כל 7 שניות. 3, 7, 11, 15 הם
+// *סדרה* אחת - השלישי בכל רביעייה. כלומר בכל רגע נתון מוצג בדיוק
+// כרטיס אחד מהסדרה, תמיד באותו מקום בטור.
+//
+// יש ארבע סדרות: 1,5,9,13 | 2,6,10,14 | 3,7,11,15 | 4,8,12,16.
 //
 // מקום תפוס (מפרסם ששילם עליו) לא נדחק: המוצר עובר למקום הפנוי הבא.
 //
@@ -19,7 +21,7 @@ import { AD_SLOT_COUNT } from './adSlots.js';
 
 export const SHOP_URL = 'https://shop.gofreeil.com';
 
-/** ברירות המחדל: 4 מוצרים, מקום ראשון 3, קפיצה של 4 (קומה זהה) */
+/** ברירות המחדל: 4 מוצרים בסדרה השלישית (3, 7, 11, 15) */
 export const SHOP_ADS_DEFAULTS = {
     enabled: false,
     count: 4,
@@ -34,7 +36,7 @@ export interface ShopAdsConfig {
     count: number;
     /** המקום הראשון בטור (1-based) */
     firstSlot: number;
-    /** הקפיצה בין מוצר למוצר. 4 = אותה קומה בכל קבוצה */
+    /** הקפיצה בין מוצר למוצר. 4 = סדרה אחת (זו ברירת המחדל) */
     step: number;
     /** מזהי האתרים שאליהם מסנכרנים (ריק = כולם) */
     sites: string[];
@@ -114,21 +116,33 @@ export function preferredSlots(cfg: Pick<ShopAdsConfig, 'count' | 'firstSlot' | 
     return out;
 }
 
-/** הקבוצה (הקומה) שבה המקום מוצג - 1..4 בלוח של 16 בקבוצות של 4 */
-export function slotGroup(slot: number, perGroup = 4): number {
-    return Math.floor((slot - 1) / perGroup) + 1;
+/** כמה מקומות מוצגים יחד בטור לפני שהוא מחליף */
+export const SLOTS_PER_VIEW = 4;
+/** כמה סדרות יש בלוח (16 מקומות, ארבעה בכל תצוגה) */
+export const SERIES_COUNT = SLOTS_PER_VIEW;
+/** כמה מקומות יש בכל סדרה */
+export const SLOTS_PER_SERIES = AD_SLOT_COUNT / SLOTS_PER_VIEW;
+
+/** הסדרה שאליה שייך המקום - 1..4 (3 ו-7 ו-11 ו-15 הם סדרה 3) */
+export function seriesOf(slot: number): number {
+    return ((slot - 1) % SLOTS_PER_VIEW) + 1;
 }
 
-/** המיקום בתוך הקבוצה - 1..4. שווה בכל המקומות = אותה קומה */
-export function slotRow(slot: number, perGroup = 4): number {
-    return ((slot - 1) % perGroup) + 1;
+/** באיזו תצוגה מתוך ארבע המקום נראה - 1..4 (7 נראה בתצוגה השנייה) */
+export function viewOf(slot: number): number {
+    return Math.floor((slot - 1) / SLOTS_PER_VIEW) + 1;
 }
 
-/** האם כל המקומות נופלים על אותה קומה (אותו מיקום בתוך הקבוצה) */
-export function sameFloor(slots: number[], perGroup = 4): boolean {
+/** כל המקומות של סדרה: 3 -> [3, 7, 11, 15] */
+export function seriesSlots(series: number): number[] {
+    return Array.from({ length: SLOTS_PER_SERIES }, (_, i) => series + i * SLOTS_PER_VIEW);
+}
+
+/** האם כל המקומות שייכים לסדרה אחת */
+export function sameSeries(slots: number[]): boolean {
     if (slots.length < 2) return true;
-    const first = slotRow(slots[0], perGroup);
-    return slots.every(s => slotRow(s, perGroup) === first);
+    const first = seriesOf(slots[0]);
+    return slots.every(s => seriesOf(s) === first);
 }
 
 export function normalizeShopAdsConfig(raw: unknown): ShopAdsConfig {

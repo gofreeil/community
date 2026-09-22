@@ -11,7 +11,7 @@ import {
     syncShopAdsIfStale,
     type SiteSyncResult,
 } from '$lib/server/shopAdsStore';
-import { SHOP_AD_SITES, preferredSlots, sameFloor } from '$lib/shopAds';
+import { SHOP_AD_SITES, preferredSlots, sameSeries, seriesOf } from '$lib/shopAds';
 
 /** ניהול פרסומות החנות שמור לסופר-אדמין: הוא כותב לכל אתרי הרשת */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +41,7 @@ export const load: PageServerLoad = async (event) => {
     return {
         config,
         wanted: preferredSlots(config),
-        sameFloor: sameFloor(preferredSlots(config)),
+        sameSeries: sameSeries(preferredSlots(config)),
         sites: SHOP_AD_SITES,
         products:  productsRes.status  === 'fulfilled' ? productsRes.value  : [],
         placement: placementRes.status === 'fulfilled' ? placementRes.value : [],
@@ -86,9 +86,9 @@ export const actions: Actions = {
         const slots = preferredSlots(cfg);
         return {
             success: true,
-            message: sameFloor(slots)
-                ? `ההגדרות נשמרו. המקומות: ${slots.join(', ')} - כולם באותה קומה בטור.`
-                : `ההגדרות נשמרו. המקומות: ${slots.join(', ')} - שים לב: הם *לא* באותה קומה (קפיצה של 4 שומרת על קומה אחת).`,
+            message: sameSeries(slots)
+                ? `ההגדרות נשמרו. סדרה ${seriesOf(cfg.firstSlot)}: מקומות ${slots.join(', ')}.`
+                : `ההגדרות נשמרו. המקומות: ${slots.join(', ')} - שים לב, הם אינם סדרה אחת.`,
         };
     },
 

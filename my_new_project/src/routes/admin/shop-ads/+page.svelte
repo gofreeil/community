@@ -2,46 +2,34 @@
     import type { PageData, ActionData } from './$types';
     import { enhance } from '$app/forms';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
-    import { SHOP_URL, slotGroup, slotRow } from '$lib/shopAds';
+    import {
+        SHOP_URL, SERIES_COUNT, SLOTS_PER_VIEW, SLOTS_PER_SERIES,
+        seriesOf, seriesSlots,
+    } from '$lib/shopAds';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
-    const SLOT_NUMBERS = Array.from({ length: AD_SLOT_COUNT }, (_, i) => i + 1);
-    // הטור מציג ארבעה כרטיסים בכל רגע ומחליף אותם כל 7 שניות. לכן 16
-    // המקומות הם ארבעה "מסכים" של ארבעה, והשאלה היחידה שמעניינת את המנהל
-    // היא באיזה גובה המוצר יישב בכל מסך.
-    const PER_SCREEN = 4;
-    const SCREENS = AD_SLOT_COUNT / PER_SCREEN;
-    const POS_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי'];
-    /** תיאור מלא של מקום: "מסך 1 מתוך 4 · שלישי מלמעלה" */
-    function slotLabel(n: number): string {
-        return `מסך ${slotGroup(n)} מתוך ${SCREENS} · ${POS_NAMES[slotRow(n) - 1]} מלמעלה`;
-    }
+    /** ארבע הסדרות של הטור: 1,5,9,13 | 2,6,10,14 | 3,7,11,15 | 4,8,12,16 */
+    const SERIES = Array.from({ length: SERIES_COUNT }, (_, i) => i + 1);
 
     // הטופס נטען מההגדרות השמורות, ונטען מחדש אחרי כל פעולה שמחזירה
     // הגדרות מעודכנות (שמירה/סנכרון) - אחרת המסך היה מציג ערכים ישנים.
-    let enabled   = $state(false);
-    let count     = $state(4);
-    let firstSlot = $state(3);
-    let step      = $state(4);
-    let sites     = $state<string[]>([]);
-    let busy      = $state(false);
+    let enabled = $state(false);
+    let count   = $state(4);
+    let series  = $state(3);
+    let sites   = $state<string[]>([]);
+    let busy    = $state(false);
     $effect(() => {
         const c = data.config;
         enabled = c.enabled;
         count = c.count;
-        firstSlot = c.firstSlot;
-        step = c.step;
+        // ההגדרה נשמרת כ"מקום ראשון + קפיצה"; במסך זו פשוט הסדרה
+        series = seriesOf(c.firstSlot);
         sites = [...c.sites];
     });
 
-    /** המקומות לפי מה שמוקלד עכשיו במסך (לפני שמירה) */
-    let previewSlots = $derived(
-        Array.from({ length: count }, (_, i) => firstSlot + i * step).filter(n => n <= AD_SLOT_COUNT),
-    );
-    let previewSameFloor = $derived(
-        previewSlots.length < 2 || previewSlots.every(n => slotRow(n) === slotRow(previewSlots[0])),
-    );
+    /** המקומות לפי מה שנבחר עכשיו במסך (לפני שמירה) */
+    let previewSlots = $derived(seriesSlots(series).slice(0, count));
 
     function toggleSite(id: string, on: boolean) {
         sites = on ? [...new Set([...sites, id])] : sites.filter(s => s !== id);
@@ -69,7 +57,7 @@
             <h1 class="text-2xl md:text-3xl font-black text-white mb-1">🛒 מוצרים חדשים כפרסומת ברשת</h1>
             <p class="text-xs md:text-sm text-gray-400">
                 המוצרים האחרונים שאושרו בחנות החירות עולים אוטומטית לטור הפרסומות בכל אתרי הרשת,
-                במקומות {data.wanted.join(', ')}. מקום שכבר נמכר למפרסם - המוצר עובר למקום הפנוי הבא.
+                בסדרה {data.wanted.join(', ')}. מקום שכבר נמכר למפרסם - המוצר עובר למקום הפנוי הבא.
             </p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
@@ -117,62 +105,69 @@
         </label>
         <input type="hidden" name="enabled" value={enabled ? '1' : '0'} />
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <label class="block">
-                <span class="block text-xs font-bold text-gray-400 mb-1">כמה מוצרים</span>
-                <input type="number" name="count" bind:value={count} min="1" max={AD_SLOT_COUNT}
-                       class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm" />
-            </label>
-            <label class="block">
-                <span class="block text-xs font-bold text-gray-400 mb-1">איפה יישב המוצר הראשון</span>
-                <select name="firstSlot" bind:value={firstSlot}
-                        class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm">
-                    {#each SLOT_NUMBERS as n}
-                        <option value={n}>מקום {n} · {slotLabel(n)}</option>
-                    {/each}
-                </select>
-            </label>
-            <label class="block">
-                <span class="block text-xs font-bold text-gray-400 mb-1">קפיצה בין מוצר למוצר</span>
-                <input type="number" name="step" bind:value={step} min="1" max={AD_SLOT_COUNT}
-                       class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm" />
-                <span class="block text-[11px] text-gray-500 mt-1">4 = אותו גובה בכל מסך</span>
-            </label>
-        </div>
+        <!-- בחירת הסדרה. ההגדרה נשמרת כ"מקום ראשון + קפיצה", אבל מי שמנהל
+             חושב בסדרות (3, 7, 11, 15) ולא בשני מספרים שצריך לכפול בראש. -->
+        <fieldset class="mb-4">
+            <legend class="text-xs font-bold text-gray-400 mb-2">באיזו סדרה יישבו המוצרים</legend>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                {#each SERIES as s}
+                    <label class="cursor-pointer rounded-xl border px-3 py-2.5 transition-colors
+                                  {series === s
+                                     ? 'border-emerald-400/60 bg-emerald-500/15'
+                                     : 'border-white/10 bg-black/20 hover:bg-white/5'}">
+                        <span class="flex items-center gap-2">
+                            <input type="radio" name="series" value={s} bind:group={series} class="accent-emerald-500" />
+                            <span class="text-sm font-bold {series === s ? 'text-emerald-100' : 'text-gray-300'}">
+                                סדרה {s}
+                            </span>
+                        </span>
+                        <span class="block text-[11px] mt-1 {series === s ? 'text-emerald-300' : 'text-gray-500'}">
+                            {seriesSlots(s).join(', ')}
+                        </span>
+                    </label>
+                {/each}
+            </div>
+        </fieldset>
+        <!-- מה שנשמר בפועל: המקום הראשון של הסדרה, וקפיצה קבועה של 4 -->
+        <input type="hidden" name="firstSlot" value={series} />
+        <input type="hidden" name="step" value={SLOTS_PER_VIEW} />
 
-        <!-- תרשים הלוח: ארבעה מסכים של ארבעה כרטיסים, כמו שהטור מציג אותם
-             בסבב. המקומות שנבחרו מסומנים - ככה רואים בעין אחת שהם באותו גובה
-             ולא צריך להבין מה זה "מקום 7". -->
-        <div class="rounded-xl border px-3 py-3 mb-4
-                    {previewSameFloor ? 'border-emerald-500/30 bg-emerald-500/5'
-                                      : 'border-amber-500/40 bg-amber-500/10'}">
+        <label class="block mb-4 max-w-xs">
+            <span class="block text-xs font-bold text-gray-400 mb-1">כמה מוצרים מהסדרה</span>
+            <select name="count" bind:value={count}
+                    class="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-white text-sm">
+                {#each Array.from({ length: SLOTS_PER_SERIES }, (_, i) => i + 1) as n}
+                    <option value={n}>{n} {n === SLOTS_PER_SERIES ? '(כל הסדרה)' : ''}</option>
+                {/each}
+            </select>
+        </label>
+
+        <!-- הלוח כפי שהוא: ארבע סדרות, ארבעה מקומות בכל אחת. הסדרה שנבחרה
+             מסומנת - ככה רואים בעין אחת מה ייתפס. -->
+        <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-3 mb-4">
             <p class="text-xs text-gray-400 mb-2">
-                כך נראה הטור: ארבעה כרטיסים בכל רגע, והם מתחלפים כל 7 שניות.
+                בטור {AD_SLOT_COUNT} מקומות. הוא מציג {SLOTS_PER_VIEW} בכל רגע ומחליף כל 7 שניות,
+                כך שמכל סדרה נראה תמיד בדיוק מקום אחד - באותו גובה.
             </p>
-            <div class="flex gap-3 overflow-x-auto pb-1">
-                {#each Array.from({ length: SCREENS }, (_, g) => g) as g}
-                    <div class="shrink-0">
-                        <div class="text-[10px] text-gray-500 text-center mb-1">מסך {g + 1}</div>
-                        <div class="flex flex-col gap-1">
-                            {#each Array.from({ length: PER_SCREEN }, (_, r) => g * PER_SCREEN + r + 1) as n}
-                                <div class="w-16 h-7 rounded-md flex items-center justify-center text-[11px] font-black border
-                                            {previewSlots.includes(n)
-                                                ? 'bg-emerald-500/30 border-emerald-400/60 text-emerald-100'
-                                                : 'bg-white/5 border-white/10 text-gray-500'}">
-                                    {previewSlots.includes(n) ? `🛒 ${n}` : n}
-                                </div>
-                            {/each}
-                        </div>
+            <div class="space-y-1">
+                {#each SERIES as s}
+                    <div class="flex items-center gap-2">
+                        <span class="w-16 shrink-0 text-[11px] {s === series ? 'text-emerald-300 font-black' : 'text-gray-500'}">
+                            סדרה {s}
+                        </span>
+                        {#each seriesSlots(s) as n, i}
+                            <div class="w-14 h-7 rounded-md flex items-center justify-center text-[11px] font-black border
+                                        {s === series && i < count
+                                            ? 'bg-emerald-500/30 border-emerald-400/60 text-emerald-100'
+                                            : 'bg-white/5 border-white/10 text-gray-500'}">
+                                {s === series && i < count ? `🛒 ${n}` : n}
+                            </div>
+                        {/each}
                     </div>
                 {/each}
             </div>
-            <p class="text-sm mt-2 {previewSameFloor ? 'text-emerald-200' : 'text-amber-200'}">
-                המוצרים יישבו במקומות <strong>{previewSlots.join(', ') || '-'}</strong>
-                {#if previewSameFloor}
-                    — {POS_NAMES[slotRow(previewSlots[0] ?? 1) - 1]} מלמעלה בכל מסך, כלומר תמיד באותו גובה.
-                {:else}
-                    — בגבהים שונים בכל מסך. קפיצה של 4 שומרת על גובה אחיד.
-                {/if}
+            <p class="text-sm mt-2 text-emerald-200">
+                המוצרים יתפסו את המקומות <strong>{previewSlots.join(', ') || '-'}</strong>.
             </p>
         </div>
 
