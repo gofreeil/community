@@ -5,6 +5,7 @@
     import {
         SHOP_URL, SERIES_COUNT, SLOTS_PER_VIEW, SLOTS_PER_SERIES,
         seriesOf, seriesSlots,
+        GRADIENT_COUNT, shopAdGradient, SHOP_AD_ZOOM_MIN, SHOP_AD_ZOOM_MAX,
     } from '$lib/shopAds';
     import ShopAdPreviewCard from '$lib/components/ShopAdPreviewCard.svelte';
 
@@ -31,6 +32,45 @@
 
     /** המקומות לפי מה שנבחר עכשיו במסך (לפני שמירה) */
     let previewSlots = $derived(seriesSlots(series).slice(0, count));
+
+    // ----- עריכה ידנית של כרטיס -----
+    // הטופס נפתח על הערכים שמוצגים כרגע בכרטיס, והתצוגה המקדימה מתעדכנת
+    // תוך כדי הקלדה - עוד לפני השמירה, וודאי לפני שזה עולה לאתרים.
+    const GRADIENTS = Array.from({ length: GRADIENT_COUNT }, (_, i) => i);
+    let editing = $state<string | null>(null);
+    let edit = $state({ title: '', subtitle: '', cta: '', hoverText: '', gradientIndex: 0, fitY: 45, fitZ: 0.6 });
+
+    /** מאיזה צבע בפלטה הכרטיס צבוע - כדי שהבורר ייפתח על הצבע הנוכחי */
+    function gradientIndexOf(gradient: string, fallback: number): number {
+        const i = GRADIENTS.findIndex(n => shopAdGradient(n, 'tailwind') === gradient);
+        return i >= 0 ? i : fallback % GRADIENT_COUNT;
+    }
+
+    function openEdit(d: (typeof data.drafts)[number], index: number) {
+        editing = d.product;
+        edit = {
+            title: d.title,
+            subtitle: d.subtitle,
+            cta: d.cta,
+            hoverText: d.hoverText,
+            gradientIndex: gradientIndexOf(d.gradient, index),
+            fitY: d.fit.y,
+            fitZ: d.fit.z,
+        };
+    }
+
+    /** הכרטיס כפי שהוא ברגע זה: בעריכה - מה שבטופס, אחרת - מה שנשמר */
+    function shown(d: (typeof data.drafts)[number]) {
+        if (editing !== d.product) return d;
+        return {
+            ...d,
+            title: edit.title,
+            subtitle: edit.subtitle,
+            cta: edit.cta,
+            gradient: shopAdGradient(edit.gradientIndex, 'tailwind'),
+            fit: { x: 50, y: edit.fitY, z: edit.fitZ },
+        };
+    }
 
     function toggleSite(id: string, on: boolean) {
         sites = on ? [...new Set([...sites, id])] : sites.filter(s => s !== id);
@@ -237,31 +277,128 @@
                 אין מוצרים מתאימים. מוצר נכנס לפרסום אם הוא מאושר בחנות, יש לו תמונה, יש מלאי, והתצוגה שלו "מופיע".
             </p>
         {:else}
-            <div class="flex flex-wrap gap-4">
-                {#each data.drafts as d (d.product)}
+            <div class="flex flex-wrap gap-4 items-start">
+                {#each data.drafts as d, i (d.product)}
+                    {@const v = shown(d)}
                     <figure class="m-0">
                         <div class="flex items-center gap-2 mb-1.5">
                             <span class="text-[11px] font-black text-white bg-white/10 rounded-full px-2 py-0.5">
                                 מקום {d.slot || '-'}
                             </span>
-                            <span class="text-[11px] text-gray-500 truncate max-w-[6rem]">{d.store}</span>
+                            {#if d.edited}
+                                <span class="text-[11px] font-bold text-amber-300" title="הכרטיס נערך ידנית">✎ נערך</span>
+                            {:else}
+                                <span class="text-[11px] text-gray-500 truncate max-w-[5rem]">{d.store}</span>
+                            {/if}
                         </div>
                         <ShopAdPreviewCard
-                            title={d.title}
-                            subtitle={d.subtitle}
-                            cta={d.cta}
-                            gradient={d.gradient}
-                            mainImage={d.mainImage}
-                            fit={d.fit}
+                            title={v.title}
+                            subtitle={v.subtitle}
+                            cta={v.cta}
+                            gradient={v.gradient}
+                            mainImage={v.mainImage}
+                            fit={v.fit}
                         />
                         <figcaption class="w-36 mt-1.5 text-[11px] text-gray-500 leading-snug">
-                            בריחוף: {d.hoverText}
+                            <button type="button" onclick={() => (editing === d.product ? (editing = null) : openEdit(d, i))}
+                                    class="w-full px-2 py-1 rounded-md bg-white/5 border border-white/15 text-gray-200 font-bold hover:bg-white/10">
+                                {editing === d.product ? 'סגור' : '✎ ערוך'}
+                            </button>
                             <a href={d.href} target="_blank" rel="noopener noreferrer"
-                               class="block text-blue-300 hover:text-blue-200 mt-0.5">לדף המוצר ↗</a>
+                               class="block text-blue-300 hover:text-blue-200 mt-1">לדף המוצר ↗</a>
                         </figcaption>
                     </figure>
+
+                    {#if editing === d.product}
+                        <!-- לוח העריכה נפתח ליד הכרטיס, והכרטיס מתעדכן תוך כדי
+                             הקלדה. השמירה נשמרת בהגדרות בלבד - היא עולה לאתרים
+                             רק בסנכרון הבא. -->
+                        <form method="POST" action="?/saveDraft"
+                              use:enhance={() => { busy = true; return async ({ update }) => { await update(); busy = false; editing = null; }; }}
+                              class="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-3 w-full sm:w-80">
+                            <input type="hidden" name="product" value={d.product} />
+                            <h3 class="text-sm font-black text-amber-200 mb-2">עריכת הכרטיס</h3>
+
+                            <label class="block mb-2">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">כותרת (עד 42 תווים)</span>
+                                <input name="title" bind:value={edit.title} maxlength="42"
+                                       class="w-full rounded-lg bg-black/30 border border-white/10 px-2.5 py-1.5 text-white text-sm" />
+                            </label>
+                            <label class="block mb-2">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">תת-כותרת (עד 60)</span>
+                                <input name="subtitle" bind:value={edit.subtitle} maxlength="60"
+                                       class="w-full rounded-lg bg-black/30 border border-white/10 px-2.5 py-1.5 text-white text-sm" />
+                            </label>
+                            <label class="block mb-2">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">רצועה תחתונה (עד 48)</span>
+                                <input name="cta" bind:value={edit.cta} maxlength="48"
+                                       class="w-full rounded-lg bg-black/30 border border-white/10 px-2.5 py-1.5 text-white text-sm" />
+                            </label>
+                            <label class="block mb-2">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">טקסט בריחוף (עד 160)</span>
+                                <textarea name="hoverText" bind:value={edit.hoverText} maxlength="160" rows="2"
+                                          class="w-full rounded-lg bg-black/30 border border-white/10 px-2.5 py-1.5 text-white text-sm"></textarea>
+                            </label>
+
+                            <span class="block text-[11px] font-bold text-gray-400 mb-1">צבע</span>
+                            <div class="flex flex-wrap gap-1.5 mb-3">
+                                {#each GRADIENTS as g}
+                                    <button type="button" onclick={() => (edit.gradientIndex = g)}
+                                            class="w-8 h-8 rounded-lg bg-gradient-to-br {shopAdGradient(g, 'tailwind')} border-2
+                                                   {edit.gradientIndex === g ? 'border-white' : 'border-transparent'}"
+                                            aria-label="צבע {g + 1}"></button>
+                                {/each}
+                            </div>
+                            <input type="hidden" name="gradientIndex" value={edit.gradientIndex} />
+
+                            <label class="block mb-2">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">
+                                    זום התמונה ({edit.fitZ.toFixed(2)})
+                                </span>
+                                <input type="range" name="fitZ" bind:value={edit.fitZ}
+                                       min={SHOP_AD_ZOOM_MIN} max={SHOP_AD_ZOOM_MAX} step="0.05"
+                                       class="w-full accent-amber-500" />
+                            </label>
+                            <label class="block mb-3">
+                                <span class="block text-[11px] font-bold text-gray-400 mb-1">
+                                    מיקום אנכי ({edit.fitY}%)
+                                </span>
+                                <input type="range" name="fitY" bind:value={edit.fitY} min="0" max="100" step="1"
+                                       class="w-full accent-amber-500" />
+                            </label>
+
+                            <div class="flex flex-wrap gap-2">
+                                <button type="submit" disabled={busy}
+                                        class="px-3 py-1.5 rounded-lg bg-amber-500/25 border border-amber-500/50 text-amber-100 text-xs font-bold hover:bg-amber-500/35 disabled:opacity-50">
+                                    💾 שמור עריכה
+                                </button>
+                                <button type="button" onclick={() => (editing = null)}
+                                        class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/15 text-gray-300 text-xs font-bold hover:bg-white/10">
+                                    ביטול
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-2">
+                                העריכה נשמרת כאן; היא עולה לאתרים בסנכרון הבא.
+                            </p>
+                        </form>
+                    {/if}
                 {/each}
             </div>
+            {#if data.drafts.some(d => d.edited)}
+                <form method="POST" action="?/resetDraft" class="mt-3 flex flex-wrap items-center gap-2"
+                      use:enhance={() => { busy = true; return async ({ update }) => { await update(); busy = false; }; }}>
+                    <span class="text-xs text-gray-500">להחזיר כרטיס לברירת המחדל מהמוצר:</span>
+                    <select name="product" class="rounded-lg bg-black/30 border border-white/10 px-2 py-1 text-white text-xs">
+                        {#each data.drafts.filter(d => d.edited) as d (d.product)}
+                            <option value={d.product}>{d.title}</option>
+                        {/each}
+                    </select>
+                    <button type="submit" disabled={busy}
+                            class="px-3 py-1 rounded-lg bg-white/5 border border-white/15 text-gray-300 text-xs font-bold hover:bg-white/10 disabled:opacity-50">
+                        ↺ אפס
+                    </button>
+                </form>
+            {/if}
         {/if}
     </section>
 

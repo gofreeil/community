@@ -10,9 +10,10 @@ import {
     removeShopAds,
     syncShopAdsIfStale,
     buildShopAdDrafts,
+    saveShopAdOverride,
     type SiteSyncResult,
 } from '$lib/server/shopAdsStore';
-import { SHOP_AD_SITES, preferredSlots, sameSeries, seriesOf } from '$lib/shopAds';
+import { SHOP_AD_SITES, preferredSlots, sameSeries, seriesOf, normalizeOverride } from '$lib/shopAds';
 
 /** ניהול פרסומות החנות שמור לסופר-אדמין: הוא כותב לכל אתרי הרשת */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,7 +46,7 @@ export const load: PageServerLoad = async (event) => {
         config,
         wanted,
         // הטיוטה: הכרטיסים כפי שייכתבו, לתצוגה מקדימה לפני הסנכרון
-        drafts: buildShopAdDrafts(products, wanted),
+        drafts: buildShopAdDrafts(products, wanted, config.overrides),
         sameSeries: sameSeries(preferredSlots(config)),
         sites: SHOP_AD_SITES,
         products,
@@ -114,6 +115,46 @@ export const actions: Actions = {
         return s.success ? { success: true, message: s.message } : fail(502, { error: s.message });
     },
 
+    /** עריכה ידנית של כרטיס מוצר - נשמרת לפי מזהה המוצר */
+    saveDraft: async (event) => {
+        await ensureSuperAdmin(event);
+        const fd = await event.request.formData();
+        const productId = String(fd.get('product') ?? '').trim();
+        if (!productId) return fail(400, { error: 'חסר מזהה מוצר' });
+        const num = (key: string) => {
+            const raw = fd.get(key);
+            const n = Number(raw);
+            return raw !== null && raw !== '' && Number.isFinite(n) ? n : undefined;
+        };
+        const patch = normalizeOverride({
+            title:         fd.get('title'),
+            subtitle:      fd.get('subtitle'),
+            cta:           fd.get('cta'),
+            hoverText:     fd.get('hoverText'),
+            gradientIndex: num('gradientIndex'),
+            fit:           { x: 50, y: num('fitY') ?? 45, z: num('fitZ') ?? 0.6 },
+        });
+        try {
+            await saveShopAdOverride(productId, patch);
+        } catch (e) {
+            return fail(502, { error: `שמירת העריכה נכשלה: ${e instanceof Error ? e.message : e}` });
+        }
+        return { success: true, message: 'העריכה נשמרה. כדי שתעלה לאתרים - לחץ "סנכרן עכשיו".' };
+    },
+
+    /** ביטול העריכה - הכרטיס חוזר להיגזר מהמוצר */
+    resetDraft: async (event) => {
+        await ensureSuperAdmin(event);
+        const fd = await event.request.formData();
+        const productId = String(fd.get('product') ?? '').trim();
+        if (!productId) return fail(400, { error: 'חסר מזהה מוצר' });
+        try {
+            await saveShopAdOverride(productId, null);
+        } catch (e) {
+            return fail(502, { error: `הביטול נכשל: ${e instanceof Error ? e.message : e}` });
+        }
+        return { success: true, message: 'העריכה בוטלה - הכרטיס חזר לברירת המחדל מהמוצר.' };
+    },
     /** הורדת כל פרסומות המוצרים מהרשת */
     removeAll: async (event) => {
         await ensureSuperAdmin(event);

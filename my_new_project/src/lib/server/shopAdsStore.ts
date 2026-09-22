@@ -27,8 +27,10 @@ import {
     normalizeShopAdsConfig,
     preferredSlots,
     shopAdGradient,
+    hasOverride,
     type ShopAdSite,
     type ShopAdsConfig,
+    type ShopAdOverride,
 } from '../shopAds.js';
 
 const ADS_ENDPOINT   = '/api/submitted-ads';
@@ -171,18 +173,26 @@ interface AdContent {
     mainImage: string;
     landing: Record<string, unknown>;
     companyName: string;
+    /** מיקום וזום התמונה - ברירת המחדל, או מה שנערך ידנית */
+    fit: { x: number; y: number; z: number };
 }
 
-function adContent(p: ShopProduct, index: number, site: ShopAdSite): AdContent {
+/**
+ * תוכן הכרטיס של מוצר. מה שנערך ידנית במסך הניהול (ov) גובר; כל השאר
+ * נגזר מהמוצר, וממשיך להתעדכן לבד כשהמחיר או התיאור בחנות משתנים.
+ */
+function adContent(p: ShopProduct, index: number, site: ShopAdSite, ov?: ShopAdOverride): AdContent {
     const price = p.oldPrice && p.oldPrice > p.price
         ? `${shekel(p.price)} במקום ${shekel(p.oldPrice)}`
         : shekel(p.price);
+    const colorIndex = typeof ov?.gradientIndex === 'number' ? ov.gradientIndex : index;
     return {
-        title:     trim(p.name, 42),
-        subtitle:  p.store ? trim(`${price} · ${p.store}`, 60) : price,
-        hoverText: trim(p.desc || `${p.name} - בחנות החירות`, 160),
-        cta:       trim(`${price} · לצפייה בחנות`, 48),
-        gradient:  shopAdGradient(index, site.gradient),
+        title:     trim(ov?.title    ?? p.name, 42),
+        subtitle:  ov?.subtitle  ? trim(ov.subtitle, 60) : (p.store ? trim(`${price} · ${p.store}`, 60) : price),
+        hoverText: trim(ov?.hoverText ?? (p.desc || `${p.name} - בחנות החירות`), 160),
+        cta:       trim(ov?.cta ?? `${price} · לצפייה בחנות`, 48),
+        gradient:  shopAdGradient(colorIndex, site.gradient),
+        fit:       ov?.fit ? { ...ov.fit } : { ...SHOP_AD_FIT },
         mainImage: p.image,
         companyName: p.store || 'חנות החירות',
         landing: {
@@ -226,6 +236,8 @@ export interface ShopAdDraft {
     fit: { x: number; y: number; z: number };
     /** היעד של הכרטיס - דף המוצר בחנות */
     href: string;
+    /** האם הכרטיס נערך ידנית */
+    edited: boolean;
 }
 
 /**
@@ -233,10 +245,15 @@ export interface ShopAdDraft {
  * ולכן הטיוטה במסך הניהול היא הדבר עצמו ולא שחזור שלו.
  * הגרדיאנט נלקח בצורת Tailwind, כי כך התצוגה המקדימה מרנדרת.
  */
-export function buildShopAdDrafts(products: ShopProduct[], wanted: number[]): ShopAdDraft[] {
+export function buildShopAdDrafts(
+    products: ShopProduct[],
+    wanted: number[],
+    overrides: Record<string, ShopAdOverride> = {},
+): ShopAdDraft[] {
     const site = SHOP_AD_SITES.find(s => s.id === 'community') ?? SHOP_AD_SITES[0];
     return products.map((p, i) => {
-        const c = adContent(p, i, site);
+        const ov = overrides[p.documentId];
+        const c = adContent(p, i, site, ov);
         return {
             product:     p.documentId,
             slot:        wanted[i] ?? 0,
@@ -249,8 +266,9 @@ export function buildShopAdDrafts(products: ShopProduct[], wanted: number[]): Sh
             hoverText:   c.hoverText,
             gradient:    c.gradient,
             mainImage:   c.mainImage,
-            fit:         { ...SHOP_AD_FIT },
+            fit:         { ...c.fit },
             href:        productUrl(p),
+            edited:      hasOverride(ov),
         };
     });
 }
@@ -485,7 +503,7 @@ function submittedColumns(c: AdContent, landing: Record<string, unknown>, now: s
 
 /** המפתחות הפנימיים ב-landing, בשמות שהאתר היעד קורא */
 function internalLanding(site: ShopAdSite, c: AdContent, order: number, product: string, now: string) {
-    const fit = { ...SHOP_AD_FIT };
+    const fit = { ...c.fit };
     const base: Record<string, unknown> = {
         ...c.landing,
         _order:                 order,
@@ -535,6 +553,7 @@ async function syncSite(
     wanted: number[],
     decidedBy: string,
     allAdRows: Row[],
+    overrides: Record<string, ShopAdOverride> = {},
 ): Promise<SiteSyncResult> {
     const base: SiteSyncResult = { site: site.id, label: site.label, ok: true, created: 0, updated: 0, removed: 0, slots: [] };
     const state = await readSite(site, allAdRows);
@@ -547,7 +566,7 @@ async function syncSite(
 
     for (let i = 0; i < products.length; i++) {
         const p = products[i];
-        const c = adContent(p, i, site);
+        const c = adContent(p, i, site, overrides[p.documentId]);
         const existing = state.ours.find(r => r.product === p.documentId);
         if (site.kind === 'ng') {
             const extra = {
@@ -556,7 +575,7 @@ async function syncSite(
                 gradient:        c.gradient,
                 logo:            '',
                 main_image:      c.mainImage,
-                main_image_fit:  { ...SHOP_AD_FIT },
+                main_image_fit:  { ...c.fit },
                 ad_style:        { ...DEFAULT_AD_STYLE },
                 landing:         c.landing,
                 submitted_by:    { id: '', email: '', name: '' },
@@ -680,7 +699,7 @@ export async function syncShopAds(opts: { decidedBy: string; config?: ShopAdsCon
     // בזה אחר זה: כולם כותבים לאותו Strapi, ומקביליות כאן סיכנה timeout
     for (const site of sites) {
         try {
-            results.push(await syncSite(site, products, wanted, opts.decidedBy, allAdRows));
+            results.push(await syncSite(site, products, wanted, opts.decidedBy, allAdRows, cfg.overrides));
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             console.warn(`[shopAds] sync to ${site.id} failed:`, msg);
@@ -791,6 +810,22 @@ export async function writeShopAdsConfig(cfg: ShopAdsConfig): Promise<ShopAdsCon
     }
     invalidate('items:');
     return clean;
+}
+
+/**
+ * שמירת עריכה ידנית של כרטיס מוצר (או מחיקתה, כש-patch הוא null).
+ * העריכה נשמרת לפי מזהה המוצר, ולכן היא שורדת גם שינוי מקום בטור וגם
+ * סנכרון שמריץ מחדש את כל התוכן.
+ */
+export async function saveShopAdOverride(
+    productId: string,
+    patch: ShopAdOverride | null,
+): Promise<ShopAdsConfig> {
+    const cfg = await readShopAdsConfig();
+    const overrides = { ...cfg.overrides };
+    if (patch && hasOverride(patch)) overrides[productId] = patch;
+    else delete overrides[productId];
+    return writeShopAdsConfig({ ...cfg, overrides });
 }
 
 /**

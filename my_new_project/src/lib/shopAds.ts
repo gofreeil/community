@@ -40,8 +40,38 @@ export interface ShopAdsConfig {
     step: number;
     /** מזהי האתרים שאליהם מסנכרנים (ריק = כולם) */
     sites: string[];
+    /**
+     * עריכות ידניות לכל מוצר, לפי מזהה המוצר בחנות. מה שלא נערך נגזר
+     * מהמוצר כרגיל, וכך עריכה נשארת נכונה גם כשהמחיר או התיאור בחנות
+     * משתנים. העריכה נדבקת למוצר, לא למקום: המוצר יכול לזוז בטור
+     * ולשמור על הניסוח שנתת לו.
+     */
+    overrides: Record<string, ShopAdOverride>;
     /** חותמת הסנכרון המוצלח האחרון */
     syncedAt?: string;
+}
+
+/** עריכה ידנית של כרטיס מוצר. שדה חסר = נגזר מהמוצר אוטומטית. */
+export interface ShopAdOverride {
+    title?: string;
+    subtitle?: string;
+    /** הטקסט ברצועה התחתונה */
+    cta?: string;
+    /** הטקסט שמופיע בריחוף מעל הרצועה */
+    hoverText?: string;
+    /** מספר הצבע מהפלטה (0-based). חסר = הצבע לפי מקום המוצר ברשימה */
+    gradientIndex?: number;
+    /** מיקום וזום התמונה במשבצת */
+    fit?: { x: number; y: number; z: number };
+}
+
+/** האם יש בעריכה משהו בפועל (כדי לא לשמור אובייקטים ריקים) */
+export function hasOverride(ov: ShopAdOverride | undefined): boolean {
+    if (!ov) return false;
+    return Boolean(
+        ov.title || ov.subtitle || ov.cta || ov.hoverText ||
+        typeof ov.gradientIndex === 'number' || ov.fit,
+    );
 }
 
 /** סוג האחסון של הפרסומות באתר היעד */
@@ -160,8 +190,58 @@ export function normalizeShopAdsConfig(raw: unknown): ShopAdsConfig {
         firstSlot: int(o.firstSlot, SHOP_ADS_DEFAULTS.firstSlot, 1, AD_SLOT_COUNT),
         step:      int(o.step,      SHOP_ADS_DEFAULTS.step,      1, AD_SLOT_COUNT),
         sites:     sites.length > 0 ? sites : SHOP_AD_SITES.map(s => s.id),
+        overrides: normalizeOverrides(o.overrides),
         syncedAt:  typeof o.syncedAt === 'string' ? o.syncedAt : undefined,
     };
+}
+
+/** גבולות הזום של התמונה במשבצת - כמו בבילדר של הפרסומות */
+export const SHOP_AD_ZOOM_MIN = 0.4;
+export const SHOP_AD_ZOOM_MAX = 2;
+
+export function normalizeOverride(raw: unknown): ShopAdOverride {
+    const o = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+    const str = (v: unknown, max: number) => {
+        const s = typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
+        return s ? s.slice(0, max) : undefined;
+    };
+    const clamp = (v: unknown, lo: number, hi: number, round = false) => {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return undefined;
+        const c = Math.min(hi, Math.max(lo, n));
+        return round ? Math.round(c) : c;
+    };
+    const rawFit = (o.fit && typeof o.fit === 'object' ? o.fit : null) as Record<string, unknown> | null;
+    const fit = rawFit
+        ? {
+            x: clamp(rawFit.x, 0, 100) ?? 50,
+            y: clamp(rawFit.y, 0, 100) ?? 45,
+            z: clamp(rawFit.z, SHOP_AD_ZOOM_MIN, SHOP_AD_ZOOM_MAX) ?? 0.6,
+          }
+        : undefined;
+    const out: ShopAdOverride = {
+        title:     str(o.title, 42),
+        subtitle:  str(o.subtitle, 60),
+        cta:       str(o.cta, 48),
+        hoverText: str(o.hoverText, 160),
+        gradientIndex: clamp(o.gradientIndex, 0, GRADIENT_COUNT - 1, true),
+        fit,
+    };
+    // מפתחות ריקים לא נשמרים - ככה "אפס" באמת מחזיר לברירת המחדל
+    for (const k of Object.keys(out) as Array<keyof ShopAdOverride>) {
+        if (out[k] === undefined) delete out[k];
+    }
+    return out;
+}
+
+function normalizeOverrides(raw: unknown): Record<string, ShopAdOverride> {
+    if (!raw || typeof raw !== 'object') return {};
+    const out: Record<string, ShopAdOverride> = {};
+    for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+        const ov = normalizeOverride(value);
+        if (hasOverride(ov)) out[key] = ov;
+    }
+    return out;
 }
 
 // ----- הצבע של כל מוצר בטור -----
@@ -178,9 +258,12 @@ const GRADIENTS: Array<{ tailwind: string; css: string; id: string }> = [
     { tailwind: 'from-orange-500 to-red-500',    css: 'linear-gradient(135deg, #f97316, #ef4444)', id: 'sunset'  },
 ];
 
+/** כמה צבעים יש בפלטה - לבורר הצבע במסך הניהול */
+export const GRADIENT_COUNT = GRADIENTS.length;
+
 /** הגרדיאנט של המוצר ה-i, בצורה שהאתר מצפה לה */
 export function shopAdGradient(index: number, format: 'tailwind' | 'css' | 'id'): string {
-    const g = GRADIENTS[index % GRADIENTS.length];
+    const g = GRADIENTS[((index % GRADIENTS.length) + GRADIENTS.length) % GRADIENTS.length];
     if (format === 'css') return g.css;
     if (format === 'id') return g.id;
     return g.tailwind;
