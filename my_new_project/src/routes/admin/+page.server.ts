@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { withUserAvatarUrl } from '$lib/server/userAvatar';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, userSchemaHasField, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getItemsByCategory, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, userSchemaHasField, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { finalizeWishDecision } from '$lib/server/wishDecision';
@@ -21,6 +21,15 @@ function parseArea(entry: string): { name: string; city: string } {
     return m ? { name: m[1].trim(), city: m[2].trim() } : { name: entry.trim(), city: '' };
 }
 const stripCityName = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+
+// מזהי משתמשים עם כרטיס פנויים/פנויות פעיל (לא נמחק) - לקהל SMS "בעלי כרטיס פנויים קיים"
+function singlesCardUserIds(items: { category: string; status: string; user_id: string | null }[]): Set<string> {
+    return new Set(
+        items
+            .filter((i) => i.category === 'singles' && i.status !== 'deleted' && i.user_id)
+            .map((i) => i.user_id as string),
+    );
+}
 
 // לכל רכז: מספר התושבים הרשומים בשכונותיו ומספר הפריטים שכבר על המפה בהן.
 // התאמה לפי שכונה + עיר (זהה ל-/api/coordinators). מפתח = מזהה המשתמש.
@@ -195,11 +204,14 @@ export const load: PageServerLoad = async (event) => {
     const [pendingAdsCount, pendingSinglesCount, discountCodes, totpSecret, serverHealth, stats] =
         await Promise.all([pendingAdsPromise, pendingSinglesPromise, discountCodesPromise, totpPromise, serverHealthPromise, statsPromise]);
 
+    // בעלי כרטיס פנויים/פנויות פעיל - לתג בשורת המשתמש ולקהל SMS "הזמנה לשאלות חדשות"
+    const singlesUserIds = singlesCardUserIds(items0);
+
     return {
         // תמונות פרופיל מוטבעות → כתובות עם קאש (userAvatar.ts); extra_fields של
         // הפריטים (גלריות פנויים, לוגואים על המפה...) לא נקראים בעמוד הזה בכלל -
         // הסיכומים חושבו כבר כאן בשרת. יחד: 6.8MB/12 שניות → מאות KB.
-        users: users.map(withUserAvatarUrl),
+        users: users.map(withUserAvatarUrl).map((u) => ({ ...u, has_singles_card: singlesUserIds.has(u.id) })),
         items: items.map((i) => (i.extra_fields && i.extra_fields !== '{}' ? { ...i, extra_fields: '{}' } : i)),
         coordinatorRequests: coordinatorRequestsWithContext,
         pendingNeighborhoods: pendingNeighborhoodsWithRequester,
@@ -290,6 +302,7 @@ export const actions: Actions = {
      *   no_city  - בלי עיר בפרופיל; דדופ לפי sms_profile_nudge_at.
      *   imported - נוספו מייבוא (import_source), אפשר לסנן למקור אחד; דדופ לפי מפתח קמפיין
      *              (campaign) שנרשם ב-sms_campaigns של המשתמש - כך קמפיין חדש לא נחסם ע"י קודם.
+     *   singles  - יש להם כרטיס פנויים/פנויות פעיל (לא נמחק); דדופ לפי מפתח קמפיין, כמו imported.
      * תמיד: נייד ישראלי תקין, לא חסום. מי שהצליח מסומן מיד - ריצה שנעצרה לא שולחת פעמיים.
      */
     smsIncompleteProfiles: async (event) => {
@@ -299,12 +312,13 @@ export const actions: Actions = {
         const form = await event.request.formData();
         const message  = form.get('message')?.toString().trim() ?? '';
         const mode     = form.get('mode')?.toString() === 'test' ? 'test' : 'batch';
-        const audience = form.get('audience')?.toString() === 'imported' ? 'imported' : 'no_city';
+        const audienceRaw = form.get('audience')?.toString();
+        const audience = audienceRaw === 'imported' ? 'imported' : audienceRaw === 'singles' ? 'singles' : 'no_city';
         const source   = form.get('source')?.toString().trim() ?? '';        // '' = כל המקורות
         const campaign = form.get('campaign')?.toString().trim().slice(0, 60) ?? '';
         if (!message) return fail(400, { smsError: 'חסר נוסח ההודעה' });
         if (message.length > 600) return fail(400, { smsError: 'ההודעה ארוכה מדי (עד 600 תווים)' });
-        if (audience === 'imported' && !/^[a-z0-9-]{3,60}$/i.test(campaign)) {
+        if ((audience === 'imported' || audience === 'singles') && !/^[a-z0-9-]{3,60}$/i.test(campaign)) {
             return fail(400, { smsError: 'חסר מפתח קמפיין תקין (אותיות/ספרות/מקף) - לפיו נמנעת שליחה כפולה' });
         }
 
@@ -321,7 +335,7 @@ export const actions: Actions = {
 
             // שער בטיחות: בלי השדה sms_campaigns בבאקאנד, הסימון "נשלח" נכשל בשקט והמנה
             // הבאה שולחת שוב לאותם אנשים. עוצרים לפני שנשלחת הודעה אחת.
-            if (audience === 'imported' && mode !== 'test' && !(await userSchemaHasField('sms_campaigns'))) {
+            if ((audience === 'imported' || audience === 'singles') && mode !== 'test' && !(await userSchemaHasField('sms_campaigns'))) {
                 return fail(503, { smsError: 'הבאקאנד עדיין לא פרוס עם שדה sms_campaigns - בלי רישום "נשלח" ההודעה תצא פעמיים. נסה שוב בעוד כמה דקות.' });
             }
 
@@ -334,10 +348,16 @@ export const actions: Actions = {
             }
 
             const users = await getAllUsersRaw();
+            const singlesUserIds = audience === 'singles'
+                ? singlesCardUserIds(await getItemsByCategory('singles'))
+                : null;
             const pending = users.filter((u) => {
                 if (u.banned || !isMobile(u.phone)) return false;
                 if (audience === 'imported') {
                     return !!u.import_source && (!source || u.import_source === source) && !u.sms_campaigns.includes(campaign);
+                }
+                if (audience === 'singles') {
+                    return singlesUserIds!.has(u.id) && !u.sms_campaigns.includes(campaign);
                 }
                 return !u.city?.trim() && !u.sms_profile_nudge_at;
             });
@@ -352,7 +372,7 @@ export const actions: Actions = {
             const okPhones = new Set(results.filter((r) => r.ok).map((r) => r.phone));
             const okIds = batch.filter((u) => okPhones.has(u.phone)).map((u) => u.id);
             if (okIds.length) {
-                if (audience === 'imported') await markUsersSmsCampaign(okIds, campaign);
+                if (audience === 'imported' || audience === 'singles') await markUsersSmsCampaign(okIds, campaign);
                 else await markUsersSmsNudged(okIds);
             }
 

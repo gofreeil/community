@@ -134,7 +134,11 @@
 		'בהמשך להרשמתך לרכישה הקבוצתית, פתחנו לך חשבון גם ב"קהילה בשכונה" - גמ"חים, מסירות, טרמפים, מניינים ואירועים ב{city}.\n' +
 		'כניסה בקוד SMS או בגוגל, בלי סיסמה: https://community.gofreeil.com/login?via=pg\n' +
 		'להסרה השב "הסר".';
-	type SmsAudience = 'no_city' | 'imported';
+	const SMS_DRAFT_SINGLES =
+		'שלום {name}, כאן "קהילה בשכונה" 👋\n' +
+		'שדרגנו את לוח הפנויים/פנויות והוספנו כמה שאלות חדשות שיעזרו לדייק יותר את ההתאמה שלך.\n' +
+		'מוזמן/ת להיכנס ולהשלים אותן בכרטיס שלך: https://community.gofreeil.com/add/singles';
+	type SmsAudience = 'no_city' | 'imported' | 'singles';
 	let showSmsModal = $state(false);
 	let smsAudience  = $state<SmsAudience>('no_city');
 	let smsSource    = $state('');   // '' = כל מקורות הייבוא
@@ -165,6 +169,10 @@
 				const sent = ((u as any).sms_campaigns as string[] | undefined) ?? [];
 				return !!src && (!smsSource || src === smsSource) && !sent.includes(smsCampaign);
 			}
+			if (smsAudience === 'singles') {
+				const sent = ((u as any).sms_campaigns as string[] | undefined) ?? [];
+				return !!(u as any).has_singles_card && !sent.includes(smsCampaign);
+			}
 			return !(u as any).city?.trim() && !(u as any).sms_profile_nudge_at;
 		}),
 	);
@@ -173,18 +181,20 @@
 		(data.users ?? []).filter((u) => {
 			if (isMobile(u.phone)) return false;
 			if (smsAudience === 'imported') { const src = (u as any).import_source as string; return !!src && (!smsSource || src === smsSource); }
+			if (smsAudience === 'singles') return !!(u as any).has_singles_card;
 			return !(u as any).city?.trim();
 		}).length,
 	);
 
 	function smsDefaultCampaign(): string {
 		const ym = new Date().toISOString().slice(0, 7);
+		if (smsAudience === 'singles') return `singles-new-questions-${ym}`;
 		return `welcome-${smsSource || 'import'}-${ym}`;
 	}
 	function setSmsAudience(a: SmsAudience) {
 		smsAudience = a;
-		smsText = a === 'imported' ? SMS_DRAFT_IMPORTED : SMS_DRAFT_NO_CITY;
-		if (a === 'imported' && !smsCampaign) smsCampaign = smsDefaultCampaign();
+		smsText = a === 'imported' ? SMS_DRAFT_IMPORTED : a === 'singles' ? SMS_DRAFT_SINGLES : SMS_DRAFT_NO_CITY;
+		if ((a === 'imported' || a === 'singles') && !smsCampaign) smsCampaign = smsDefaultCampaign();
 	}
 	function openSmsModal(audience: SmsAudience = 'no_city') {
 		smsLog = [];
@@ -230,7 +240,7 @@
 
 	async function smsSendAll() {
 		if (smsBusy || !smsText.trim()) return;
-		if (!confirm(`לשלוח SMS ל-${smsRecipients.length} משתמשים שלא מילאו עיר ושכונה? השליחה במנות, ואפשר לעצור באמצע.`)) return;
+		if (!confirm(`לשלוח SMS ל-${smsRecipients.length} נמענים? השליחה במנות, ואפשר לעצור באמצע.`)) return;
 		smsBusy = true;
 		smsStop = false;
 		try {
@@ -1056,6 +1066,15 @@
 				>
 					📥 הודעת "אתה רשום" למיובאים ({smsSources.reduce((s, [, n]) => s + n, 0)})
 				</button>
+				<!-- הזמנה לבעלי כרטיס פנויים קיים למלא את השאלות החדשות שנוספו לטופס -->
+				<button
+					type="button"
+					onclick={() => openSmsModal('singles')}
+					class="px-3 py-1.5 text-sm rounded-lg bg-pink-500/10 text-pink-300 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer"
+					title="SMS למי שיש לו כבר כרטיס פנויים/פנויות: הזמנה למלא את השאלות החדשות שנוספו לטופס - הנוסח נפתח לעריכה לפני השליחה"
+				>
+					💑 הזמנה לשאלות חדשות ({(data.users ?? []).filter((u) => (u as any).has_singles_card).length})
+				</button>
 			</form>
 
 			{#if usersListOpen || searchQuery}
@@ -1366,6 +1385,14 @@
 				>
 					📥 נוספו מייבוא (לא נרשמו בעצמם)
 				</button>
+				<button
+					type="button"
+					disabled={smsBusy}
+					onclick={() => setSmsAudience('singles')}
+					class="px-3 py-1.5 text-sm rounded-lg border transition-all cursor-pointer {smsAudience === 'singles' ? 'bg-pink-500/20 text-pink-200 border-pink-500/50' : 'text-gray-300 border-white/15 hover:bg-white/10'}"
+				>
+					💑 יש להם כרטיס פנויים קיים
+				</button>
 			</div>
 			{#if smsAudience === 'imported'}
 				<div class="flex items-center gap-2 flex-wrap mb-2">
@@ -1383,10 +1410,19 @@
 						class="bg-[#070b14] border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-56"
 						title="נרשם על כל נמען שקיבל - שליחה חוזרת עם אותו מפתח מדלגת עליו; מפתח חדש = קמפיין חדש" />
 				</div>
+			{:else if smsAudience === 'singles'}
+				<div class="flex items-center gap-2 flex-wrap mb-2">
+					<label for="sms-campaign-singles" class="text-xs text-gray-400">מפתח קמפיין:</label>
+					<input id="sms-campaign-singles" bind:value={smsCampaign} disabled={smsBusy} dir="ltr"
+						class="bg-[#070b14] border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-56"
+						title="נרשם על כל נמען שקיבל - שליחה חוזרת עם אותו מפתח מדלגת עליו; מפתח חדש = קמפיין חדש" />
+				</div>
 			{/if}
 			<p class="text-gray-400 text-sm mb-3">
 				נמענים: <span class="text-white font-bold">{smsRecipients.length}</span>
-				{smsAudience === 'imported' ? 'מיובאים עם נייד תקין שעוד לא קיבלו את הקמפיין הזה.' : 'משתמשים בלי עיר, עם נייד תקין, שעוד לא קיבלו.'}
+				{#if smsAudience === 'imported'}מיובאים עם נייד תקין שעוד לא קיבלו את הקמפיין הזה.
+				{:else if smsAudience === 'singles'}בעלי כרטיס פנויים קיים, עם נייד תקין, שעוד לא קיבלו את הקמפיין הזה.
+				{:else}משתמשים בלי עיר, עם נייד תקין, שעוד לא קיבלו.{/if}
 				{#if smsUnreachable}
 					<span class="text-gray-500">({smsUnreachable} נוספים בלי נייד תקין - לא ניתן להגיע אליהם ב-SMS)</span>
 				{/if}
