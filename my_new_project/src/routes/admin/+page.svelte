@@ -1042,47 +1042,70 @@
 				<span class="ms-auto text-gray-400 text-sm transition-transform {usersListOpen || searchQuery ? 'rotate-180' : ''}">▼</span>
 			</button>
 
-			<!-- השלמה רטרואקטיבית של עיר/שכונה מהפרסומים של המשתמש (למי שנרשם בלי) -->
-			<form method="POST" action="?/backfillUserLocations" use:enhance class="mb-3 flex items-center gap-2 flex-wrap">
-				<button
-					type="submit"
-					class="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all cursor-pointer"
-					onclick={(e) => { if (!confirm('להשלים עיר/שכונה לכל המשתמשים שאין להם - לפי הפרסומים שלהם? לא נוגע במי שכבר יש לו עיר.')) e.preventDefault(); }}
-					title="למשתמשים בלי עיר: העיר והשכונה השכיחות מהפריטים שפרסמו"
-				>
-					📍 השלם עיר/שכונה מהפרסומים
-				</button>
-				<span class="text-xs text-gray-500">
-					{(data.users ?? []).filter((u) => !(u as any).city?.trim()).length} משתמשים בלי עיר
-				</span>
-				<!-- SMS יזום למי שלא מילא - נפתח מודל עם נוסח לעריכה לפני שליחה -->
-				<button
-					type="button"
-					onclick={() => openSmsModal('no_city')}
-					class="px-3 py-1.5 text-sm rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all cursor-pointer"
-					title="שליחת SMS לכל מי שלא מילא עיר ושכונה - הנוסח נפתח לעריכה לפני השליחה"
-				>
-					📱 SMS למי שלא השלים פרטים
-				</button>
-				<!-- הודעת "אתה רשום" לכל מי שנוסף מייבוא (import_source) ולא נרשם בעצמו -->
-				<button
-					type="button"
-					onclick={() => openSmsModal('imported')}
-					class="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all cursor-pointer"
-					title="SMS למי שנוסף מייבוא (רכישות קבוצתיות): נוסח לעריכה, בדיקה לעצמך, שליחה במנות, בלי כפילויות"
-				>
-					📥 הודעת "אתה רשום" למיובאים ({smsSources.reduce((s, [, n]) => s + n, 0)})
-				</button>
-				<!-- הזמנה לבעלי כרטיס פנויים קיים למלא את השאלות החדשות שנוספו לטופס -->
-				<button
-					type="button"
-					onclick={() => openSmsModal('singles')}
-					class="px-3 py-1.5 text-sm rounded-lg bg-pink-500/10 text-pink-300 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer"
-					title="SMS למי שיש לו כבר כרטיס פנויים/פנויות: הזמנה למלא את השאלות החדשות שנוספו לטופס - הנוסח נפתח לעריכה לפני השליחה"
-				>
-					💑 הזמנה לשאלות חדשות ({(data.users ?? []).filter((u) => (u as any).has_singles_card).length})
-				</button>
-			</form>
+			<!-- פעולות על המשתמשים, בשתי קבוצות: השלמת עיר/שכונה (שני שלבים) ודיוורי SMS אחרים -->
+			<div class="mb-3 grid gap-3 md:grid-cols-2">
+				<div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5">
+					<div class="mb-2 flex items-center gap-2 text-xs">
+						<span class="font-semibold text-gray-300">השלמת עיר/שכונה</span>
+						<span class="text-gray-500">· {(data.users ?? []).filter((u) => !(u as any).city?.trim()).length} משתמשים בלי עיר</span>
+					</div>
+					<div class="grid gap-2 sm:grid-cols-2">
+						<!-- השלמה רטרואקטיבית של עיר/שכונה מהפרסומים של המשתמש (למי שנרשם בלי) -->
+						<form method="POST" action="?/backfillUserLocations" use:enhance class="flex flex-col gap-1">
+							<button
+								type="submit"
+								class="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all cursor-pointer text-start"
+								onclick={(e) => { if (!confirm('להשלים עיר/שכונה לכל המשתמשים שאין להם - לפי הפרסומים שלהם? לא נוגע במי שכבר יש לו עיר.')) e.preventDefault(); }}
+								title="למשתמשים בלי עיר: העיר והשכונה השכיחות מהפריטים שפרסמו"
+							>
+								📍 השלם עיר/שכונה מהפרסומים
+							</button>
+							<p class="text-[11px] leading-snug text-gray-500">שלב 1 · בלי הודעה: ממלא אוטומטית לפי הפריטים שפרסמו. לא נוגע במי שכבר יש לו עיר.</p>
+						</form>
+						<!-- SMS יזום למי שלא מילא - נפתח מודל עם נוסח לעריכה לפני שליחה -->
+						<div class="flex flex-col gap-1">
+							<button
+								type="button"
+								onclick={() => openSmsModal('no_city')}
+								class="px-3 py-1.5 text-sm rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all cursor-pointer text-start"
+								title="שליחת SMS לכל מי שלא מילא עיר ושכונה - הנוסח נפתח לעריכה לפני השליחה"
+							>
+								📱 SMS למי שלא השלים פרטים
+							</button>
+							<p class="text-[11px] leading-snug text-gray-500">שלב 2 · SMS למי שנשאר בלי עיר אחרי שלב 1, שיישלים בעצמו. רק מי שעוד לא קיבל.</p>
+						</div>
+					</div>
+				</div>
+				<div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5">
+					<div class="mb-2 text-xs font-semibold text-gray-300">דיוורי SMS נוספים</div>
+					<div class="grid gap-2 sm:grid-cols-2">
+						<!-- הודעת "אתה רשום" לכל מי שנוסף מייבוא (import_source) ולא נרשם בעצמו -->
+						<div class="flex flex-col gap-1">
+							<button
+								type="button"
+								onclick={() => openSmsModal('imported')}
+								class="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all cursor-pointer text-start"
+								title="SMS למי שנוסף מייבוא (רכישות קבוצתיות): נוסח לעריכה, בדיקה לעצמך, שליחה במנות, בלי כפילויות"
+							>
+								📥 הודעת "אתה רשום" למיובאים ({smsSources.reduce((s, [, n]) => s + n, 0)})
+							</button>
+							<p class="text-[11px] leading-snug text-gray-500">למי שיובא מגיליונות הרכישות הקבוצתיות ולא נרשם בעצמו: מודיע שהוא רשום באתר.</p>
+						</div>
+						<!-- הזמנה לבעלי כרטיס פנויים קיים למלא את השאלות החדשות שנוספו לטופס -->
+						<div class="flex flex-col gap-1">
+							<button
+								type="button"
+								onclick={() => openSmsModal('singles')}
+								class="px-3 py-1.5 text-sm rounded-lg bg-pink-500/10 text-pink-300 border border-pink-500/30 hover:bg-pink-500/20 transition-all cursor-pointer text-start"
+								title="SMS למי שיש לו כבר כרטיס פנויים/פנויות: הזמנה למלא את השאלות החדשות שנוספו לטופס - הנוסח נפתח לעריכה לפני השליחה"
+							>
+								💑 הזמנה לשאלות חדשות ({(data.users ?? []).filter((u) => (u as any).has_singles_card).length})
+							</button>
+							<p class="text-[11px] leading-snug text-gray-500">לבעלי כרטיס פנויים/פנויות: מזמין לענות על השאלות החדשות שנוספו לטופס.</p>
+						</div>
+					</div>
+				</div>
+			</div>
 
 			{#if usersListOpen || searchQuery}
 			<div class="space-y-1.5 md:space-y-2">
