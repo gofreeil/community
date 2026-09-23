@@ -1,12 +1,17 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getOwnAdForEdit } from '$lib/server/adsStore';
+import { getOwnAdForEdit, getAd } from '$lib/server/adsStore';
+import { resolveRole } from '$lib/server/adsAdmin';
 
 /**
  * GET /api/ads/mine?id=<documentId>
  * התוכן המלא של פרסומת אחת של המשתמש המחובר - להזנת הבילדר בעריכה
  * ממוקדת ("ערוך" על פרסומת מסוימת בנכסים). הבעלות מאומתת בשרת לפי
  * מפתחות הזהות של המפרסם; מזהה זר מחזיר 404 בלי להסגיר שהוא קיים.
+ *
+ * חריג: סופר-אדמין. פרסומות המוצרים של חנות החירות נוצרות ע"י המערכת
+ * ואין להן מפרסם, ולכן בדיקת הבעלות הייתה נועלת אותן. בלי החריג הזה
+ * "ערוך" במסך /admin/shop-ads לא היה יכול לפתוח אותן בבילדר.
  */
 export const GET: RequestHandler = async (event) => {
     const session = await event.locals.auth().catch(() => null);
@@ -19,7 +24,10 @@ export const GET: RequestHandler = async (event) => {
     const id = event.url.searchParams.get('id')?.trim();
     if (!id) throw error(400, 'חסר מזהה פרסומת');
 
-    const ad = await getOwnAdForEdit(id, identity).catch(() => null);
+    const role = await resolveRole(event).catch(() => '');
+    const ad = role === 'super_admin'
+        ? await getAd(id).catch(() => null)
+        : await getOwnAdForEdit(id, identity).catch(() => null);
     if (!ad) throw error(404, 'הפרסומת לא נמצאה או שאינה שייכת לחשבון הזה');
 
     // רק מה שהבילדר צריך כדי להמשיך לערוך - תוכן ועיצוב, בלי שדות ניהול

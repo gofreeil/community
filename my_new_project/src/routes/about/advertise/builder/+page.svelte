@@ -10,7 +10,7 @@
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, setAdIntent, getAdEditTarget, setAdEditTarget, clearAdEditTarget, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, setAdIntent, getAdEditTarget, setAdEditTarget, clearAdEditTarget, setAdEditInPlace, type AdIntent } from "$lib/adDraft";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -861,8 +861,12 @@
         // מה שבאמת רץ על האתר - לא טיוטה ישנה. אם הטיוטה כבר שייכת לאותה פרסומת
         // (עריכה שנקטעה באמצע) ממשיכים ממנה בלי לדרוס את מה שכבר שונה.
         // המזהה נשמר ונוסע עם השליחה, וכך האישור מחליף בדיוק את הפרסומת הזו.
-        const editId = new URLSearchParams(location.search).get("edit");
+        const params = new URLSearchParams(location.search);
+        const editId = params.get("edit");
         if (editId) {
+            // inplace=1 - הגעה ממסך פרסומות המוצרים: השליחה תעדכן את
+            // הפרסומת הקיימת ולא תיצור גרסה שממתינה לאישור.
+            setAdEditInPlace(params.get("inplace") === "1");
             setAdIntent("edit");
             adIntent = "edit";
             const continuingSameAd = getAdEditTarget() === editId;

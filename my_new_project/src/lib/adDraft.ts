@@ -47,6 +47,26 @@ export function clearAdEditTarget(): void {
     try { localStorage.removeItem(AD_EDIT_TARGET_KEY); } catch { /* ignore */ }
 }
 
+/**
+ * עריכה *במקום*: הגעה לבילדר עם ?edit=<id>&inplace=1 - ממסך פרסומות
+ * המוצרים של חנות החירות. השליחה אז מעדכנת את הפרסומת הקיימת במקום
+ * ליצור גרסה חדשה שממתינה לאישור, כי לפרסומת מוצר אין מפרסם שממתין
+ * לאישור - היא כבר על האוויר. שמור לסופר-אדמין, והשרת אוכף זאת שוב
+ * ומסרב לגעת ברשומה שאינה פרסומת מוצר.
+ */
+export const AD_EDIT_INPLACE_KEY = 'ad_builder_edit_inplace_v1';
+
+export function setAdEditInPlace(on: boolean): void {
+    try {
+        if (on) localStorage.setItem(AD_EDIT_INPLACE_KEY, '1');
+        else localStorage.removeItem(AD_EDIT_INPLACE_KEY);
+    } catch { /* ignore */ }
+}
+
+export function isAdEditInPlace(): boolean {
+    try { return localStorage.getItem(AD_EDIT_INPLACE_KEY) === '1'; } catch { return false; }
+}
+
 export function setAdIntent(intent: AdIntent): void {
     try { localStorage.setItem(AD_INTENT_KEY, intent); } catch { /* ignore */ }
 }

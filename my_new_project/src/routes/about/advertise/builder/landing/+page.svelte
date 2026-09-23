@@ -5,7 +5,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, isAdEditInPlace, setAdEditInPlace, type AdIntent } from "$lib/adDraft";
 
     let { data } = $props<{
         data: {
@@ -527,11 +527,21 @@
             if (!(await shrinkPayloadImages(payload))) {
                 throw new Error($_("advertise.l_err_too_heavy"));
             }
-            const res = await fetch("/api/ads/submit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
+            // עריכה במקום (פרסומת מוצר של חנות החירות, ממסך הניהול):
+            // מעדכנים את הרשומה הקיימת במקום ליצור גרסה שממתינה לאישור -
+            // לפרסומת כזו אין מפרסם שממתין, והיא כבר על האוויר.
+            const inPlaceId = isAdEditInPlace() ? getAdEditTarget() : null;
+            const res = inPlaceId
+                ? await fetch("/api/ads/shop-edit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ...payload, id: inPlaceId }),
+                  })
+                : await fetch("/api/ads/submit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
             if (!res.ok) {
                 throw new Error(await extractServerError(res));
             }
@@ -543,6 +553,7 @@
             clearAdIntent();
             // גם יעד העריכה נצרך - שליחה עתידית לא תתקשר בטעות לפרסומת הזו
             clearAdEditTarget();
+            setAdEditInPlace(false);
         } catch (e) {
             // fetch rejects with a TypeError ("Failed to fetch") on a network
             // failure - show a Hebrew connectivity message instead of English.

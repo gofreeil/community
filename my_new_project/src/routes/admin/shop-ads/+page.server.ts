@@ -10,6 +10,8 @@ import {
     removeShopAds,
     syncShopAdsIfStale,
     buildShopAdDrafts,
+    readShopAdMasters,
+    clearShopAdEdit,
     type SiteSyncResult,
 } from '$lib/server/shopAdsStore';
 import { SHOP_AD_SITES, preferredSlots, sameSeries, seriesOf } from '$lib/shopAds';
@@ -40,12 +42,14 @@ export const load: PageServerLoad = async (event) => {
         getShopAdsPlacement(config),
     ]);
     const products = productsRes.status === 'fulfilled' ? productsRes.value : [];
+    // הכרטיסים שנערכו בבילדר - הטיוטה מציגה אותם ולא את הנגזר מהמוצר
+    const masters = await readShopAdMasters();
 
     return {
         config,
         wanted,
         // הטיוטה: הכרטיסים כפי שייכתבו, לתצוגה מקדימה לפני הסנכרון
-        drafts: buildShopAdDrafts(products, wanted),
+        drafts: buildShopAdDrafts(products, wanted, masters),
         sameSeries: sameSeries(preferredSlots(config)),
         sites: SHOP_AD_SITES,
         products,
@@ -114,6 +118,16 @@ export const actions: Actions = {
         return s.success ? { success: true, message: s.message } : fail(502, { error: s.message });
     },
 
+    /** ביטול עריכה: הכרטיס חוזר להיגזר מהמוצר בסנכרון הבא */
+    resetEdit: async (event) => {
+        await ensureSuperAdmin(event);
+        const fd = await event.request.formData();
+        const id = String(fd.get('id') ?? '').trim();
+        if (!id) return fail(400, { error: 'חסר מזהה פרסומת' });
+        const ok = await clearShopAdEdit(id).catch(() => false);
+        if (!ok) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        return { success: true, message: 'העריכה בוטלה. הסנכרון הבא יגזור את הכרטיס מחדש מהמוצר.' };
+    },
     /** הורדת כל פרסומות המוצרים מהרשת */
     removeAll: async (event) => {
         await ensureSuperAdmin(event);

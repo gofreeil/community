@@ -36,6 +36,16 @@
         sites = on ? [...new Set([...sites, id])] : sites.filter(s => s !== id);
     }
 
+    /**
+     * מזהה הרשומה של המוצר באתר "קהילה בשכונה". זו הרשומה שהבילדר עורך,
+     * והיא המאסטר של הכרטיס בכל הרשת. ריק = המוצר עוד לא סונכרן, ולכן
+     * אין מה לערוך.
+     */
+    function communityAdId(productDocId: string): string {
+        const site = data.placement.find(p => p.site === 'community');
+        return site?.ads.find(a => a.product === productDocId)?.id ?? '';
+    }
+
     /** המוצר שהוצב במקום מסוים באתר מסוים - לטבלת המצב */
     function placedFor(siteId: string, productDocId: string) {
         const site = data.placement.find(p => p.site === siteId);
@@ -239,12 +249,19 @@
         {:else}
             <div class="flex flex-wrap gap-4 items-start">
                 {#each data.drafts as d (d.product)}
+                    {@const adId = communityAdId(d.product)}
                     <figure class="m-0">
                         <div class="flex items-center gap-2 mb-1.5">
                             <span class="text-[11px] font-black text-white bg-white/10 rounded-full px-2 py-0.5">
                                 מקום {d.slot || '-'}
                             </span>
-                            <span class="text-[11px] text-gray-500 truncate max-w-[5rem]">{d.store}</span>
+                            {#if d.edited}
+                                <span class="text-[11px] font-bold text-amber-300" title="נערך בבילדר - זה מה שמתפרסם בכל הרשת">
+                                    ✎ נערך
+                                </span>
+                            {:else}
+                                <span class="text-[11px] text-gray-500 truncate max-w-[5rem]">{d.store}</span>
+                            {/if}
                         </div>
                         <ShopAdPreviewCard
                             title={d.title}
@@ -256,7 +273,28 @@
                             bandHeight={d.bandHeight}
                         />
                         <figcaption class="w-36 mt-1.5 text-[11px] text-gray-500 leading-snug">
-                            בריחוף: {d.hoverText}
+                            {#if adId}
+                                <!-- הבילדר הקיים, על הפרסומת הזו. inplace=1 -
+                                     השמירה מעדכנת אותה ולא יוצרת גרסה ממתינה. -->
+                                <a href="/about/advertise/builder?edit={adId}&inplace=1"
+                                   class="block text-center px-2 py-1 rounded-md bg-white/5 border border-white/15 text-gray-200 font-bold hover:bg-white/10 no-underline">
+                                    ✎ ערוך בבילדר
+                                </a>
+                                {#if d.edited}
+                                    <form method="POST" action="?/resetEdit" class="mt-1"
+                                          onsubmit={(e) => { if (!confirm('לבטל את העריכה ולחזור לכרטיס הנגזר מהמוצר?')) e.preventDefault(); }}
+                                          use:enhance={() => { busy = true; return async ({ update }) => { await update(); busy = false; }; }}>
+                                        <input type="hidden" name="id" value={adId} />
+                                        <button type="submit" disabled={busy}
+                                                class="w-full px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 disabled:opacity-50">
+                                            ↺ בטל עריכה
+                                        </button>
+                                    </form>
+                                {/if}
+                            {:else}
+                                <span class="block text-center text-gray-600">לעריכה - סנכרן קודם</span>
+                            {/if}
+                            <span class="block mt-1">בריחוף: {d.hoverText}</span>
                             <a href={d.href} target="_blank" rel="noopener noreferrer"
                                class="block text-blue-300 hover:text-blue-200 mt-0.5">לדף המוצר ↗</a>
                         </figcaption>
@@ -264,10 +302,9 @@
                 {/each}
             </div>
             <p class="text-[11px] text-gray-500 mt-3">
-                התוכן נגזר מהמוצר בחנות: שם, מחיר, שם החנות והתמונה. רוצה כרטיס אחר -
-                <a href={SHOP_URL + '/seller-dashboard'} target="_blank" rel="noopener noreferrer"
-                   class="text-blue-300 hover:text-blue-200">משנים את המוצר בחנות ↗</a>
-                ומסנכרנים.
+                התוכן נגזר מהמוצר בחנות (שם, מחיר, שם החנות, תמונה). "ערוך בבילדר" פותח את
+                אותו בונה פרסומות שהמפרסמים משתמשים בו - ומה שנשמר שם מתפרסם בכל אתרי הרשת
+                בסנכרון הבא, במקום הנגזר מהמוצר.
             </p>
         {/if}
     </section>

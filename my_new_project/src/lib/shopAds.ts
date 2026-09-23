@@ -231,8 +231,60 @@ const GRADIENTS: Array<{ tailwind: string; css: string; id: string }> = [
     { tailwind: 'from-orange-500 to-red-500',    css: 'linear-gradient(135deg, #f97316, #ef4444)', id: 'sunset'  },
 ];
 
-/** כמה צבעים יש בפלטה - לבורר הצבע במסך הניהול */
-export const GRADIENT_COUNT = GRADIENTS.length;
+/**
+ * כל הפלטה של הבילדר (22 צבעים) בתרגום למחרוזת CSS. פרסומת שנערכה
+ * בבילדר נושאת זוג מחלקות Tailwind, ורוב אתרי הרשת מצפים למחרוזת CSS
+ * מלאה - בלי התרגום הזה הרצועה שלהם הייתה נשארת בלי צבע. זו אותה
+ * טבלה שקיימת ב-adGradient.ts של "ועדי שכונות".
+ */
+const BUILDER_TAILWIND_TO_CSS: Record<string, string> = {
+    'from-amber-500 to-orange-600':   'linear-gradient(135deg, #f59e0b, #ea580c)',
+    'from-orange-500 to-red-500':     'linear-gradient(135deg, #f97316, #ef4444)',
+    'from-yellow-400 to-amber-500':   'linear-gradient(135deg, #facc15, #f59e0b)',
+    'from-red-600 to-pink-600':       'linear-gradient(135deg, #dc2626, #db2777)',
+    'from-rose-500 to-fuchsia-600':   'linear-gradient(135deg, #f43f5e, #c026d3)',
+    'from-rose-700 to-red-900':       'linear-gradient(135deg, #be123c, #7f1d1d)',
+    'from-fuchsia-500 to-purple-600': 'linear-gradient(135deg, #d946ef, #9333ea)',
+    'from-purple-600 to-pink-600':    'linear-gradient(135deg, #9333ea, #db2777)',
+    'from-violet-600 to-indigo-700':  'linear-gradient(135deg, #7c3aed, #4338ca)',
+    'from-indigo-600 to-blue-600':    'linear-gradient(135deg, #4f46e5, #2563eb)',
+    'from-blue-600 to-cyan-600':      'linear-gradient(135deg, #2563eb, #0891b2)',
+    'from-sky-400 to-blue-500':       'linear-gradient(135deg, #38bdf8, #3b82f6)',
+    'from-teal-500 to-cyan-600':      'linear-gradient(135deg, #14b8a6, #0891b2)',
+    'from-emerald-500 to-teal-700':   'linear-gradient(135deg, #10b981, #0f766e)',
+    'from-green-600 to-emerald-600':  'linear-gradient(135deg, #16a34a, #059669)',
+    'from-lime-400 to-green-500':     'linear-gradient(135deg, #a3e635, #22c55e)',
+    'from-slate-500 to-gray-700':     'linear-gradient(135deg, #64748b, #374151)',
+    'from-gray-800 to-slate-900':     'linear-gradient(135deg, #1f2937, #0f172a)',
+    'from-orange-300 to-pink-400':    'linear-gradient(135deg, #fdba74, #f472b6)',
+    'from-emerald-300 to-teal-400':   'linear-gradient(135deg, #6ee7b7, #2dd4bf)',
+    'from-yellow-500 to-amber-700':   'linear-gradient(135deg, #eab308, #b45309)',
+    'from-slate-700 to-blue-900':     'linear-gradient(135deg, #334155, #1e3a8a)',
+};
+
+/** מזהה הצבע באתר הדירוג הציבורי, לפי משפחת הצבע של מחלקת ה-from */
+const FAMILY_TO_RATING_ID: Record<string, string> = {
+    amber: 'amber', yellow: 'gold', orange: 'sunset', red: 'rose', rose: 'rose',
+    fuchsia: 'violet', purple: 'violet', violet: 'violet', indigo: 'ocean',
+    blue: 'blue', sky: 'cyan', cyan: 'cyan', teal: 'cyan', emerald: 'emerald',
+    green: 'emerald', lime: 'emerald', slate: 'slate', gray: 'slate',
+};
+
+/**
+ * גרדיאנט ששמור על פרסומת (בצורת Tailwind, כפי שהבילדר שומר) בצורה
+ * שאתר היעד מצפה לה. ערך לא מוכר נופל לברירת מחדל צבעונית, לא לשקוף.
+ */
+export function convertGradient(value: string, format: 'tailwind' | 'css' | 'id'): string {
+    const raw = (value ?? '').trim();
+    if (format === 'tailwind') return raw || shopAdGradient(0, 'tailwind');
+    if (/^(linear|radial|conic)-gradient\(/.test(raw)) {
+        return format === 'css' ? raw : shopAdGradient(0, 'id');
+    }
+    const pair = raw.split(/\s+/).filter(c => /^(from|to)-/.test(c)).join(' ');
+    if (format === 'css') return BUILDER_TAILWIND_TO_CSS[pair] ?? shopAdGradient(0, 'css');
+    const family = /^from-([a-z]+)-/.exec(pair)?.[1] ?? '';
+    return FAMILY_TO_RATING_ID[family] ?? shopAdGradient(0, 'id');
+}
 
 /** הגרדיאנט של המוצר ה-i, בצורה שהאתר מצפה לה */
 export function shopAdGradient(index: number, format: 'tailwind' | 'css' | 'id'): string {

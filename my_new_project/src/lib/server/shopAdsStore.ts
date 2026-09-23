@@ -20,13 +20,15 @@
 import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete } from './strapiClient.js';
 import { invalidate } from './cache.js';
 import { AD_SLOT_COUNT } from '../adSlots.js';
-import { DEFAULT_AD_STYLE, type AdStyle } from '../adStyle.js';
+import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from '../adStyle.js';
+import { parseAdImageFit } from '../adImageFit.js';
 import {
     SHOP_URL,
     SHOP_AD_SITES,
     normalizeShopAdsConfig,
     preferredSlots,
     shopAdGradient,
+    convertGradient,
     SHOP_AD_CTA_MAX,
     bandHeightFor,
     type ShopAdSite,
@@ -196,6 +198,8 @@ interface AdContent {
     cta: string;
     gradient: string;
     mainImage: string;
+    /** לוגו - ריק בכרטיס נגזר, קיים כשהוא הועלה בבילדר */
+    logo?: string;
     landing: Record<string, unknown>;
     companyName: string;
     /** מיקום וזום התמונה - ברירת המחדל, או מה שנערך ידנית */
@@ -208,12 +212,20 @@ interface AdContent {
     adStyle: AdStyle;
 }
 
-/** תוכן הכרטיס של מוצר - נגזר כולו מהמוצר בחנות */
-function adContent(p: ShopProduct, index: number, site: ShopAdSite): AdContent {
+/**
+ * תוכן הכרטיס של מוצר.
+ *
+ * `master` הוא הכרטיס של "קהילה בשכונה" אחרי שנערך בבילדר: ברגע שהוא
+ * קיים הוא גובר על הנגזר מהמוצר, וכל אתרי הרשת מקבלים את מה שנערך.
+ * ככה יש עורך אחד (הבילדר הקיים) ומקור אמת אחד, במקום מערכת עיצוב
+ * שנייה במסך הניהול.
+ */
+function adContent(p: ShopProduct, index: number, site: ShopAdSite, master?: EditedMaster): AdContent {
+    if (master) return masterContent(master, site);
     const priceNow = shekel(p.price);
     const priceWas = p.oldPrice && p.oldPrice > p.price ? shekel(p.oldPrice) : '';
     const priceFull = priceWas ? `${priceNow} במקום ${priceWas}` : priceNow;
-        // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
+    // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
     const subtitle = trim(p.store || priceFull, SHOP_AD_CTA_MAX * 2);
     return {
         title:     trim(p.name, 42),
@@ -228,6 +240,7 @@ function adContent(p: ShopProduct, index: number, site: ShopAdSite): AdContent {
         gradient:  shopAdGradient(index, site.gradient),
         fit:       { ...SHOP_AD_FIT },
         mainImage: p.image,
+        logo:      '',
         companyName: p.store || 'חנות החירות',
         landing: {
             headline:   trim(p.name, 80),
@@ -248,6 +261,44 @@ function adContent(p: ShopProduct, index: number, site: ShopAdSite): AdContent {
             hours:      '',
             products:   [],
         },
+    };
+}
+
+/**
+ * כרטיס מוצר שנערך בבילדר, כפי שהוא שמור ברשומה של "קהילה בשכונה".
+ * הוא ה"מאסטר": הסנכרון מעתיק אותו לשאר האתרים במקום לגזור מחדש.
+ */
+export interface EditedMaster {
+    id: string;
+    product: string;
+    title: string;
+    subtitle: string;
+    hoverText: string;
+    cta: string;
+    /** בצורת Tailwind, כפי שהבילדר שומר */
+    gradient: string;
+    logo: string;
+    mainImage: string;
+    fit: { x: number; y: number; z: number };
+    adStyle: AdStyle;
+    landing: Record<string, unknown>;
+    editedAt: string;
+}
+
+/** המאסטר בצורה שאתר היעד מצפה לה (גרדיאנט ותמונות) */
+function masterContent(m: EditedMaster, site: ShopAdSite): AdContent {
+    return {
+        title:     m.title,
+        subtitle:  m.subtitle,
+        hoverText: m.hoverText,
+        cta:       m.cta,
+        gradient:  convertGradient(m.gradient, site.gradient),
+        fit:       { ...m.fit },
+        adStyle:   m.adStyle,
+        mainImage: m.mainImage,
+        logo:      m.logo,
+        companyName: m.subtitle || 'חנות החירות',
+        landing:   { ...m.landing },
     };
 }
 
@@ -272,6 +323,10 @@ export interface ShopAdDraft {
     bandHeight: number;
     /** היעד של הכרטיס - דף המוצר בחנות */
     href: string;
+    /** האם הכרטיס נערך בבילדר (ואז הוא המאסטר לכל הרשת) */
+    edited: boolean;
+    /** מתי נערך */
+    editedAt: string;
 }
 
 /**
@@ -279,10 +334,14 @@ export interface ShopAdDraft {
  * ולכן הטיוטה במסך הניהול היא הדבר עצמו ולא שחזור שלו.
  * הגרדיאנט נלקח בצורת Tailwind, כי כך התצוגה המקדימה מרנדרת.
  */
-export function buildShopAdDrafts(products: ShopProduct[], wanted: number[]): ShopAdDraft[] {
+export function buildShopAdDrafts(
+    products: ShopProduct[],
+    wanted: number[],
+    masters: Map<string, EditedMaster> = new Map(),
+): ShopAdDraft[] {
     const site = SHOP_AD_SITES.find(s => s.id === 'community') ?? SHOP_AD_SITES[0];
     return products.map((p, i) => {
-        const c = adContent(p, i, site);
+        const c = adContent(p, i, site, masters.get(p.documentId));
         return {
             product:     p.documentId,
             slot:        wanted[i] ?? 0,
@@ -298,6 +357,8 @@ export function buildShopAdDrafts(products: ShopProduct[], wanted: number[]): Sh
             fit:         { ...c.fit },
             bandHeight:  c.adStyle.bandHeight,
             href:        productUrl(p),
+            edited:      Boolean(masters.get(p.documentId)),
+            editedAt:    masters.get(p.documentId)?.editedAt ?? '',
         };
     });
 }
@@ -410,6 +471,58 @@ interface SiteRows {
     taken: Set<number>;
 }
 
+/**
+ * הכרטיסים שנערכו בבילדר, לפי מזהה המוצר. המאסטר הוא תמיד הרשומה של
+ * "קהילה בשכונה": שם יושב הבילדר, ומשם הסנכרון מעתיק לשאר הרשת.
+ * רשומה נטענת במלואה (עם התמונות) רק כשהיא באמת מסומנת כערוכה.
+ */
+async function readEditedMasters(allRows: Row[]): Promise<Map<string, EditedMaster>> {
+    const out = new Map<string, EditedMaster>();
+    const edited = allRows.filter(r => {
+        const l = landingOf(r);
+        const site = l._site;
+        const isCommunity = site === undefined || site === null || site === 'community';
+        return isCommunity && l._shopEdited === true && typeof l._shopProduct === 'string';
+    });
+    for (const row of edited) {
+        try {
+            const full = await strapiGet<{ data: Row | null }>(`${ADS_ENDPOINT}/${encodeURIComponent(String(row.documentId))}`);
+            const r = full?.data;
+            if (!r) continue;
+            const l = landingOf(r);
+            out.set(String(l._shopProduct), {
+                id:        String(r.documentId),
+                product:   String(l._shopProduct),
+                title:     String(r.title ?? ''),
+                subtitle:  String(r.subtitle ?? ''),
+                hoverText: String(r.hover_text ?? ''),
+                cta:       String(r.cta ?? ''),
+                gradient:  String(r.gradient ?? ''),
+                logo:      String(r.logo ?? ''),
+                mainImage: String(r.main_image ?? ''),
+                fit:       parseAdImageFit(l.mainImageFit ?? l._mainImageFit) as { x: number; y: number; z: number },
+                adStyle:   parseAdStyle(l.adStyle ?? l._adStyle) ?? { ...DEFAULT_AD_STYLE },
+                landing:   contentLanding(l),
+                editedAt:  typeof l._shopEditedAt === 'string' ? l._shopEditedAt : '',
+            });
+        } catch (e) {
+            console.warn('[shopAds] קריאת כרטיס ערוך נכשלה:', e instanceof Error ? e.message : e);
+        }
+    }
+    return out;
+}
+
+/** תוכן דף הנחיתה בלבד - בלי המפתחות הפנימיים שחיים באותו JSON */
+function contentLanding(l: Record<string, any>): Record<string, unknown> {
+    const NON_CONTENT = new Set(['mainImageFit', 'mobileImage', 'mobileImageFit', 'adStyle']);
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(l)) {
+        if (k.startsWith('_') || NON_CONTENT.has(k)) continue;
+        out[k] = v;
+    }
+    return out;
+}
+
 async function readSubmittedSite(site: ShopAdSite, allRows: Row[]): Promise<SiteRows> {
     const mine = allRows.filter(r => belongsTo(site, r));
     const ours: SiteRows['ours'] = [];
@@ -514,7 +627,7 @@ function submittedColumns(c: AdContent, landing: Record<string, unknown>, now: s
         hover_text:         c.hoverText,
         cta:                c.cta,
         gradient:           c.gradient,
-        logo:               '',
+        logo:               c.logo ?? '',
         main_image:         c.mainImage,
         landing,
         submitted_by_id:    null,
@@ -582,6 +695,7 @@ async function syncSite(
     wanted: number[],
     decidedBy: string,
     allAdRows: Row[],
+    masters: Map<string, EditedMaster> = new Map(),
 ): Promise<SiteSyncResult> {
     const base: SiteSyncResult = { site: site.id, label: site.label, ok: true, created: 0, updated: 0, removed: 0, slots: [] };
     const state = await readSite(site, allAdRows);
@@ -601,7 +715,7 @@ async function syncSite(
                 hover_text:      c.hoverText,
                 cta:             c.cta,
                 gradient:        c.gradient,
-                logo:            '',
+                logo:            c.logo ?? '',
                 main_image:      c.mainImage,
                 main_image_fit:  { ...c.fit },
                 ad_style:        { ...c.adStyle },
@@ -720,14 +834,15 @@ export async function syncShopAds(opts: { decidedBy: string; config?: ShopAdsCon
     const sites = SHOP_AD_SITES.filter(s => cfg.sites.includes(s.id));
 
     // האוסף המשותף נקרא פעם אחת לכל האתרים שיושבים בו
-    const needsShared = sites.some(s => s.kind === 'submitted');
-    const allAdRows = needsShared ? await leanRows(ADS_ENDPOINT, 'landing') : [];
+    // תמיד נקרא: גם אתר שאינו באוסף המשותף צריך את הכרטיסים שנערכו בבילדר
+    const allAdRows = await leanRows(ADS_ENDPOINT, 'landing');
+    const masters = await readEditedMasters(allAdRows);
 
     const results: SiteSyncResult[] = [];
     // בזה אחר זה: כולם כותבים לאותו Strapi, ומקביליות כאן סיכנה timeout
     for (const site of sites) {
         try {
-            results.push(await syncSite(site, products, wanted, opts.decidedBy, allAdRows));
+            results.push(await syncSite(site, products, wanted, opts.decidedBy, allAdRows, masters));
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             console.warn(`[shopAds] sync to ${site.id} failed:`, msg);
@@ -838,6 +953,108 @@ export async function writeShopAdsConfig(cfg: ShopAdsConfig): Promise<ShopAdsCon
     }
     invalidate('items:');
     return clean;
+}
+
+// ============================================================
+// עריכה בבילדר
+// ============================================================
+
+/** הכרטיסים שנערכו בבילדר - למסך הניהול ולתצוגה המקדימה */
+export async function readShopAdMasters(): Promise<Map<string, EditedMaster>> {
+    try {
+        return await readEditedMasters(await leanRows(ADS_ENDPOINT, 'landing'));
+    } catch (e) {
+        console.warn('[shopAds] קריאת הכרטיסים הערוכים נכשלה:', e instanceof Error ? e.message : e);
+        return new Map();
+    }
+}
+
+/** מה שהבילדר שולח בשמירה - אותו מטען בדיוק של הגשת פרסומת רגילה */
+export interface BuilderPayload {
+    title?: string;
+    subtitle?: string;
+    hoverText?: string;
+    cta?: string;
+    gradient?: string;
+    logo?: string;
+    mainImage?: string;
+    mainImageFit?: unknown;
+    mobileImage?: string;
+    mobileImageFit?: unknown;
+    adStyle?: unknown;
+    landing?: Record<string, unknown>;
+}
+
+/**
+ * שמירת עריכה מהבילדר *על הרשומה הקיימת*, בלי ליצור גרסה שממתינה
+ * לאישור: לפרסומת מוצר אין מפרסם שממתין - היא כבר על האוויר, והעורך
+ * הוא בעל האתר עצמו.
+ *
+ * שומר סף כפול: הנתיב מוודא סופר-אדמין, וכאן נבדק שהרשומה היא באמת
+ * פרסומת מוצר (_shopProduct) - כך שגם באג במסך לא יוכל לגעת בפרסומת
+ * של מפרסם משלם. המקום בטור (_order) והשיוך לאתר נשמרים כמות שהם.
+ *
+ * הסימון _shopEdited הופך את הרשומה ל"מאסטר": הסנכרון הבא מפסיק לגזור
+ * את התוכן מהמוצר ומעתיק אותה לשאר אתרי הרשת.
+ */
+export async function saveShopAdFromBuilder(
+    id: string,
+    payload: BuilderPayload,
+    editedBy: string,
+): Promise<{ product: string; title: string } | null> {
+    const res = await strapiGet<{ data: Row | null }>(`${ADS_ENDPOINT}/${encodeURIComponent(id)}`);
+    const row = res?.data;
+    if (!row) return null;
+    const existing = landingOf(row);
+    const product = typeof existing._shopProduct === 'string' ? existing._shopProduct : '';
+    if (!product) return null;
+
+    const now = new Date().toISOString();
+    const landing: Record<string, unknown> = {
+        ...(payload.landing ?? contentLanding(existing)),
+        // המפתחות הפנימיים של הרשומה נשמרים - המקום בטור, השיוך והזיהוי
+        _site:          existing._site ?? 'community',
+        _order:         existing._order,
+        _shopProduct:   product,
+        _shopSyncedAt:  existing._shopSyncedAt,
+        _shopEdited:    true,
+        _shopEditedAt:  now,
+        _shopEditedBy:  editedBy,
+        mainImageFit:   parseAdImageFit(payload.mainImageFit),
+        adStyle:        parseAdStyle(payload.adStyle) ?? { ...DEFAULT_AD_STYLE },
+        ...(payload.mobileImage ? { mobileImage: payload.mobileImage, mobileImageFit: parseAdImageFit(payload.mobileImageFit) } : {}),
+    };
+    const columns: Record<string, unknown> = {
+        title:      payload.title ?? row.title,
+        subtitle:   payload.subtitle ?? row.subtitle,
+        hover_text: payload.hoverText ?? row.hover_text,
+        cta:        payload.cta ?? row.cta,
+        gradient:   payload.gradient ?? row.gradient,
+        logo:       payload.logo ?? '',
+        main_image: payload.mainImage ?? row.main_image,
+        landing,
+    };
+    await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(id)}`, { data: columns });
+    invalidate('ads:');
+    return { product, title: String(columns.title ?? '') };
+}
+
+/**
+ * ביטול העריכה: הרשומה חוזרת להיגזר מהמוצר בסנכרון הבא.
+ * לא נוגע בתוכן עכשיו - הסנכרון הוא שכותב אותו מחדש.
+ */
+export async function clearShopAdEdit(id: string): Promise<boolean> {
+    const res = await strapiGet<{ data: Row | null }>(`${ADS_ENDPOINT}/${encodeURIComponent(id)}`);
+    const row = res?.data;
+    const existing = landingOf(row ?? {});
+    if (!row || typeof existing._shopProduct !== 'string') return false;
+    const landing = { ...existing };
+    delete landing._shopEdited;
+    delete landing._shopEditedAt;
+    delete landing._shopEditedBy;
+    await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(id)}`, { data: { landing } });
+    invalidate('ads:');
+    return true;
 }
 
 /**
