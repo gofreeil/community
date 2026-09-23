@@ -132,6 +132,8 @@ export const shopAdsActions = {
         const session = await ensureSuperAdmin(event);
         const fd = await event.request.formData();
         const product = String(fd.get('product') ?? '').trim();
+        const back = String(fd.get('return') ?? '');
+        const ret = back.startsWith('/') && !back.startsWith('//') ? `&return=${encodeURIComponent(back)}` : '';
         if (!product) return fail(400, { shop: true, error: 'חסר מזהה מוצר' });
         let id: string | null;
         try {
@@ -140,7 +142,7 @@ export const shopAdsActions = {
             return fail(502, { shop: true, error: `פתיחת העריכה נכשלה: ${e instanceof Error ? e.message : e}` });
         }
         if (!id) return fail(404, { shop: true, error: 'המוצר כבר לא ברשימת המוצרים לפרסום' });
-        throw redirect(303, `/about/advertise/builder?edit=${encodeURIComponent(id)}&inplace=1`);
+        throw redirect(303, `/about/advertise/builder?edit=${encodeURIComponent(id)}&inplace=1${ret}`);
     },
 
     /** ביטול עריכה: הכרטיס חוזר להיגזר מהמוצר בסנכרון הבא */

@@ -10,7 +10,7 @@
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, setAdIntent, getAdEditTarget, setAdEditTarget, clearAdEditTarget, setAdEditInPlace, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, setAdIntent, getAdEditTarget, setAdEditTarget, clearAdEditTarget, setAdEditInPlace, setAdEditReturn, type AdIntent } from "$lib/adDraft";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
     let { data } = $props<{
@@ -867,6 +867,8 @@
             // inplace=1 - הגעה ממסך פרסומות המוצרים: השליחה תעדכן את
             // הפרסומת הקיימת ולא תיצור גרסה שממתינה לאישור.
             setAdEditInPlace(params.get("inplace") === "1");
+            // ומשם חוזרים למסך הניהול, לערוך את הכרטיס הבא
+            setAdEditReturn(params.get("inplace") === "1" ? params.get("return") : null);
             setAdIntent("edit");
             adIntent = "edit";
             const continuingSameAd = getAdEditTarget() === editId;

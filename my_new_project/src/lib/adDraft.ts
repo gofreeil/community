@@ -63,6 +63,20 @@ export function setAdEditInPlace(on: boolean): void {
     } catch { /* ignore */ }
 }
 
+/** לאן לחזור אחרי שמירה במקום - מסך הניהול שממנו הגיעו (נתיב פנימי בלבד) */
+export const AD_EDIT_RETURN_KEY = 'ad_builder_edit_return_v1';
+
+export function setAdEditReturn(path: string | null): void {
+    try {
+        if (path && path.startsWith('/') && !path.startsWith('//')) localStorage.setItem(AD_EDIT_RETURN_KEY, path);
+        else localStorage.removeItem(AD_EDIT_RETURN_KEY);
+    } catch { /* ignore */ }
+}
+
+export function getAdEditReturn(): string | null {
+    try { return localStorage.getItem(AD_EDIT_RETURN_KEY); } catch { return null; }
+}
+
 export function isAdEditInPlace(): boolean {
     try { return localStorage.getItem(AD_EDIT_INPLACE_KEY) === '1'; } catch { return false; }
 }

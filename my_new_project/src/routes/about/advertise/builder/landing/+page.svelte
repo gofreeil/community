@@ -5,7 +5,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, isAdEditInPlace, setAdEditInPlace, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, isAdEditInPlace, setAdEditInPlace, getAdEditReturn, setAdEditReturn, type AdIntent } from "$lib/adDraft";
 
     let { data } = $props<{
         data: {
@@ -544,6 +544,17 @@
                   });
             if (!res.ok) {
                 throw new Error(await extractServerError(res));
+            }
+            // עריכה במקום: חוזרים ישר למסך פרסומות המוצרים, לכרטיס הבא.
+            // אין כאן אישור שממתין, ולכן גם לא מסך "נשלחה לאישור".
+            const returnTo = inPlaceId ? getAdEditReturn() : null;
+            if (inPlaceId) {
+                clearAdEditTarget();
+                setAdEditInPlace(false);
+                setAdEditReturn(null);
+                clearAdIntent();
+                await goto(`${returnTo || '/admin/shop-ads'}?shopEdited=${encodeURIComponent(inPlaceId)}#shop-ads`);
+                return;
             }
             submitted = true;
             // מכאן הטיוטה כבר אצל המנהל - האזור האישי מפסיק לנדנד "סיים את עריכתו"

@@ -5,6 +5,7 @@
      * הפעולות (?/shopSave וכו') קיימות בשני הנתיבים - ראו shopAdsAdmin.ts.
      */
     import { enhance } from '$app/forms';
+    import { page } from '$app/state';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
     import {
         SERIES_COUNT, SLOTS_PER_VIEW, SLOTS_PER_SERIES,
@@ -56,6 +57,9 @@
         const site = shop.placement.find(p => p.site === 'community');
         return site?.ads.find(a => a.product === productDocId)?.id ?? '';
     }
+
+    /** הכרטיס שנערך הרגע - הבילדר מחזיר לכאן עם ?shopEdited=<id> */
+    const justEdited = $derived(page.url.searchParams.get('shopEdited') ?? '');
 
     const fmt = (iso?: string) =>
         iso ? new Date(iso).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' }) : 'מעולם לא';
@@ -196,7 +200,7 @@
 </form>
 
 <!-- ===== פעולות + כותרת הטיוטה בשורה אחת ===== -->
-<section class="mb-5">
+<section id="shop-ads" class="mb-5 scroll-mt-4">
     <div class="flex flex-wrap items-center gap-2 mb-2">
         <h3 class="text-base font-black text-white"
             title="כך בדיוק ייראה הכרטיס בטור - בגודל אמיתי. שום דבר מזה לא עלה לאוויר עד שתלחץ &quot;סנכרן עכשיו&quot;.">
@@ -227,14 +231,16 @@
         <div class="flex flex-wrap gap-4 items-start">
             {#each shop.drafts as d (d.product)}
                 {@const adId = communityAdId(d.product)}
-                <figure class="m-0">
+                <!-- הכרטיס שנערך הרגע (חזרה מהבילדר) מודגש -->
+                <figure class="m-0 rounded-lg {adId && adId === justEdited ? 'ring-2 ring-emerald-400/70 ring-offset-4 ring-offset-transparent' : ''}">
                     <div class="flex items-center gap-2 mb-1.5">
                         <span class="text-[11px] font-black text-white bg-white/10 rounded-full px-2 py-0.5">
                             מקום {d.slot || '-'}
                         </span>
                         {#if d.edited}
-                            <span class="text-[11px] font-bold text-amber-300" title="נערך בבילדר - זה מה שמתפרסם בכל הרשת">
-                                ✎ נערך
+                            <span class="text-[11px] font-black text-emerald-200 bg-emerald-500/20 border border-emerald-400/40 rounded-full px-2 py-0.5"
+                                  title="נערך בבילדר - זה מה שמתפרסם בכל הרשת">
+                                ✓ נערך ידנית
                             </span>
                         {:else}
                             <span class="text-[11px] text-gray-400 truncate max-w-[5rem]">{d.store}</span>
@@ -254,13 +260,14 @@
                              ולא יוצרת גרסה ממתינה). למוצר שעוד לא הופץ, shopEdit יוצר
                              קודם רשומה מוסתרת - כך אפשר לערוך לפני ההפצה. -->
                         {#if adId}
-                            <a href="/about/advertise/builder?edit={adId}&inplace=1"
+                            <a href="/about/advertise/builder?edit={adId}&inplace=1&return={encodeURIComponent(page.url.pathname)}"
                                class="block text-center px-2 py-1.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 text-sm font-bold hover:bg-amber-500/30 no-underline">
                                 ✎ ערוך בבילדר
                             </a>
                         {:else}
                             <form method="POST" action="?/shopEdit" use:enhance={withBusy}>
                                 <input type="hidden" name="product" value={d.product} />
+                                <input type="hidden" name="return" value={page.url.pathname} />
                                 <button type="submit" disabled={busy}
                                         class="w-full px-2 py-1.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 text-sm font-bold hover:bg-amber-500/30 disabled:opacity-50">
                                     ✎ ערוך בבילדר
