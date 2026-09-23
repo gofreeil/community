@@ -208,7 +208,7 @@ export const he = {
         whatsapp_title: "💬 קבוצות וואטסאפ של השכונה שלך",
         whatsapp_join: "הצטרף לקבוצת הווטסאפ של השכונה שלך ←",
         rec_title: "💡 ההמלצה שלך",
-        rec_snooze: "🔔 הזכר לי מחר",
+        rec_snooze: "🔔 הזכר לי בהמשך",
         rec_go: "עבור אל ←",
 
         // ===== 12 ההמלצות =====
@@ -734,7 +734,7 @@ export const en = {
         whatsapp_title: "💬 Your neighborhood's WhatsApp groups",
         whatsapp_join: "Join your neighborhood's WhatsApp group ←",
         rec_title: "💡 Your recommendation",
-        rec_snooze: "🔔 Remind me tomorrow",
+        rec_snooze: "🔔 Remind me later",
         rec_go: "Go to ←",
 
         // ===== The 12 recommendations =====
@@ -1259,7 +1259,7 @@ export const ru = {
         whatsapp_title: "💬 WhatsApp-группы вашего района",
         whatsapp_join: "Присоединяйтесь к WhatsApp-группе вашего района ←",
         rec_title: "💡 Ваша рекомендация",
-        rec_snooze: "🔔 Напомнить завтра",
+        rec_snooze: "🔔 Напомнить позже",
         rec_go: "Перейти ←",
 
         // ===== 12 рекомендаций =====

@@ -328,17 +328,32 @@
 			localStorage.setItem(key, JSON.stringify([...s]));
 	}
 	let dismissedRecs = $state<Set<string>>(loadRecSet("rec_dismissed"));
-	let snoozedRecs = $state<Set<string>>(loadRecSet("rec_snoozed"));
+	// "הזכר לי בהמשך": id → תאריך הדחייה. ההמלצה חוזרת בכניסה הבאה
+	// שאחרי REC_INTERVAL_DAYS (פורמט ישן - מערך בלי תאריכים - נחשב כבר בשל)
+	function loadSnoozed(): Record<string, string> {
+		if (typeof localStorage === "undefined") return {};
+		try {
+			const p = JSON.parse(localStorage.getItem("rec_snoozed") ?? "{}");
+			if (Array.isArray(p)) return Object.fromEntries(p.map((id: string) => [id, ""]));
+			return p && typeof p === "object" ? p : {};
+		} catch {
+			return {};
+		}
+	}
+	function saveSnoozed(s: Record<string, string>) {
+		try { localStorage.setItem("rec_snoozed", JSON.stringify(s)); } catch {}
+	}
+	let snoozedRecs = $state<Record<string, string>>(loadSnoozed());
 	function dismissRec(id: string) {
 		dismissedRecs = new Set([...dismissedRecs, id]);
 		saveRecSet("rec_dismissed", dismissedRecs);
 	}
 	function snoozeRec(id: string) {
-		snoozedRecs = new Set([...snoozedRecs, id]);
-		saveRecSet("rec_snoozed", snoozedRecs);
+		snoozedRecs = { ...snoozedRecs, [id]: new Date().toISOString().slice(0, 10) };
+		saveSnoozed(snoozedRecs);
 	}
 	function isRecVisible(id: string) {
-		return !dismissedRecs.has(id) && !snoozedRecs.has(id);
+		return !dismissedRecs.has(id) && !(id in snoozedRecs);
 	}
 
 	// ===== business_type (localStorage) =====
@@ -1984,10 +1999,22 @@
 
 	onMount(() => {
 		const today = new Date().toISOString().slice(0, 10);
-		// כמה ימים עברו מאז ההמלצה האחרונה - מתקדמים להמלצה הבאה רק אחרי REC_INTERVAL_DAYS
-		const daysSinceLast = dailyState.lastDate
-			? Math.floor((new Date(today).getTime() - new Date(dailyState.lastDate).getTime()) / 86_400_000)
+		const daysSince = (date: string) => date
+			? Math.floor((new Date(today).getTime() - new Date(date).getTime()) / 86_400_000)
 			: Infinity;
+		// המלצה שנדחתה ב"הזכר לי בהמשך" חוזרת קודם - אם עברו REC_INTERVAL_DAYS מהדחייה
+		const due = allRecs.find(r => r.id in snoozedRecs && !dismissedRecs.has(r.id) && r.eligible()
+			&& daysSince(snoozedRecs[r.id]) >= REC_INTERVAL_DAYS);
+		if (due) {
+			const { [due.id]: _, ...rest } = snoozedRecs;
+			snoozedRecs = rest;
+			saveSnoozed(snoozedRecs);
+			dailyState = { lastDate: today, shownIds: [...dailyState.shownIds.filter(id => id !== due.id), due.id] };
+			saveDaily(dailyState);
+			return;
+		}
+		// כמה ימים עברו מאז ההמלצה האחרונה - מתקדמים להמלצה הבאה רק אחרי REC_INTERVAL_DAYS
+		const daysSinceLast = daysSince(dailyState.lastDate);
 		if (daysSinceLast < REC_INTERVAL_DAYS && dailyState.shownIds.length > 0) {
 			const lastId = dailyState.shownIds[dailyState.shownIds.length - 1];
 			if (allRecs.find(r => r.id === lastId && r.eligible() && isRecVisible(r.id))) return;
