@@ -392,22 +392,12 @@
         </a>
 
         <!-- ── שדכן מערכת: בקשה / סטטוס (מוצג לגברים ולנשים כאחד) ── -->
-        {#if mmStatus === 'approved'}
-            <a href="/singles/matchmaker" class="block mb-6 rounded-2xl bg-gradient-to-r from-rose-500/15 to-pink-500/10 border border-rose-500/40 px-4 py-3.5 hover:border-rose-500/70 transition">
-                <div class="flex items-center gap-3">
-                    <div class="text-2xl">💘</div>
-                    <div class="flex-1 text-right">
-                        <p class="text-white font-bold text-sm">{$_('extras.s_mm_approved')}</p>
-                        <p class="text-rose-200/80 text-xs mt-0.5">{$_('extras.s_mm_tools_hint')}</p>
-                    </div>
-                    <span class="shrink-0 bg-rose-500/20 text-rose-100 text-xs font-bold px-3 py-1.5 rounded-full border border-rose-400/40">{$_('extras.s_mm_tools_btn')} ←</span>
-                </div>
-            </a>
-        {:else if mmStatus === 'pending'}
+        <!-- שדכן/ית מאושר/ת: כרטיס "כלים לשדכן" עבר לאזור האישי (/profile) -->
+        {#if mmStatus === 'pending'}
             <div class="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/30 px-4 py-3.5 text-center">
                 <p class="text-amber-200 text-sm font-bold">⏳ {$_('extras.s_mm_pending')}</p>
             </div>
-        {:else}
+        {:else if mmStatus !== 'approved'}
             <div class="mb-6 rounded-2xl bg-gradient-to-r from-rose-500/12 to-purple-500/8 border border-rose-500/30 px-4 py-4">
                 <div class="flex items-start gap-3">
                     <div class="text-2xl">💘</div>

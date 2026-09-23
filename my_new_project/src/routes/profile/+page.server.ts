@@ -16,7 +16,7 @@ import { markAdMessagesHandled, reconcileAdMessages } from '$lib/server/adNotifi
 import { reconcileCoordinatorMessages, markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { approveCoordinatorRequest, rejectCoordinatorRequest, findPendingCoordinatorRequest } from '$lib/server/db';
 import { decideSinglesAccess } from '$lib/server/singlesAccess';
-import { decideMatchmakerRequest, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
+import { decideMatchmakerRequest, getMatchmakerStatus, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
 import { markSinglesRequestMessageHandled } from '$lib/server/singlesRequestNotifications';
 import { decideSinglesCard, markSinglesReviewMessageHandled } from '$lib/server/singlesCardReview';
 import { decideWish } from '$lib/server/wishDecision';
@@ -43,6 +43,7 @@ export const load: PageServerLoad = async (event) => {
             citiesData,
             oauth_image: null,
             pendingAdsCount: 0,
+            isApprovedMatchmaker: false,
             registeredUsersCount: 0,
             strapiAvailable: true,
             userFromStaleCache: false,
@@ -179,10 +180,17 @@ export const load: PageServerLoad = async (event) => {
     // כל הפרסומות של המשתמש - לרשימה עם כפתור עריכה פר-פרסומת. כשל כאן
     // משאיר את הכרטיס במצב טיוטה. myAd (האחת ה"עיקרית", לפי מאושרת →
     // ממתינה → נדחתה) ממשיך להזין את כרטיס הטיוטה הקיים.
-    const myAds = await getMyAds({
-        id: session.user?.id as string | undefined,
-        email: resolvedUser?.email ?? session.user?.email ?? undefined,
-    }).catch(() => [] as Awaited<ReturnType<typeof getMyAds>>);
+    // במקביל: האם המשתמש שדכן/ית מערכת מאושר/ת - לכרטיס "כלים לשדכן" באזור האישי.
+    // סופר-אדמין לא צריך אותו (יש לו כפתור "שדכנים" בלוח הניהול).
+    const [myAds, isApprovedMatchmaker] = await Promise.all([
+        getMyAds({
+            id: session.user?.id as string | undefined,
+            email: resolvedUser?.email ?? session.user?.email ?? undefined,
+        }).catch(() => [] as Awaited<ReturnType<typeof getMyAds>>),
+        resolvedUser?.role === 'super_admin'
+            ? Promise.resolve(false)
+            : getMatchmakerStatus(session.user.id).then((s) => s === 'approved').catch(() => false),
+    ]);
     const myAd = myAds.length > 0
         ? { status: myAds[0].status, title: myAds[0].title, id: myAds[0].id }
         : null;
@@ -286,6 +294,7 @@ export const load: PageServerLoad = async (event) => {
         citiesData,
         oauth_image: session.user?.image ?? null,
         pendingAdsCount,
+        isApprovedMatchmaker,
         // מצב הפרסומת של המשתמש עצמו - כדי שהכרטיס באזור האישי לא יקרא
         // "טיוטה" למי שכבר מפרסם בפועל
         myAd,
