@@ -1,6 +1,6 @@
 <script lang="ts">
     /**
-     * ניהול פרסומות החנות: הגדרות, סנכרון, טיוטת הכרטיסים והמצב בכל אתר.
+     * ניהול פרסומות החנות: הגדרות, סנכרון, טיוטת הכרטיסים.
      * מוצג גם כמסך עצמאי (/admin/shop-ads) וגם כקומה בתוך /admin/ads-review;
      * הפעולות (?/shopSave וכו') קיימות בשני הנתיבים - ראו shopAdsAdmin.ts.
      */
@@ -57,14 +57,6 @@
         return site?.ads.find(a => a.product === productDocId)?.id ?? '';
     }
 
-    /** המוצר שהוצב במקום מסוים באתר מסוים - לטבלת המצב */
-    function placedFor(siteId: string, productDocId: string) {
-        const site = shop.placement.find(p => p.site === siteId);
-        return site?.ads.find(a => a.product === productDocId);
-    }
-    function siteError(siteId: string): string {
-        return shop.placement.find(p => p.site === siteId)?.error ?? '';
-    }
     const fmt = (iso?: string) =>
         iso ? new Date(iso).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' }) : 'מעולם לא';
 
@@ -203,35 +195,32 @@
     </div>
 </form>
 
-<!-- ===== פעולות ===== -->
-<div class="flex flex-wrap gap-2 mb-5">
-    <form method="POST" action="?/shopSync" use:enhance={withBusy}>
-        <button type="submit" disabled={busy}
-                class="px-4 py-2 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-200 text-sm font-bold hover:bg-blue-500/30 disabled:opacity-50">
-            🔄 סנכרן עכשיו
-        </button>
-    </form>
-    <form method="POST" action="?/shopRemoveAll"
-          onsubmit={(e) => { if (!confirm('להוריד את כל פרסומות המוצרים מכל אתרי הרשת?')) e.preventDefault(); }}
-          use:enhance={withBusy}>
-        <button type="submit" disabled={busy}
-                class="px-4 py-2 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm font-bold hover:bg-red-500/25 disabled:opacity-50">
-            🗑 הורד את כולן
-        </button>
-    </form>
-</div>
-
-<!-- ===== הטיוטה: הכרטיסים כפי שייראו בטור ===== -->
-<section class="mb-6">
-    <div class="flex flex-wrap items-baseline gap-2 mb-1">
-        <h3 class="text-lg font-black text-white">טיוטת הפרסומות ({shop.drafts.length})</h3>
-        <span class="text-xs text-gray-500">כך בדיוק ייראה הכרטיס בטור - בגודל אמיתי</span>
+<!-- ===== פעולות + כותרת הטיוטה בשורה אחת ===== -->
+<section class="mb-5">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+        <h3 class="text-base font-black text-white"
+            title="כך בדיוק ייראה הכרטיס בטור - בגודל אמיתי. שום דבר מזה לא עלה לאוויר עד שתלחץ &quot;סנכרן עכשיו&quot;.">
+            טיוטת הפרסומות <span class="text-gray-500 font-bold">({shop.drafts.length})</span>
+        </h3>
+        <div class="flex gap-1.5 ms-auto">
+            <form method="POST" action="?/shopSync" use:enhance={withBusy}>
+                <button type="submit" disabled={busy}
+                        class="px-2.5 py-1 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-200 text-xs font-bold hover:bg-blue-500/25 disabled:opacity-50">
+                    🔄 סנכרן עכשיו
+                </button>
+            </form>
+            <form method="POST" action="?/shopRemoveAll"
+                  onsubmit={(e) => { if (!confirm('להוריד את כל פרסומות המוצרים מכל אתרי הרשת?')) e.preventDefault(); }}
+                  use:enhance={withBusy}>
+                <button type="submit" disabled={busy}
+                        class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-red-300 text-xs font-bold hover:bg-red-500/15 disabled:opacity-50">
+                    🗑 הורד את כולן
+                </button>
+            </form>
+        </div>
     </div>
-    <p class="text-xs text-gray-400 mb-3">
-        שום דבר מזה לא עלה לאוויר עד שתלחץ "סנכרן עכשיו".
-    </p>
     {#if shop.drafts.length === 0}
-        <p class="text-sm text-gray-400">
+        <p class="text-xs text-gray-500">
             אין מוצרים מתאימים. מוצר נכנס לפרסום אם הוא מאושר בחנות, יש לו תמונה, יש מלאי, והתצוגה שלו "מופיע".
         </p>
     {:else}
@@ -289,57 +278,10 @@
                 </figure>
             {/each}
         </div>
-        <p class="text-[11px] text-gray-500 mt-3">
+        <p class="text-[11px] text-gray-600 mt-2">
             התוכן נגזר מהמוצר בחנות (שם, מחיר, שם החנות, תמונה). "ערוך בבילדר" פותח את
             אותו בונה פרסומות שהמפרסמים משתמשים בו - ומה שנשמר שם מתפרסם בכל אתרי הרשת
             בסנכרון הבא, במקום הנגזר מהמוצר.
         </p>
     {/if}
-</section>
-
-<!-- ===== המצב בכל אתר ===== -->
-<section>
-    <h3 class="text-lg font-black text-white mb-3">המקום בפועל בכל אתר</h3>
-    <div class="overflow-x-auto rounded-2xl border border-white/10">
-        <table class="w-full text-sm">
-            <thead class="bg-white/5 text-gray-400">
-                <tr>
-                    <th class="text-right font-bold px-3 py-2">אתר</th>
-                    {#each shop.products as p (p.documentId)}
-                        <th class="text-right font-bold px-3 py-2 whitespace-nowrap">{p.name}</th>
-                    {/each}
-                </tr>
-            </thead>
-            <tbody>
-                {#each shop.sites.filter(s => sites.includes(s.id)) as site (site.id)}
-                    <tr class="border-t border-white/5">
-                        <td class="px-3 py-2 text-gray-200 whitespace-nowrap">
-                            {site.label}
-                            {#if siteError(site.id)}
-                                <span class="block text-[11px] text-red-300">{siteError(site.id)}</span>
-                            {/if}
-                        </td>
-                        {#each shop.products as p (p.documentId)}
-                            {@const placed = placedFor(site.id, p.documentId)}
-                            <td class="px-3 py-2">
-                                {#if placed}
-                                    <span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-black
-                                                 {placed.slot === shop.wanted[shop.products.indexOf(p)]
-                                                    ? 'bg-emerald-500/20 text-emerald-200'
-                                                    : 'bg-amber-500/20 text-amber-200'}">
-                                        מקום {placed.slot}
-                                    </span>
-                                {:else}
-                                    <span class="text-gray-600 text-xs">—</span>
-                                {/if}
-                            </td>
-                        {/each}
-                    </tr>
-                {/each}
-            </tbody>
-        </table>
-    </div>
-    <p class="text-[11px] text-gray-500 mt-2">
-        תג כתום = המקום המבוקש היה תפוס והמוצר הועבר למקום הפנוי הבא.
-    </p>
 </section>
