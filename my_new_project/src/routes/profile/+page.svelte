@@ -3577,7 +3577,7 @@
 					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/50 flex items-center justify-center gap-1.5"
 					title={tFn("profile.manage_users_title")}
 				>
-					{tFn("profile.manage_users")}
+					{tFn("profile.manage_users_short")}
 					{#if (data.registeredUsersCount ?? 0) > 0}
 						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-400/40 text-[11px] font-black">
 							{data.registeredUsersCount}
@@ -3589,7 +3589,7 @@
 					class="relative flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
 					title={tFn("profile.manage_content_title")}
 				>
-					{tFn("profile.manage_content")}
+					{tFn("profile.manage_content_short")}
 					{#if (data.pendingAdsCount ?? 0) > 0}
 						<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
 							{data.pendingAdsCount}
@@ -3601,7 +3601,7 @@
 					class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center justify-center gap-1.5"
 					title={tFn("profile.coord_area_title")}
 				>
-					🏘️ {tFn("profile.coord_area")}
+					🏘️ {tFn("profile.coord_area_short")}
 				</a>
 					<a
 						href="/singles/matchmaker"
@@ -3648,6 +3648,28 @@
 				{/if}
 			</div>
 		</div>
+	{/if}
+
+	<!-- ===== שדכן/ית מערכת מאושר/ת - כניסה לכלי השדכנות (רק למי שכבר שדכן) ===== -->
+	{#if data.isApprovedMatchmaker}
+		<a href="/singles/matchmaker" class="group block mb-2 rounded-2xl bg-gradient-to-r from-rose-500/15 to-pink-500/10 border border-rose-500/40 px-4 py-3.5 hover:border-rose-500/70 transition {mobileTab !== 'main' ? 'hidden md:block' : ''}">
+			<div class="flex items-center gap-3">
+				<div class="text-2xl">💘</div>
+				<div class="flex-1 text-right">
+					<p class="text-white font-bold text-sm">{tFn("extras.s_mm_approved")}</p>
+					<p class="text-rose-200/80 text-xs mt-0.5">{tFn("extras.s_mm_tools_hint")}</p>
+				</div>
+				<span class="shrink-0 inline-flex items-center gap-1.5 bg-gradient-to-l from-rose-600 to-fuchsia-600 text-white text-sm font-bold ps-3 pe-2 py-2 rounded-xl shadow-lg shadow-rose-600/30 ring-1 ring-white/15 group-hover:from-rose-500 group-hover:to-fuchsia-500 group-hover:shadow-rose-500/50 transition-all">
+					<svg class="w-4 h-4 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/>
+					</svg>
+					{tFn("extras.s_mm_tools_btn")}
+					<span class="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center transition-transform group-hover:-translate-x-0.5 ltr:group-hover:translate-x-0.5">
+						<svg class="w-3.5 h-3.5 ltr:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+					</span>
+				</span>
+			</div>
+		</a>
 	{/if}
 
 	<!-- ===== קומה 2: הודעות אישיות ===== -->
