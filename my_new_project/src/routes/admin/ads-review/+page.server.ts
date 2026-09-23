@@ -25,6 +25,7 @@ import {
 } from '$lib/server/adsStore';
 import { markAdMessagesHandled } from '$lib/server/adNotifications';
 import { publishAdEverywhere } from '$lib/server/adsSyndication';
+import { loadShopAdsAdmin, shopAdsActions } from '$lib/server/shopAdsAdmin';
 
 const fmtDay = (iso: string) =>
     new Date(iso).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -37,7 +38,15 @@ async function ensureSuperAdmin(event: any) {
 }
 
 export const load: PageServerLoad = async (event) => {
-    const { role } = await ensureAdsAdmin(event);
+    const { role, session } = await ensureAdsAdmin(event);
+    // קומת הפרסומות המיובאות מהחנות - לסופר-אדמין בלבד. רצה במקביל לשאר,
+    // ותקלה בה לא מפילה את הדף
+    const shopPromise = role === 'super_admin'
+        ? loadShopAdsAdmin(session?.user?.id ?? 'super_admin').catch((e) => {
+            console.warn('[admin/ads-review] shop ads load failed:', e instanceof Error ? e.message : e);
+            return null;
+        })
+        : Promise.resolve(null);
     // Lazy cron: בכל טעינה של הדף - בודק אם יש פרסומות שצריך לשלוח עליהן תזכורת.
     // אידימפוטנטי, שולח רק פעם אחת לכל שלב (30/7/1 ימים לפני פקיעה).
     const reminderRun = await processExpiryReminders().catch(() => ({ sent: 0, checked: 0 }));
@@ -68,7 +77,9 @@ export const load: PageServerLoad = async (event) => {
     }
     const backendUnavailable = failures.length > 0;
 
-    return { pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable, role };
+    const shop = await shopPromise;
+
+    return { pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable, role, shop };
 };
 
 function parseIds(formData: FormData): string[] {
@@ -80,6 +91,9 @@ function parseIds(formData: FormData): string[] {
 }
 
 export const actions: Actions = {
+    // הפעולות של קומת הפרסומות המיובאות מהחנות (shopSave, shopSync...)
+    ...shopAdsActions,
+
     approve: async (event) => {
         const { session } = await ensureAdsAdmin(event);
         const formData = await event.request.formData();

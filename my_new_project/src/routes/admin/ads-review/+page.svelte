@@ -6,6 +6,8 @@
     import { heMatches } from '$lib/search';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
+    import ShopAdsManager from '$lib/components/ShopAdsManager.svelte';
+    import { SHOP_URL } from '$lib/shopAds';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -227,13 +229,6 @@
                class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-bold hover:bg-white/10">
                 פרופיל
             </a>
-            {#if isSuperAdmin}
-                <a href="/admin/shop-ads"
-                   class="px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 text-xs font-bold hover:bg-emerald-500/25"
-                   title="המוצרים החדשים של חנות החירות בטור הפרסומות של כל אתרי הרשת">
-                    🛒 מוצרי החנות
-                </a>
-            {/if}
             <button type="button"
                     onclick={() => { invalidateAll(); lastRefresh = Date.now(); }}
                     class="px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs font-bold hover:bg-amber-500/25"
@@ -277,13 +272,13 @@
         </div>
     </section>
 
-    <!-- הודעות -->
-    {#if form?.success}
+    <!-- הודעות (של קומת החנות מוצגות בתוך הקומה עצמה) -->
+    {#if form?.success && !('shop' in form && form.shop)}
         <div class="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-emerald-200 text-sm font-bold">
             ✅ {form.message}
         </div>
     {/if}
-    {#if form && 'error' in form && form.error}
+    {#if form && 'error' in form && form.error && !('shop' in form && form.shop)}
         <div class="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200 text-sm font-bold">
             ❌ {form.error}
         </div>
@@ -644,6 +639,28 @@
                 </article>
             {/each}
         </div>
+    {/if}
+
+    <!-- ============================================================ -->
+    <!-- פרסומות מיובאות אוטומטית מאתרים אחרים (מוצרי חנות החירות)    -->
+    <!-- ============================================================ -->
+    {#if isSuperAdmin && data.shop}
+        <section class="mt-10 rounded-3xl border border-emerald-500/30 bg-emerald-500/[0.04] p-3 md:p-6">
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
+                <div class="min-w-0">
+                    <h2 class="text-xl md:text-2xl font-black text-white mb-1">🛒 פרסומות מיובאות אוטומטית מאתרים אחרים</h2>
+                    <p class="text-xs md:text-sm text-gray-400">
+                        המוצרים האחרונים שאושרו בחנות החירות עולים אוטומטית לטור הפרסומות בכל אתרי הרשת,
+                        בסדרה {data.shop.wanted.join(', ')}. מקום שכבר נמכר למפרסם - המוצר עובר למקום הפנוי הבא.
+                    </p>
+                </div>
+                <a href={SHOP_URL} target="_blank" rel="noopener noreferrer"
+                   class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-bold hover:bg-white/10">
+                    לחנות ↗
+                </a>
+            </div>
+            <ShopAdsManager shop={data.shop} {form} />
+        </section>
     {/if}
 
     <!-- ============================================================ -->
