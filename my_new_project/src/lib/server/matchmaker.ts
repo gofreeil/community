@@ -20,6 +20,18 @@ function reqStatus(extra_fields: string | null | undefined): string {
 }
 
 /**
+ * בקשת גישה ללוח (singles_access) בתפקיד "שדכן/ית" שאושרה = שדכן/ית מאושר/ת.
+ * יש שני מסלולים לבקש שדכנות (שער הלוח / "בקשה להיות שדכן מערכת"), והמנהל
+ * שמאשר בשער "שדכן/ית" מתכוון לאשר שדכנות - לא רק צפייה בלוח.
+ */
+function isApprovedMatchmakerAccess(r: { extra_fields?: string | null }): boolean {
+    try {
+        const ef = JSON.parse(r.extra_fields || '{}');
+        return ef.role === 'matchmaker' && ef.status === 'approved';
+    } catch { return false; }
+}
+
+/**
  * מצב בקשת/הרשאת השדכנות של המשתמש.
  * 'unavailable' = תקלת Strapi זמנית — אי-אפשר לקבוע. הקוראים שמגנים על גישה
  * חייבים לטפל בזה כ"לא ודאי" ולא לחסום/לפתוח בטעות.
@@ -33,8 +45,12 @@ export async function getMatchmakerStatus(
     if (!userId) return 'none';
     const uid = String(userId);
     try {
-        const mine = (await getItemsByCategory(MATCHMAKER_REQUEST_CATEGORY)).filter((r) => r.user_id === uid);
+        const [mine, access] = await Promise.all([
+            getItemsByCategory(MATCHMAKER_REQUEST_CATEGORY).then((l) => l.filter((r) => r.user_id === uid)),
+            getItemsByCategory('singles_access').then((l) => l.filter((r) => r.user_id === uid)),
+        ]);
         if (mine.some((r) => reqStatus(r.extra_fields) === 'approved')) return 'approved';
+        if (access.some(isApprovedMatchmakerAccess)) return 'approved';
         if (mine.some((r) => reqStatus(r.extra_fields) === 'pending')) return 'pending';
         return 'none';
     } catch {
@@ -48,8 +64,10 @@ export async function getMatchmakerStatus(
  * שרת אפשר בקשה כפולה בשליחה חוזרת מהירה.
  */
 export async function findOpenMatchmakerRequest(userId: string): Promise<'approved' | 'pending' | null> {
-    const mine = (await getItemsByUserId(String(userId))).filter((r) => r.category === MATCHMAKER_REQUEST_CATEGORY);
+    const all = await getItemsByUserId(String(userId));
+    const mine = all.filter((r) => r.category === MATCHMAKER_REQUEST_CATEGORY);
     if (mine.some((r) => reqStatus(r.extra_fields) === 'approved')) return 'approved';
+    if (all.some((r) => r.category === 'singles_access' && isApprovedMatchmakerAccess(r))) return 'approved';
     if (mine.some((r) => reqStatus(r.extra_fields) === 'pending')) return 'pending';
     return null;
 }
