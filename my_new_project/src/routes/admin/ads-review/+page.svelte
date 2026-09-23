@@ -208,14 +208,14 @@
 </script>
 
 <svelte:head>
-    <title>אישור פרסומות - מנהל ראשי</title>
+    <title>ניהול פרסומות - מנהל ראשי</title>
 </svelte:head>
 
 <div class="max-w-6xl mx-auto px-3 md:px-4 py-4 md:py-10" dir="rtl">
     <!-- כותרת + ניווט -->
     <header class="mb-5 md:mb-6 flex flex-wrap items-start gap-3 justify-between">
         <div class="min-w-0">
-            <h1 class="text-2xl md:text-3xl font-black text-white mb-1">📢 אישור פרסומות</h1>
+            <h1 class="text-2xl md:text-3xl font-black text-white mb-1">📢 ניהול פרסומות</h1>
             <p class="text-xs md:text-sm text-gray-400">פרסומות שנשלחו על־ידי משתמשים - אשר/דחה לפני פרסום באתר.</p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
