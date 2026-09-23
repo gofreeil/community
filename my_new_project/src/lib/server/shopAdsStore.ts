@@ -27,12 +27,10 @@ import {
     normalizeShopAdsConfig,
     preferredSlots,
     shopAdGradient,
-    hasOverride,
     SHOP_AD_CTA_MAX,
     bandHeightFor,
     type ShopAdSite,
     type ShopAdsConfig,
-    type ShopAdOverride,
 } from '../shopAds.js';
 
 const ADS_ENDPOINT   = '/api/submitted-ads';
@@ -210,29 +208,25 @@ interface AdContent {
     adStyle: AdStyle;
 }
 
-/**
- * תוכן הכרטיס של מוצר. מה שנערך ידנית במסך הניהול (ov) גובר; כל השאר
- * נגזר מהמוצר, וממשיך להתעדכן לבד כשהמחיר או התיאור בחנות משתנים.
- */
-function adContent(p: ShopProduct, index: number, site: ShopAdSite, ov?: ShopAdOverride): AdContent {
+/** תוכן הכרטיס של מוצר - נגזר כולו מהמוצר בחנות */
+function adContent(p: ShopProduct, index: number, site: ShopAdSite): AdContent {
     const priceNow = shekel(p.price);
     const priceWas = p.oldPrice && p.oldPrice > p.price ? shekel(p.oldPrice) : '';
     const priceFull = priceWas ? `${priceNow} במקום ${priceWas}` : priceNow;
-    const colorIndex = typeof ov?.gradientIndex === 'number' ? ov.gradientIndex : index;
-    // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
-    const subtitle = trim(ov?.subtitle ?? (p.store || priceFull), SHOP_AD_CTA_MAX * 2);
+        // שם החנות בלבד - מזהה את המוכר בלי להתחרות עם המחיר שברצועה
+    const subtitle = trim(p.store || priceFull, SHOP_AD_CTA_MAX * 2);
     return {
-        title:     trim(ov?.title ?? p.name, 42),
+        title:     trim(p.name, 42),
         // כלל הברזל: תת-כותרת ארוכה מקבלת מקום בכך שהרצועה הצבעונית
         // מטפסת לתוך אזור התמונה (שגובהו קבוע) - לא בהארכת הכרטיס.
         adStyle:   { ...DEFAULT_AD_STYLE, bandHeight: bandHeightFor(subtitle) },
         subtitle,
-        hoverText: trim(ov?.hoverText ?? (p.desc || `${p.name} - בחנות החירות`), 160),
+        hoverText: trim(p.desc || `${p.name} - בחנות החירות`, 160),
         // המחיר הנוכחי בלבד: "במקום ₪129" היה מגלגל את הרצועה לשתי שורות
         // ומגביה את הכרטיס ביחס לשאר. ההשוואה מופיעה בדף הנחיתה.
-        cta:       trim(ov?.cta ?? `${priceNow} · לצפייה בחנות`, SHOP_AD_CTA_MAX),
-        gradient:  shopAdGradient(colorIndex, site.gradient),
-        fit:       ov?.fit ? { ...ov.fit } : { ...SHOP_AD_FIT },
+        cta:       trim(`${priceNow} · לצפייה בחנות`, SHOP_AD_CTA_MAX),
+        gradient:  shopAdGradient(index, site.gradient),
+        fit:       { ...SHOP_AD_FIT },
         mainImage: p.image,
         companyName: p.store || 'חנות החירות',
         landing: {
@@ -278,8 +272,6 @@ export interface ShopAdDraft {
     bandHeight: number;
     /** היעד של הכרטיס - דף המוצר בחנות */
     href: string;
-    /** האם הכרטיס נערך ידנית */
-    edited: boolean;
 }
 
 /**
@@ -287,15 +279,10 @@ export interface ShopAdDraft {
  * ולכן הטיוטה במסך הניהול היא הדבר עצמו ולא שחזור שלו.
  * הגרדיאנט נלקח בצורת Tailwind, כי כך התצוגה המקדימה מרנדרת.
  */
-export function buildShopAdDrafts(
-    products: ShopProduct[],
-    wanted: number[],
-    overrides: Record<string, ShopAdOverride> = {},
-): ShopAdDraft[] {
+export function buildShopAdDrafts(products: ShopProduct[], wanted: number[]): ShopAdDraft[] {
     const site = SHOP_AD_SITES.find(s => s.id === 'community') ?? SHOP_AD_SITES[0];
     return products.map((p, i) => {
-        const ov = overrides[p.documentId];
-        const c = adContent(p, i, site, ov);
+        const c = adContent(p, i, site);
         return {
             product:     p.documentId,
             slot:        wanted[i] ?? 0,
@@ -311,7 +298,6 @@ export function buildShopAdDrafts(
             fit:         { ...c.fit },
             bandHeight:  c.adStyle.bandHeight,
             href:        productUrl(p),
-            edited:      hasOverride(ov),
         };
     });
 }
@@ -596,7 +582,6 @@ async function syncSite(
     wanted: number[],
     decidedBy: string,
     allAdRows: Row[],
-    overrides: Record<string, ShopAdOverride> = {},
 ): Promise<SiteSyncResult> {
     const base: SiteSyncResult = { site: site.id, label: site.label, ok: true, created: 0, updated: 0, removed: 0, slots: [] };
     const state = await readSite(site, allAdRows);
@@ -609,7 +594,7 @@ async function syncSite(
 
     for (let i = 0; i < products.length; i++) {
         const p = products[i];
-        const c = adContent(p, i, site, overrides[p.documentId]);
+        const c = adContent(p, i, site);
         const existing = state.ours.find(r => r.product === p.documentId);
         if (site.kind === 'ng') {
             const extra = {
@@ -742,7 +727,7 @@ export async function syncShopAds(opts: { decidedBy: string; config?: ShopAdsCon
     // בזה אחר זה: כולם כותבים לאותו Strapi, ומקביליות כאן סיכנה timeout
     for (const site of sites) {
         try {
-            results.push(await syncSite(site, products, wanted, opts.decidedBy, allAdRows, cfg.overrides));
+            results.push(await syncSite(site, products, wanted, opts.decidedBy, allAdRows));
         } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
             console.warn(`[shopAds] sync to ${site.id} failed:`, msg);
@@ -853,22 +838,6 @@ export async function writeShopAdsConfig(cfg: ShopAdsConfig): Promise<ShopAdsCon
     }
     invalidate('items:');
     return clean;
-}
-
-/**
- * שמירת עריכה ידנית של כרטיס מוצר (או מחיקתה, כש-patch הוא null).
- * העריכה נשמרת לפי מזהה המוצר, ולכן היא שורדת גם שינוי מקום בטור וגם
- * סנכרון שמריץ מחדש את כל התוכן.
- */
-export async function saveShopAdOverride(
-    productId: string,
-    patch: ShopAdOverride | null,
-): Promise<ShopAdsConfig> {
-    const cfg = await readShopAdsConfig();
-    const overrides = { ...cfg.overrides };
-    if (patch && hasOverride(patch)) overrides[productId] = patch;
-    else delete overrides[productId];
-    return writeShopAdsConfig({ ...cfg, overrides });
 }
 
 /**
