@@ -14,6 +14,8 @@ export const he = {
         s_gatherings_title: "להיפגש פנים אל פנים? ערבי מפגש וסעודות קהילתיות",
         s_gatherings_sub: "הקימו או הצטרפו לסעודה משותפת, וראו מי עוד מגיע →",
         s_filter: "סנן:",
+        s_search_ph: "חיפוש לפי שם, עיר, תחביבים...",
+        s_search_clear: "נקה חיפוש",
         s_age_all: "כל הגילאים",
         s_age_under30: "עד 30",
         s_age_30plus: "30+",
@@ -65,9 +67,9 @@ export const he = {
         s_gate_publish_btn: "➕ פרסום כרטיס",
         s_gate_or: "או",
         s_gate_request_title: "שדכן/ית? בקשו גישה",
-        s_gate_request_sub: "שדכנים מאושרים רואים את כל הכרטיסים בלוח. הבקשה נבדקת ידנית.",
+        s_gate_request_sub: "שדכנים מאושרים רואים את כל הכרטיסים בלוח. הבקשה נבדקת ידנית.",
         s_gate_submit: "שליחת בקשת גישה",
-        s_gate_submitting: "שולח...",
+        s_gate_submitting: "שולח...",
         s_gate_error: "שליחת הבקשה נכשלה. נסו שוב בעוד רגע.",
         s_gate_self_pending: "הכרטיס שלך ממתין לאישור — הגישה ללוח תיפתח מיד עם אישורו.",
         s_aria_login_to_view: "התחבר כדי לצפות בפרופיל של {name}",
@@ -303,6 +305,8 @@ export const en = {
         s_gatherings_title: "Want to meet face to face? Meetup evenings and community meals",
         s_gatherings_sub: "Start or join a shared meal, and see who else is coming →",
         s_filter: "Filter:",
+        s_search_ph: "Search by name, city, interests...",
+        s_search_clear: "Clear search",
         s_age_all: "All ages",
         s_age_under30: "Under 30",
         s_age_30plus: "30+",
@@ -354,9 +358,9 @@ export const en = {
         s_gate_publish_btn: "➕ Publish a card",
         s_gate_or: "or",
         s_gate_request_title: "A matchmaker? Request access",
-        s_gate_request_sub: "Approved matchmakers see every card on the board. Each request is reviewed manually.",
+        s_gate_request_sub: "Approved matchmakers see every card on the board. Each request is reviewed manually.",
         s_gate_submit: "Send access request",
-        s_gate_submitting: "Sending...",
+        s_gate_submitting: "Sending...",
         s_gate_error: "Sending the request failed. Please try again in a moment.",
         s_gate_self_pending: "Your card is pending approval — board access will open as soon as it's approved.",
         s_aria_login_to_view: "Sign in to view {name}'s profile",
@@ -592,6 +596,8 @@ export const ru = {
         s_gatherings_title: "Хотите встретиться лично? Вечера знакомств и общинные трапезы",
         s_gatherings_sub: "Организуйте или присоединяйтесь к совместной трапезе и посмотрите, кто ещё придёт →",
         s_filter: "Фильтр:",
+        s_search_ph: "Поиск по имени, городу, увлечениям...",
+        s_search_clear: "Очистить поиск",
         s_age_all: "Все возрасты",
         s_age_under30: "До 30",
         s_age_30plus: "30+",
@@ -643,9 +649,9 @@ export const ru = {
         s_gate_publish_btn: "➕ Опубликовать карточку",
         s_gate_or: "или",
         s_gate_request_title: "Сваха? Запросите доступ",
-        s_gate_request_sub: "Одобренные свахи видят все карточки доски. Каждый запрос проверяется вручную.",
+        s_gate_request_sub: "Одобренные свахи видят все карточки доски. Каждый запрос проверяется вручную.",
         s_gate_submit: "Отправить запрос на доступ",
-        s_gate_submitting: "Отправка...",
+        s_gate_submitting: "Отправка...",
         s_gate_error: "Не удалось отправить запрос. Повторите попытку через мгновение.",
         s_gate_self_pending: "Ваша карточка ожидает одобрения — доступ к доске откроется сразу после него.",
         s_aria_login_to_view: "Войдите, чтобы посмотреть профиль {name}",
