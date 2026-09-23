@@ -3559,6 +3559,17 @@
 					{tFn("profile.site_admin")}
 					<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">{tFn("profile.super_admin_badge")}</span>
 				</h3>
+				{#if isPrimaryAdmin}
+					<a
+						href="https://api.gofreeil.com/admin"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-[10px] text-white/35 hover:text-white/70 transition-colors px-1.5 py-0.5"
+						title={tFn("profile.strapi_title")}
+					>
+						🗄️ Strapi DB
+					</a>
+				{/if}
 			</div>
 			<div class="flex flex-wrap gap-2">
 				<a
@@ -3592,17 +3603,13 @@
 				>
 					🏘️ {tFn("profile.coord_area")}
 				</a>
-				{#if isPrimaryAdmin}
 					<a
-						href="https://api.gofreeil.com/admin"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-rose-300 hover:text-rose-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-rose-500/10 border border-rose-500/30 hover:border-rose-400/50 flex items-center justify-center gap-1.5"
-						title={tFn("profile.strapi_title")}
+						href="/singles/matchmaker"
+						class="flex-1 min-w-[160px] text-xs md:text-sm font-bold text-pink-300 hover:text-pink-200 transition-colors cursor-pointer px-3 py-2 rounded-lg hover:bg-pink-500/10 border border-pink-500/30 hover:border-pink-400/50 flex items-center justify-center gap-1.5"
+						title={tFn("profile.matchmakers_title")}
 					>
-						🗄️ Strapi DB
+						💞 {tFn("profile.matchmakers")}
 					</a>
-				{/if}
 			</div>
 		</div>
 	{:else if isUserAdmin || ((data.user as any)?.coordinator_of?.length ?? 0) > 0}

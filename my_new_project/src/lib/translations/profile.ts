@@ -71,6 +71,8 @@ export const he = {
         coord_area: "אזור רכזים",
         coord_area_title: "אישור אירועים שכונתיים",
         strapi_title: "גישה ישירה ל-Strapi (פרטי - רק לך)",
+        matchmakers: "שדכנים",
+        matchmakers_title: "אזור השדכנים - הצעות התאמה",
         coord_enter: "כניסה לאישור אירועים",
 
         // ===== הודעות אישיות =====
@@ -593,6 +595,8 @@ export const en = {
         coord_area: "Coordinators area",
         coord_area_title: "Approve neighborhood events",
         strapi_title: "Direct Strapi access (private - only for you)",
+        matchmakers: "Matchmakers",
+        matchmakers_title: "Matchmakers area - match suggestions",
         coord_enter: "Enter to approve events",
 
         // ===== Personal messages =====
@@ -1113,6 +1117,8 @@ export const ru = {
         coord_area: "Зона координаторов",
         coord_area_title: "Утверждение районных мероприятий",
         strapi_title: "Прямой доступ к Strapi (личный - только для вас)",
+        matchmakers: "Свахи",
+        matchmakers_title: "Раздел свах - предложения пар",
         coord_enter: "Вход для утверждения мероприятий",
 
         // ===== Личные сообщения =====
