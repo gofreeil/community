@@ -237,7 +237,7 @@
                                 ✎ נערך
                             </span>
                         {:else}
-                            <span class="text-[11px] text-gray-500 truncate max-w-[5rem]">{d.store}</span>
+                            <span class="text-[11px] text-gray-400 truncate max-w-[5rem]">{d.store}</span>
                         {/if}
                     </div>
                     <ShopAdPreviewCard
@@ -249,39 +249,49 @@
                         fit={d.fit}
                         bandHeight={d.bandHeight}
                     />
-                    <figcaption class="w-36 mt-1.5 text-[11px] text-gray-500 leading-snug">
+                    <figcaption class="w-36 mt-2 text-xs text-gray-300 leading-snug">
+                        <!-- הבילדר הקיים, על הפרסומת הזו (inplace=1 - השמירה מעדכנת אותה
+                             ולא יוצרת גרסה ממתינה). למוצר שעוד לא הופץ, shopEdit יוצר
+                             קודם רשומה מוסתרת - כך אפשר לערוך לפני ההפצה. -->
                         {#if adId}
-                            <!-- הבילדר הקיים, על הפרסומת הזו. inplace=1 -
-                                 השמירה מעדכנת אותה ולא יוצרת גרסה ממתינה. -->
                             <a href="/about/advertise/builder?edit={adId}&inplace=1"
-                               class="block text-center px-2 py-1 rounded-md bg-white/5 border border-white/15 text-gray-200 font-bold hover:bg-white/10 no-underline">
+                               class="block text-center px-2 py-1.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 text-sm font-bold hover:bg-amber-500/30 no-underline">
                                 ✎ ערוך בבילדר
                             </a>
-                            {#if d.edited}
-                                <form method="POST" action="?/shopResetEdit" class="mt-1"
-                                      onsubmit={(e) => { if (!confirm('לבטל את העריכה ולחזור לכרטיס הנגזר מהמוצר?')) e.preventDefault(); }}
-                                      use:enhance={withBusy}>
-                                    <input type="hidden" name="id" value={adId} />
-                                    <button type="submit" disabled={busy}
-                                            class="w-full px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 disabled:opacity-50">
-                                        ↺ בטל עריכה
-                                    </button>
-                                </form>
-                            {/if}
                         {:else}
-                            <span class="block text-center text-gray-600">לעריכה - סנכרן קודם</span>
+                            <form method="POST" action="?/shopEdit" use:enhance={withBusy}>
+                                <input type="hidden" name="product" value={d.product} />
+                                <button type="submit" disabled={busy}
+                                        class="w-full px-2 py-1.5 rounded-md bg-amber-500/20 border border-amber-400/50 text-amber-100 text-sm font-bold hover:bg-amber-500/30 disabled:opacity-50">
+                                    ✎ ערוך בבילדר
+                                </button>
+                            </form>
                         {/if}
-                        <span class="block mt-1">בריחוף: {d.hoverText}</span>
+                        {#if adId && d.edited}
+                            <form method="POST" action="?/shopResetEdit" class="mt-1"
+                                  onsubmit={(e) => { if (!confirm('לבטל את העריכה ולחזור לכרטיס הנגזר מהמוצר?')) e.preventDefault(); }}
+                                  use:enhance={withBusy}>
+                                <input type="hidden" name="id" value={adId} />
+                                <button type="submit" disabled={busy}
+                                        class="w-full px-2 py-1 rounded-md bg-white/5 border border-white/15 text-gray-300 hover:bg-white/10 disabled:opacity-50">
+                                    ↺ בטל עריכה
+                                </button>
+                            </form>
+                        {/if}
+                        <span class="block mt-1.5 line-clamp-3" title={d.hoverText}>
+                            <span class="text-gray-400">בריחוף:</span> {d.hoverText}
+                        </span>
                         <a href={d.href} target="_blank" rel="noopener noreferrer"
-                           class="block text-blue-300 hover:text-blue-200 mt-0.5">לדף המוצר ↗</a>
+                           class="block text-blue-300 hover:text-blue-200 mt-1">לדף המוצר ↗</a>
                     </figcaption>
                 </figure>
             {/each}
         </div>
-        <p class="text-[11px] text-gray-600 mt-2">
-            התוכן נגזר מהמוצר בחנות (שם, מחיר, שם החנות, תמונה). "ערוך בבילדר" פותח את
-            אותו בונה פרסומות שהמפרסמים משתמשים בו - ומה שנשמר שם מתפרסם בכל אתרי הרשת
-            בסנכרון הבא, במקום הנגזר מהמוצר.
+        <p class="text-sm text-gray-200 mt-3 leading-relaxed">
+            <b class="text-amber-200">✎ ערוך בבילדר</b> פותח את אותו בונה פרסומות שהמפרסמים משתמשים בו.
+            אפשר לערוך את הכרטיס לפני ההפצה - ומה שנשמר שם מתפרסם בכל אתרי הרשת רק בלחיצה על
+            <b class="text-blue-200">🔄 סנכרן עכשיו</b>.
+            <span class="text-gray-400">בלי עריכה - התוכן נגזר מהמוצר בחנות (שם, מחיר, שם החנות, תמונה).</span>
         </p>
     {/if}
 </section>

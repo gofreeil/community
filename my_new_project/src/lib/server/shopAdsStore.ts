@@ -708,8 +708,21 @@ async function syncSite(
 
     for (let i = 0; i < products.length; i++) {
         const p = products[i];
-        const c = adContent(p, i, site);
+        const master = masters.get(p.documentId);
+        const c = adContent(p, i, site, master);
         const existing = state.ours.find(r => r.product === p.documentId);
+
+        // המאסטר עצמו: התוכן נשאר כפי שנערך. מתעדכנים רק המקום בטור,
+        // וטיוטה שנערכה לפני ההפצה עולה עכשיו לאוויר.
+        if (master && existing?.id === master.id) {
+            const full = await strapiGet<{ data: Row | null }>(`${ADS_ENDPOINT}/${encodeURIComponent(master.id)}`);
+            const landing: Record<string, unknown> = { ...landingOf(full?.data ?? {}), _order: orders[i], _shopSyncedAt: now };
+            delete landing._paused;
+            delete landing._shopDraft;
+            await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(master.id)}`, { data: { landing } });
+            base.updated++;
+            continue;
+        }
         if (site.kind === 'ng') {
             const extra = {
                 hover_text:      c.hoverText,
@@ -1017,6 +1030,8 @@ export async function saveShopAdFromBuilder(
         _order:         existing._order,
         _shopProduct:   product,
         _shopSyncedAt:  existing._shopSyncedAt,
+        // טיוטה שנערכת לפני ההפצה נשארת מוסתרת עד הסנכרון
+        ...(existing._shopDraft === true ? { _paused: true, _shopDraft: true } : {}),
         _shopEdited:    true,
         _shopEditedAt:  now,
         _shopEditedBy:  editedBy,
@@ -1037,6 +1052,35 @@ export async function saveShopAdFromBuilder(
     await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(id)}`, { data: columns });
     invalidate('ads:');
     return { product, title: String(columns.title ?? '') };
+}
+
+/**
+ * עריכה לפני ההפצה: הבילדר עורך רשומה, ולמוצר שעוד לא סונכרן אין כזו.
+ * נוצרת לו רשומה ב"קהילה בשכונה" - מושהית ומסומנת _shopDraft, כך שהיא
+ * לא מוצגת באף אתר עד "סנכרן עכשיו". מחזיר את מזהה הרשומה (קיימת או חדשה).
+ */
+export async function ensureShopAdEditRow(productDocId: string, decidedBy: string): Promise<string | null> {
+    const site = SHOP_AD_SITES.find(s => s.id === 'community');
+    if (!site) return null;
+    const cfg = await readShopAdsConfig();
+    const wanted = preferredSlots(cfg);
+    const products = await fetchNewestShopProducts(wanted.length);
+    const i = products.findIndex(p => p.documentId === productDocId);
+    if (i < 0) return null;
+
+    const state = await readSubmittedSite(site, await leanRows(ADS_ENDPOINT, 'landing'));
+    const existing = state.ours.find(r => r.product === productDocId);
+    if (existing) return existing.id;
+
+    const orders = placeOrders(wanted.slice(0, products.length).map(s => s - 1), state.taken);
+    const now = new Date().toISOString();
+    const c = adContent(products[i], i, site);
+    const landing = { ...internalLanding(site, c, orders[i], productDocId, now), _paused: true, _shopDraft: true };
+    const res = await strapiPost<{ data?: Row }>(ADS_ENDPOINT, {
+        data: { ...submittedColumns(c, landing, now, decidedBy), submitted_at: now },
+    });
+    invalidate('ads:');
+    return res?.data?.documentId ? String(res.data.documentId) : null;
 }
 
 /**

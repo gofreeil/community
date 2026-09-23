@@ -5,7 +5,7 @@
  * ads-review. כל תשובה מסומנת shop: true - ככה כל מסך יודע להציג אותה
  * ליד הקומה של החנות ולא בראש הדף.
  */
-import { error, fail, type RequestEvent } from '@sveltejs/kit';
+import { error, fail, redirect, type RequestEvent } from '@sveltejs/kit';
 import { ensureAdsAdmin } from '$lib/server/adsAdmin';
 import {
     readShopAdsConfig,
@@ -18,6 +18,7 @@ import {
     buildShopAdDrafts,
     readShopAdMasters,
     clearShopAdEdit,
+    ensureShopAdEditRow,
     type SiteSyncResult,
 } from '$lib/server/shopAdsStore';
 import { SHOP_AD_SITES, preferredSlots, sameSeries, seriesOf } from '$lib/shopAds';
@@ -124,6 +125,22 @@ export const shopAdsActions = {
         return s.success
             ? { shop: true, success: true, message: s.message }
             : fail(502, { shop: true, error: s.message });
+    },
+
+    /** עריכה בבילדר - גם לפני ההפצה: למוצר שלא סונכרן נוצרת רשומה מוסתרת */
+    shopEdit: async (event: RequestEvent) => {
+        const session = await ensureSuperAdmin(event);
+        const fd = await event.request.formData();
+        const product = String(fd.get('product') ?? '').trim();
+        if (!product) return fail(400, { shop: true, error: 'חסר מזהה מוצר' });
+        let id: string | null;
+        try {
+            id = await ensureShopAdEditRow(product, session?.user?.id ?? 'super_admin');
+        } catch (e) {
+            return fail(502, { shop: true, error: `פתיחת העריכה נכשלה: ${e instanceof Error ? e.message : e}` });
+        }
+        if (!id) return fail(404, { shop: true, error: 'המוצר כבר לא ברשימת המוצרים לפרסום' });
+        throw redirect(303, `/about/advertise/builder?edit=${encodeURIComponent(id)}&inplace=1`);
     },
 
     /** ביטול עריכה: הכרטיס חוזר להיגזר מהמוצר בסנכרון הבא */
