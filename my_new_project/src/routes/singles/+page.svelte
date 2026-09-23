@@ -344,6 +344,28 @@
         {/if}
 
         {#if !data.gated}
+        <!-- חיפוש חופשי -->
+        <div class="relative max-w-md mx-auto mb-6">
+            <svg class="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+                type="search"
+                bind:value={searchQuery}
+                placeholder={$_('extras.s_search_ph')}
+                aria-label={$_('extras.s_search_ph')}
+                class="w-full ps-9 pe-9 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-100 text-sm placeholder:text-gray-500 focus:outline-none focus:border-pink-400/60 [&::-webkit-search-cancel-button]:hidden"
+            />
+            {#if searchQuery}
+                <button
+                    type="button"
+                    onclick={() => searchQuery = ''}
+                    aria-label={$_('extras.s_search_clear')}
+                    class="absolute top-1/2 -translate-y-1/2 end-2 w-6 h-6 rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center"
+                >✕</button>
+            {/if}
+        </div>
+
         <!-- ── באנר ערבי מפגש / סעודות ── -->
         <a href="/gatherings" class="block mb-6 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 px-4 py-3.5 hover:border-amber-500/60 transition">
             <div class="flex items-center gap-3">
@@ -394,28 +416,6 @@
 
         <!-- Filters: chips מינימליסטיים בשורה זורמת -->
         <div class="mb-6">
-            <!-- חיפוש חופשי -->
-            <div class="relative max-w-md mx-auto mb-3">
-                <svg class="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                    type="search"
-                    bind:value={searchQuery}
-                    placeholder={$_('extras.s_search_ph')}
-                    aria-label={$_('extras.s_search_ph')}
-                    class="w-full ps-9 pe-9 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-100 text-sm placeholder:text-gray-500 focus:outline-none focus:border-pink-400/60 [&::-webkit-search-cancel-button]:hidden"
-                />
-                {#if searchQuery}
-                    <button
-                        type="button"
-                        onclick={() => searchQuery = ''}
-                        aria-label={$_('extras.s_search_clear')}
-                        class="absolute top-1/2 -translate-y-1/2 end-2 w-6 h-6 rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center"
-                    >✕</button>
-                {/if}
-            </div>
-
             <div class="flex flex-wrap justify-center items-center gap-x-2 gap-y-2">
                 <span class="text-gray-300 text-sm font-semibold tracking-wide me-1 inline-flex items-center gap-1.5">
                     <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
