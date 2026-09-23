@@ -95,8 +95,11 @@
         : ''
     );
     let mixedChannels = $derived(unreadSystem > 0 && unreadPrivate > 0);
+    // כשכל ההתראות הן "נרשם חדש" - הבאדג' ירוק ובצד ימין של התמונה
+    let onlyNewUsers = $derived(liveMsgs.length > 0 && liveMsgs.every((m) => m.type === 'new_user'));
     let totalTone = $derived(
-        onlyChannel === 'system' ? 'from-rose-500 to-red-600'
+        onlyNewUsers ? 'from-emerald-500 to-green-600'
+        : onlyChannel === 'system' ? 'from-rose-500 to-red-600'
         : onlyChannel === 'private' ? 'from-emerald-500 to-green-600'
         : 'from-indigo-500 to-violet-600'
     );
@@ -525,7 +528,7 @@
                                         type="button"
                                         onclick={() => toggleChannel('all')}
                                         aria-expanded={openChannel === 'all'}
-                                        class="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1
+                                        class="absolute -top-1.5 {onlyNewUsers ? '-right-1.5' : '-left-1.5'} min-w-[18px] h-[18px] px-1
                                                bg-gradient-to-br {totalTone}
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[10px]
@@ -792,7 +795,7 @@
                                         type="button"
                                         onclick={() => toggleChannel('all')}
                                         aria-expanded={openChannel === 'all'}
-                                        class="absolute -bottom-1 -left-1 min-w-[22px] h-[22px] px-1.5
+                                        class="absolute -bottom-1 {onlyNewUsers ? '-right-1' : '-left-1'} min-w-[22px] h-[22px] px-1.5
                                                bg-gradient-to-br {totalTone}
                                                border-2 border-[#0f172a] rounded-full
                                                flex items-center justify-center text-white text-[11px]
