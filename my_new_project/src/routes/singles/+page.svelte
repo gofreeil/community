@@ -36,6 +36,20 @@
         goto(`/items/${id}`);
     }
 
+    // כל הכרטיס הוא קישור - אבל רק בהקשה קצרה. לחיצה ארוכה או גרירה (גלילה) לא פותחות,
+    // וגם לא הקשה על כפתור/קישור פנימי (שמטפל בעצמו).
+    let tapStart = { t: 0, x: 0, y: 0 };
+    function onCardPointerDown(e: PointerEvent) {
+        tapStart = { t: Date.now(), x: e.clientX, y: e.clientY };
+    }
+    function onCardClick(e: MouseEvent, id: string) {
+        if ((e.target as HTMLElement).closest('a, button, input, textarea, select')) return;
+        const held = Date.now() - tapStart.t;
+        const moved = Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y);
+        if (held > 500 || moved > 10) return;
+        openProfile(id);
+    }
+
     // ── שער גישה: הלוח סגור לצפייה. שדכנים מבקשים גישה; מפרסם כרטיס נכנס אוטומטית ──
     let gateSubmitting = $state(false);
     let gateSent = $state(false);
@@ -525,7 +539,15 @@
                         <p class="text-purple-300/70 text-xs mt-0.5">{$_('extras.s_mm_only_sub')}</p>
                     </div>
                 {/if}
-                <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative">
+                <div
+                    role="link"
+                    tabindex="0"
+                    aria-label={$_('extras.s_view_full')}
+                    onpointerdown={onCardPointerDown}
+                    onclick={(e) => onCardClick(e, me.id)}
+                    onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); openProfile(me.id); } }}
+                    class="w-full max-w-md rounded-2xl bg-[#0f172a] border-2 {isMale ? 'border-blue-400' : 'border-pink-400'} overflow-hidden shadow-xl ring-2 {isMale ? 'ring-blue-500/40' : 'ring-pink-500/40'} relative cursor-pointer focus:outline-none focus:ring-amber-400/60"
+                >
                     <!-- Card header -->
                     <div class="bg-gradient-to-r {isMale ? 'from-blue-600 to-cyan-600' : 'from-pink-600 to-rose-500'} p-4 flex items-center gap-3 relative">
                         <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
@@ -636,7 +658,8 @@
                     role="link"
                     tabindex="0"
                     aria-label={isGuest ? $_('extras.s_aria_login_to_view', { values: { name: person.nickname } }) : $_('extras.s_aria_full_details', { values: { name: person.nickname } })}
-                    onclick={() => openProfile(person.id)}
+                    onpointerdown={onCardPointerDown}
+                    onclick={(e) => onCardClick(e, person.id)}
                     onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProfile(person.id); } }}
                     class="relative rounded-2xl bg-[#0f172a] border {isMale ? 'border-blue-500/30' : 'border-pink-500/30'} overflow-hidden shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400/60"
                 >
