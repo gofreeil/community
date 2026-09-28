@@ -1039,14 +1039,15 @@ export async function saveShopAdFromBuilder(
         adStyle:        parseAdStyle(payload.adStyle) ?? { ...DEFAULT_AD_STYLE },
         ...(payload.mobileImage ? { mobileImage: payload.mobileImage, mobileImageFit: parseAdImageFit(payload.mobileImageFit) } : {}),
     };
+    // שדה שנשאר ריק בבילדר לא מוחק את מה שיש בכרטיס - נשאר הקיים
     const columns: Record<string, unknown> = {
-        title:      payload.title ?? row.title,
-        subtitle:   payload.subtitle ?? row.subtitle,
+        title:      payload.title?.trim() || row.title,
+        subtitle:   payload.subtitle?.trim() || row.subtitle,
         hover_text: payload.hoverText ?? row.hover_text,
         cta:        payload.cta ?? row.cta,
-        gradient:   payload.gradient ?? row.gradient,
+        gradient:   payload.gradient || row.gradient,
         logo:       payload.logo ?? '',
-        main_image: payload.mainImage ?? row.main_image,
+        main_image: payload.mainImage || row.main_image,
         landing,
     };
     await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(id)}`, { data: columns });

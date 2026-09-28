@@ -368,10 +368,9 @@
     let adTitle    = $derived(title.trim() || landingHeadline.trim());
     let adSubtitle = $derived(subtitle.trim() || landingPitch.trim());
 
-    // חובה רק מה שבלעדיו אין כרטיס (וגם השרת דורש). כל השאר מסומן בטופס
-    // "אופציונלי" ויש לו נפילה: דף הנחיתה לוקח את הכותרת הראשית, והכרטיס
-    // בלי טקסט ריחוף פשוט לא מחליף את התמונה.
-    let canSubmit = $derived(Boolean(adImage && adTitle && adSubtitle));
+    // אין חסימה בצד הלקוח: כל שדה ריק נופל למה שהגולש כבר מילא (כאן או
+    // בפרסומת הקיימת - בשרת). אם באמת אין ממה לקחת, השרת מחזיר הודעה ברורה
+    // שמוצגת ליד הכפתור.
     let submitting = $state(false);
     let submitted  = $state(false);
 
@@ -506,7 +505,7 @@
     }
 
     async function submitAd() {
-        if (!canSubmit || submitting) return;
+        if (submitting) return;
         submitting = true;
         submitError = "";
         try {
@@ -962,9 +961,9 @@
             </div>
 
             <ul class="checklist">
-                <li class:done={!!mainImage}><span>{mainImage ? "✅" : "⬜"}</span> {$_("advertise.b_main_image_alt")}</li>
-                <li class:done={!!title}><span>{title ? "✅" : "⬜"}</span> {$_("advertise.b_s3_title")}</li>
-                <li class:done={!!subtitle}><span>{subtitle ? "✅" : "⬜"}</span> {$_("advertise.cl_subtitle")}</li>
+                <li class:done={!!adImage}><span>{adImage ? "✅" : "⬜"}</span> {$_("advertise.b_main_image_alt")}</li>
+                <li class:done={!!adTitle}><span>{adTitle ? "✅" : "⬜"}</span> {$_("advertise.b_s3_title")}</li>
+                <li class:done={!!adSubtitle}><span>{adSubtitle ? "✅" : "⬜"}</span> {$_("advertise.cl_subtitle")}</li>
                 <li class:done={!!hoverText}><span>{hoverText ? "✅" : "⬜"}</span> {$_("advertise.cl_hover")}</li>
                 <li class:done={!!(phone || website)}><span>{(phone || website) ? "✅" : "⬜"}</span> {$_("advertise.cl_channel")}</li>
                 <li class:done={products.length > 0}><span>{products.length > 0 ? "✅" : "⬜"}</span> {$_("advertise.cl_products", { values: { n: products.length } })}</li>
@@ -972,16 +971,13 @@
                 <li class:done={!!address}><span>{address ? "✅" : "⬜"}</span> {$_("advertise.cl_address")}</li>
             </ul>
 
-            {#if !canSubmit}
-                <p class="text-amber-300 text-sm mt-3 font-bold">{$_("advertise.l_fill_min")}</p>
-            {/if}
             {#if submitError}
                 <p class="text-red-300 text-sm mt-3 font-bold">{$_("advertise.l_submit_err", { values: { msg: submitError } })}</p>
             {/if}
 
-            <button type="button" onclick={submitAd} disabled={!canSubmit || submitting}
+            <button type="button" onclick={submitAd} disabled={submitting}
                 class="mt-5 w-full py-4 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black text-lg shadow-xl shadow-green-500/30 transition-all
-                       {canSubmit && !submitting ? 'hover:scale-[1.02] active:scale-95' : 'opacity-50 cursor-not-allowed'}">
+                       {!submitting ? 'hover:scale-[1.02] active:scale-95' : 'opacity-50 cursor-not-allowed'}">
                 {#if submitting}{$_("advertise.sending")}{:else}{$_("advertise.l_submit")}{/if}
             </button>
         </section>

@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { submitAd, listApproved, computeAdSlots, type SubmittedAd } from '$lib/server/adsStore';
+import { submitAd, listApproved, computeAdSlots, getOwnAdForEdit, type SubmittedAd } from '$lib/server/adsStore';
 import { getAllAdminRecipients, createItem } from '$lib/server/db';
 import { markAdMessagesHandled } from '$lib/server/adNotifications';
 import { parseAdImageFit } from '$lib/adImageFit';
@@ -106,6 +106,9 @@ async function notifyAdminsInApp(ad: SubmittedAd) {
  * רק שני המסלולים האמיתיים מתקבלים; כל ערך אחר נופל לחודש, וכך גם
  * מודעה שנשלחה בלי המידע הזה (טיוטה ישנה) מתנהגת כמו קודם.
  */
+/** צבע הרצועה שהבילדר מתחיל ממנו - כשהמפרסם לא בחר אחר */
+const DEFAULT_GRADIENT = 'from-amber-500 to-orange-600';
+
 function parsePlanDays(raw: unknown): number {
     return Number(raw) === 6 ? 180 : 30;
 }
@@ -120,12 +123,29 @@ export const POST: RequestHandler = async (event) => {
         throw error(400, 'גוף הבקשה חייב להיות JSON תקין');
     }
 
-    const required = ['title', 'subtitle', 'mainImage', 'gradient'];
-    for (const k of required) {
-        if (!payload?.[k] || typeof payload[k] !== 'string') {
-            throw error(400, `חסר שדה: ${k}`);
+    if (!payload || typeof payload !== 'object') throw error(400, 'גוף הבקשה חייב להיות JSON תקין');
+    const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+
+    // לא חוסמים על שדה ריק: בעריכה הוא נלקח מהפרסומת שכבר קיימת (של אותו
+    // מפרסם בלבד), כותרת משנה ריקה פשוט לא מוצגת בכרטיס, וצבע חסר נופל
+    // לברירת המחדל של הבילדר.
+    const editOf = str(payload.editOfAdId);
+    if (editOf && (!str(payload.title) || !str(payload.subtitle) || !str(payload.mainImage) || !str(payload.gradient))) {
+        const identity = { id: session?.user?.id ?? undefined, email: session?.user?.email ?? undefined };
+        const prev = await getOwnAdForEdit(editOf, identity).catch(() => null);
+        if (prev) {
+            payload.title     = str(payload.title)     || prev.title;
+            payload.subtitle  = str(payload.subtitle)  || prev.subtitle;
+            payload.mainImage = str(payload.mainImage) || prev.mainImage;
+            payload.gradient  = str(payload.gradient)  || prev.gradient;
         }
     }
+    payload.subtitle = str(payload.subtitle);
+    payload.gradient = str(payload.gradient) || DEFAULT_GRADIENT;
+
+    // בלי כותרת ובלי תמונה אין כרטיס להציג - ההודעה מוצגת לגולש ליד הכפתור
+    if (!str(payload.title))     throw error(400, 'לפרסומת אין כותרת - חזור לעריכת הפרסומת והוסף כותרת');
+    if (!str(payload.mainImage)) throw error(400, 'לפרסומת אין תמונה - חזור לעריכת הפרסומת והעלה תמונה');
     if (!payload.landing || typeof payload.landing !== 'object') {
         throw error(400, 'חסר אובייקט landing');
     }
