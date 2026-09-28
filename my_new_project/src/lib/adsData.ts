@@ -16,6 +16,8 @@ export interface Ad {
     hover?: string;         // טקסט tooltip בריחוף מעל כפתור ה-CTA
     /** יעד פנימי באתר (דף נחיתה של מפרסם) - נפתח באותה לשונית ובלי noopener */
     internal?: boolean;
+    /** כרטיס מוצר מחנות החירות - בפופ-אפ בלי כפתור CTA; התמונה היא הקישור */
+    shop?: boolean;
 }
 
 export const ads: Ad[] = [

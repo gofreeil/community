@@ -64,6 +64,7 @@
 					mobileImageFit: a.mobileImage ? a.mobileImageFit : undefined,
 					color:          a.gradient,
 					hover:          a.hover,
+					shop:           a.shop,
 				})),
 		);
 	});

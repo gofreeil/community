@@ -280,6 +280,8 @@
     // 'new' = נכנס מהמחירון לקנות משבצת נוספת; 'edit' = עריכת הקיימת
     let adIntent        = $state<AdIntent>("edit");
     let cta             = $state<string>("הקלק לפרטים והזמנות");
+    // עריכת כרטיס מוצר מהחנות (?inplace=1) - בפופ-אפ הנייד שלו אין כפתור CTA
+    let shopEdit        = $state(false);
     let gradient        = $state<string>("from-amber-500 to-orange-600");
     let diagHeight      = $state<number>(12);   // % of image - height of the diagonal color band (range 5..50)
     let landingHeadline = $state<string>("");
@@ -867,6 +869,7 @@
             // inplace=1 - הגעה ממסך פרסומות המוצרים: השליחה תעדכן את
             // הפרסומת הקיימת ולא תיצור גרסה שממתינה לאישור.
             setAdEditInPlace(params.get("inplace") === "1");
+            shopEdit = params.get("inplace") === "1";
             // ומשם חוזרים למסך הניהול, לערוך את הכרטיס הבא
             setAdEditReturn(params.get("inplace") === "1" ? params.get("return") : null);
             setAdIntent("edit");
@@ -1874,11 +1877,13 @@
                                 </div>
                                 <div class="close-countdown">5</div>
                             </div>
+                            {#if !shopEdit}
                             <div class="popup-body">
                                 <button type="button" class="popup-cta bg-gradient-to-r {gradient}">
                                     ← {cta}
                                 </button>
                             </div>
+                            {/if}
                         </div>
                     </div>
                     </div>

@@ -117,6 +117,8 @@ export const load: LayoutServerLoad = async (event) => {
             adStyle: a.adStyle,
             // מספר המקום בטור (1..16) - נקבע במסך הניהול
             slot: liveSlots.get(a.id),
+            // כרטיס מוצר מחנות החירות (ראה shopAdsStore)
+            shop: !!(a.landing as { _shopProduct?: unknown } | undefined)?._shopProduct,
         }))
         : [];
 

@@ -70,27 +70,43 @@
         </button>
 
         <!-- Ad image -->
-        <!-- overflow-hidden: בתקריב התמונה גדולה מהמשבצת ואסור שתגלוש על הטקסט -->
-        <div class="relative h-44 w-full overflow-hidden">
+        <!-- overflow-hidden: בתקריב התמונה גדולה מהמשבצת ואסור שתגלוש על הטקסט.
+             בכרטיס מוצר מהחנות אין כפתור CTA, ולכן התמונה היא הקישור למוצר -->
+        {#snippet adImage(ad: Ad)}
             <!-- תמונה ייעודית לנייד אם המפרסם העלה אחת - המשבצת כאן רחבה
                  ונמוכה, והתמונה של הדסקטופ נחתכת בה אחרת לגמרי -->
             <img
-                src={popup.ad.mobileImage || popup.ad.image}
-                alt={popup.ad.title}
+                src={ad.mobileImage || ad.image}
+                alt={ad.title}
                 class="w-full h-full object-cover"
-                use:adImgFit={popup.ad.mobileImage && popup.ad.mobileImageFit
-                    ? popup.ad.mobileImageFit
-                    : { x: 50, y: 50, z: popup.ad.imageScale ?? 1 }}
+                use:adImgFit={ad.mobileImage && ad.mobileImageFit
+                    ? ad.mobileImageFit
+                    : { x: 50, y: 50, z: ad.imageScale ?? 1 }}
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-        </div>
+        {/snippet}
+        {#if popup.ad.shop}
+            <a href={popup.ad.href}
+               target={popup.ad.internal ? undefined : "_blank"}
+               rel={popup.ad.internal ? undefined : "noopener noreferrer"}
+               aria-label={popup.ad.title}
+               onclick={() => closeAdPopup()}
+               class="relative block h-44 w-full overflow-hidden">
+                {@render adImage(popup.ad)}
+            </a>
+        {:else}
+            <div class="relative h-44 w-full overflow-hidden">
+                {@render adImage(popup.ad)}
+            </div>
+        {/if}
 
         <!-- Ad content -->
         <div class="bg-[#0f172a] p-4">
             <h3 class="text-lg font-black bg-gradient-to-r {popup.ad.color} bg-clip-text text-transparent mb-1 leading-tight">
                 {popup.ad.title}
             </h3>
-            <p class="text-gray-300 text-sm mb-3 leading-snug">{popup.ad.description}</p>
+            <p class="text-gray-300 text-sm leading-snug" class:mb-3={!popup.ad.shop}>{popup.ad.description}</p>
+            {#if !popup.ad.shop}
             <!-- דף נחיתה של מפרסם משולם הוא יעד פנימי (/ads/<id>) ונפתח באותה
                  לשונית, בדיוק כמו בטור הימני בדסקטופ. אתרי הרשת ממשיכים
                  להיפתח בלשונית חדשה. -->
@@ -104,6 +120,7 @@
             >
                 ← {popup.ad.cta}
             </a>
+            {/if}
         </div>
     </div>
 </div>
