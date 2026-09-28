@@ -361,10 +361,17 @@
     );
 
     // ===== Validation + submit =====
+    // תמונה, כותרת וכותרת משנה של הכרטיס נופלות למקבילות שבדף הנחיתה - הכיוון
+    // ההפוך של "אחרת נשתמש בכותרת הראשית". הטקסט עובר במלואו, בלי חיתוך:
+    // הכותרת והסלוגן יושבים מעל התמונה ופשוט נפרשים על עוד שורות.
+    let adImage    = $derived(mainImage || landingImage);
+    let adTitle    = $derived(title.trim() || landingHeadline.trim());
+    let adSubtitle = $derived(subtitle.trim() || landingPitch.trim());
+
     // חובה רק מה שבלעדיו אין כרטיס (וגם השרת דורש). כל השאר מסומן בטופס
     // "אופציונלי" ויש לו נפילה: דף הנחיתה לוקח את הכותרת הראשית, והכרטיס
     // בלי טקסט ריחוף פשוט לא מחליף את התמונה.
-    let canSubmit = $derived(Boolean(mainImage && title && subtitle));
+    let canSubmit = $derived(Boolean(adImage && adTitle && adSubtitle));
     let submitting = $state(false);
     let submitted  = $state(false);
 
@@ -504,8 +511,10 @@
         submitError = "";
         try {
             const payload: SubmitPayload = {
-                title, subtitle, hoverText, cta, gradient,
-                logo, mainImage, mainImageFit,
+                title: adTitle, subtitle: adSubtitle, hoverText, cta, gradient,
+                logo, mainImage: adImage,
+                // החיתוך שנבחר שייך לתמונת הפרסומת; לתמונת דף הנחיתה - ברירת המחדל
+                mainImageFit: mainImage ? mainImageFit : undefined,
                 // ריקים כשהמפרסם לא העלה תמונה ייעודית לנייד
                 mobileImage, mobileImageFit,
                 // המסלול שנרכש - השרת גוזר ממנו את תאריך הפקיעה
