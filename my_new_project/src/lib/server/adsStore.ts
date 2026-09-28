@@ -295,6 +295,25 @@ function byDisplayOrder(a: SubmittedAd, b: SubmittedAd): number {
     return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
 }
 
+/**
+ * מסנן גרסאות שהוחלפו: מי שיש לה ברשימה יורשת מאושרת (עדכון שלה שכבר
+ * אושר, שאינו מוחלף בעצמו) - גם אם סימון ההחלפה לא נכתב, למשל כשה-PUT
+ * של ההורדה ב-supersedeAd נכשל אחרי שהאישור כבר עבר. בלי זה אותה פרסומת
+ * הופיעה פעמיים: הגרסה החדשה "באוויר" והישנה "פג התוקף", באותו מקום בטור.
+ *
+ * בכוונה לא מסתיר לפי הדגל _supersededBy לבדו: דגל שנשאר מגלגול קודם על
+ * פרסומת חיה (ראה approveAd) היה מעלים אותה מהאתר. הדגל ממשיך להיבדק
+ * במקומות שכבר בודקים אותו (getMyAds, findPredecessors).
+ */
+function withoutReplaced(list: SubmittedAd[]): SubmittedAd[] {
+    const replaced = new Set(
+        list
+            .filter(a => a.status === 'approved' && a.replacesAdId && !a.supersededBy)
+            .map(a => a.replacesAdId as string),
+    );
+    return replaced.size === 0 ? list : list.filter(a => !replaced.has(a.id));
+}
+
 async function findByDocumentId(id: string): Promise<StrapiAd | null> {
     try {
         const res = await strapiGet<{ data: StrapiAd | null }>(`${ENDPOINT}/${id}`);
@@ -428,6 +447,9 @@ async function supersedeAd(old: SubmittedAd, newAdId: string, decidedBy: string,
             decided_at:       new Date().toISOString(),
             decided_by:       decidedBy,
             rejection_reason: reason,
+            // null ולא '' - Strapi פוסל מחרוזת ריקה בשדה datetime, וה-PUT
+            // היה נכשל בשקט אחרי שהגרסה החדשה כבר אושרה
+            expires_at:       null,
             landing: {
                 ...(old.landing as unknown as Record<string, unknown>),
                 _supersededBy: newAdId,
@@ -453,8 +475,10 @@ export async function listPending(): Promise<SubmittedAd[]> {
 
 /** כל המאושרות - כולל מושהות ופגות תוקף. לתצוגת הניהול בלבד. */
 export async function listApproved(): Promise<SubmittedAd[]> {
-    // עותק לפני מיון - המערך עצמו יושב ב-cache ומשותף לכל הקוראים
-    return [...await listByStatus('approved')].sort(byDisplayOrder);
+    // withoutReplaced מחזיר מערך חדש (או את המקורי) - עותק לפני מיון,
+    // כי המערך עצמו יושב ב-cache ומשותף לכל הקוראים.
+    // גרסה שהוחלפה בעדכון מאושר לא מוצגת לצד היורשת שלה.
+    return [...withoutReplaced(await listByStatus('approved'))].sort(byDisplayOrder);
 }
 
 /** האם הפרסומת אמורה להיות מוצגת לגולש עכשיו */
@@ -627,10 +651,13 @@ export async function getMyAds(identity: { id?: string; email?: string }): Promi
             listByStatus('approved'), listByStatus('pending'), listByStatus('rejected'),
         ]);
         const me = { submittedBy: { id: identity.id, email: identity.email } };
-        const slots = computeSlots(approved);
+        // גרסה שהוחלפה בעדכון מאושר יורדת מהרשימה (גם בלי דגל) - הפרסומת
+        // מופיעה פעם אחת, ומספר המקום מחושב בלי הגרסה הרפאים
+        const approvedShown = withoutReplaced(approved);
+        const slots = computeSlots(approvedShown);
         const now = Date.now();
         const statusRank: Record<AdStatus, number> = { approved: 0, pending: 1, rejected: 2 };
-        return [...approved, ...pending, ...rejected]
+        return [...approvedShown, ...pending, ...rejected]
             .filter(a => !a.supersededBy && sameAdvertiser(a, me))
             .map(a => {
                 // חותמת הסנדיקציה חיה בתוך ה-JSON של landing (אין עמודה בסכמה)
@@ -986,6 +1013,9 @@ export async function unapproveAd(id: string): Promise<SubmittedAd | null> {
             decided_at:       null,
             decided_by:       null,
             rejection_reason: null,
+            // ממתינה אין לה תוקף; null ולא '' - Strapi פוסל '' בשדה datetime.
+            // בלי זה "הפרסומות שלי" הציגה "עד <תאריך>" על פרסומת שירדה מהאתר.
+            expires_at:       null,
         },
     });
     invalidate('ads:');
@@ -1345,7 +1375,8 @@ export function computeSchedule(ad: SubmittedAd): AdSchedule | null {
 }
 
 export async function listSchedules(): Promise<AdSchedule[]> {
-    const approved = await listByStatus('approved');
+    // גרסה שהוחלפה בעדכון מאושר לא מופיעה בטבלת התזמון לצד היורשת שלה
+    const approved = withoutReplaced(await listByStatus('approved'));
     // המספר האפקטיבי מחושב בזיכרון בלבד - נתיב קריאה לא כותב ל-Strapi
     const slots = computeSlots(approved);
     return approved
