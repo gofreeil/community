@@ -8,18 +8,13 @@ export const load: PageServerLoad = async (event) => {
     let allowed = ad?.status === 'approved';
     let preview = false;
 
-    // הסשן נשלף פעם אחת ומשמש גם ל-preview וגם לכפתור "פרסם בכל האתרים" של
-    // הסופר-אדמין. במסלול הרגיל (פרסומת מאושרת) הבדיקה היא מהסשן בלבד -
-    // בלי פניה ל-DB בדף ציבורי; אם התפקיד חסר בסשן הכפתור פשוט לא יוצג.
-    const session = await event.locals.auth().catch(() => null);
-    const sessionRole = (session?.user as { role?: string } | undefined)?.role;
-    let isSuperAdmin = sessionRole === 'super_admin';
-
     // ?preview=1 - תצוגה מקדימה למי שמאשר פרסומות (סופר-אדמין או אדמין שמונה),
     // כדי שאפשר יהיה לראות את דף הנחיתה *לפני* האישור. בלי זה הכפתור "פתח את דף
     // הנחיתה המלא" בעמוד אישור הפרסומות הוביל ל-404 בטאבים "ממתינות" ו"נדחו".
     // הבדיקה היא צד-שרת בלבד; לגולש רגיל ?preview=1 לא משנה דבר.
     if (ad && !allowed && event.url.searchParams.get('preview') === '1') {
+        const session = await event.locals.auth().catch(() => null);
+        const sessionRole = (session?.user as { role?: string } | undefined)?.role;
         const isAdminRole = (r?: string | null) => r === 'super_admin' || r === 'neighborhood_admin';
         let isAdmin = isAdminRole(sessionRole);
         if (!isAdmin && session?.user?.id) {
@@ -27,7 +22,6 @@ export const load: PageServerLoad = async (event) => {
                 let dbUser = await getUserById(session.user.id as string);
                 if (!dbUser && session.user.email) dbUser = await getUserByEmail(session.user.email);
                 isAdmin = isAdminRole(dbUser?.role);
-                if (dbUser?.role === 'super_admin') isSuperAdmin = true;
             } catch { /* נשאר חסום */ }
         }
         if (isAdmin) { allowed = true; preview = true; }
@@ -38,5 +32,5 @@ export const load: PageServerLoad = async (event) => {
     }
     // התמונות ככתובת ולא מוטבעות - ראה withAdImageUrls. בתצוגה מקדימה של
     // פרסומת שטרם אושרה הן נשארות מוטבעות, כי הנתיב מגיש מאושרות בלבד.
-    return { ad: withAdImageUrls(ad), preview, isSuperAdmin };
+    return { ad: withAdImageUrls(ad), preview };
 };

@@ -22,6 +22,7 @@ import { invalidate } from './cache.js';
 import { AD_SLOT_COUNT } from '../adSlots.js';
 import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from '../adStyle.js';
 import { parseAdImageFit } from '../adImageFit.js';
+import { fetchAsDataUri } from './inlineImage.js';
 import {
     SHOP_URL,
     SHOP_AD_SITES,
@@ -153,26 +154,6 @@ export async function fetchNewestShopProducts(count: number): Promise<ShopProduc
         });
     }
     return out;
-}
-
-/**
- * תמונת המוצר כ-data URI. נחוץ רק לאתר הדירוג הציבורי, שמאחסן את
- * תמונות הפרסומת מוטבעות ודוחה כתובת חיצונית. תמונה מעל התקרה שלו
- * מוחזרת ריקה - המוצר פשוט לא יפורסם שם, במקום לשבור את הכתיבה.
- */
-async function fetchAsDataUri(url: string, maxBytes: number): Promise<string> {
-    try {
-        const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
-        if (!res.ok) return '';
-        const type = (res.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
-        if (!/^image\/(png|jpe?g|webp)$/.test(type)) return '';
-        const buf = Buffer.from(await res.arrayBuffer());
-        const b64 = buf.toString('base64');
-        if (b64.length > maxBytes) return '';
-        return `data:${type === 'image/jpg' ? 'image/jpeg' : type};base64,${b64}`;
-    } catch {
-        return '';
-    }
 }
 
 // ============================================================

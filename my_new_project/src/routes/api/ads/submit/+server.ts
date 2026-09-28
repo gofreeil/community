@@ -6,6 +6,24 @@ import { markAdMessagesHandled } from '$lib/server/adNotifications';
 import { parseAdImageFit } from '$lib/adImageFit';
 import { parseAdStyle } from '$lib/adStyle';
 import { toExternalUrl } from '$lib/urlNormalize';
+import { fetchAsDataUri } from '$lib/server/inlineImage';
+import { SHOP_URL } from '$lib/shopAds';
+
+/**
+ * תמונה שמצביעה לחנות החירות נכנסת לבילדר כשעורכים בו פרסומת מוצר, ומשם
+ * יכולה לעבור לפרסומת רגילה. פרסומת כזו לא יורדת יחד עם המוצר - וכשהמוצר
+ * ירד מהחנות הכתובת מתה ודף הנחיתה הציג תמונה שבורה (28.9.2026). לכן
+ * התמונה מוטבעת כאן לתוך הרשומה, כמו כל העלאה מהבילדר.
+ * רק מהחנות: שליפת כתובת שרירותית מקלט דפדפן הייתה פותחת SSRF.
+ * לא נשלפה (מתה / כבדה מדי) - השדה מתרוקן ודף הנחיתה נופל לתמונה הבאה;
+ * keep משאיר את הכתובת בשדה חובה (התמונה הראשית), שאין לו ממה ליפול.
+ */
+const INLINE_SHOP_IMAGE_MAX = 300 * 1024;
+async function ownShopImage(raw: unknown, keep = false): Promise<string> {
+    const v = typeof raw === 'string' ? raw.trim() : '';
+    if (!v.startsWith(`${SHOP_URL}/`)) return typeof raw === 'string' ? raw : '';
+    return (await fetchAsDataUri(v, INLINE_SHOP_IMAGE_MAX)) || (keep ? v : '');
+}
 
 /**
  * שולח הודעה אישית (category 'message') לכל אדמין - סופר-אדמין וגם אדמין שמונה - על בקשת פרסום,
@@ -149,6 +167,18 @@ export const POST: RequestHandler = async (event) => {
     if (!payload.landing || typeof payload.landing !== 'object') {
         throw error(400, 'חסר אובייקט landing');
     }
+
+    // תמונות מהחנות מוטבעות לפני השמירה - ראה ownShopImage
+    const products = Array.isArray(payload.landing.products) ? payload.landing.products : [];
+    [payload.mainImage, payload.logo, payload.mobileImage, payload.landing.image] = await Promise.all([
+        ownShopImage(payload.mainImage, true),
+        ownShopImage(payload.logo),
+        ownShopImage(payload.mobileImage),
+        ownShopImage(payload.landing.image),
+    ]);
+    await Promise.all(products.map(async (p: { image?: unknown } | null) => {
+        if (p && typeof p === 'object') p.image = await ownShopImage(p.image);
+    }));
 
     let ad;
     try {

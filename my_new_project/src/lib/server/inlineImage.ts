@@ -32,6 +32,26 @@ export function imageStamp(...images: string[]): string {
 }
 
 /**
+ * תמונה מכתובת חיצונית כ-data URI (png/jpeg/webp בלבד). ריק כשהשליפה
+ * נכשלה או כשה-base64 עובר את maxBytes - הקורא מחליט מה עושים בלעדיה.
+ * לשלוף רק ממקור ידוע (החנות): כתובת שרירותית מקלט דפדפן = SSRF.
+ */
+export async function fetchAsDataUri(url: string, maxBytes: number): Promise<string> {
+    try {
+        const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+        if (!res.ok) return '';
+        const type = (res.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
+        if (!/^image\/(png|jpe?g|webp)$/.test(type)) return '';
+        const buf = Buffer.from(await res.arrayBuffer());
+        const b64 = buf.toString('base64');
+        if (b64.length > maxBytes) return '';
+        return `data:${type === 'image/jpg' ? 'image/jpeg' : type};base64,${b64}`;
+    } catch {
+        return '';
+    }
+}
+
+/**
  * מפרק data:image/...;base64 לבייטים. null לכל ערך שאינו data URI של תמונה.
  *
  * הסינון ל-image/ בלבד אינו קוסמטי: הטיפוס נלקח מהנתונים ונשלח ככותרת
