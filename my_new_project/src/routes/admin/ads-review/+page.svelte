@@ -29,12 +29,13 @@
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
     // 16 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
     const SLOT_NUMBERS = Array.from({ length: AD_SLOT_COUNT }, (_, i) => i + 1);
-    // הטור מציג רביעייה עוקבת אחת בכל רגע (1-4, אחריה 5-8... - ראו RightAdBanner).
-    // הסימון כאן משקף את זה: צבע לכל רביעייה (= מה שמוצג יחד), אות לרביעייה
-    // ושם-מיקום בתוך הרביעייה (רקע בהיר בלבד - כהה נשבר בהדגשת המערכת)
+    // רביעייה = המקומות שמתחלפים באותה משבצת בטור: א׳ = 1,5,9,13 (העליונה),
+    // ב׳ = 2,6,10,14, ג׳ = 3,7,11,15, ד׳ = 4,8,12,16 (התחתונה). הטור עצמו מציג
+    // 1-4 יחד, אחריהם 5-8 וכו' (ראו RightAdBanner) - אחד מכל רביעייה בכל רגע.
+    // צבע ואות לכל רביעייה (רקע בהיר בלבד - כהה נשבר בהדגשת המערכת)
     const GROUP_LETTERS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח'];
     const POS_NAMES = ['עליונה', 'שנייה', 'שלישית', 'תחתונה'];
-    function slotGroup(n: number): number { return Math.ceil(n / 4); }
+    function slotGroup(n: number): number { return ((n - 1) % 4) + 1; }
     function slotGroupLetter(n: number): string {
         return GROUP_LETTERS[slotGroup(n) - 1] ?? String(slotGroup(n));
     }
@@ -56,6 +57,35 @@
         return [...byGroup.entries()]
             .sort((a, b) => a[0] - b[0])
             .map(([g, nums]) => ({ letter: GROUP_LETTERS[g - 1] ?? String(g), nums }));
+    }
+    // מי תופסת כל מקום בטור - גם מושהית/פגה שומרת את המקום שלה
+    let slotOccupants = $derived(new Map<number, { id: string; title: string }>(
+        data.schedules
+            .filter(s => typeof s.slot === 'number')
+            .map(s => [s.slot as number, { id: s.id, title: s.title }])
+    ));
+    function shortTitle(t: string): string {
+        return t.length > 22 ? t.slice(0, 21) + '…' : t;
+    }
+    /** תווית אפשרות בבורר המקום - מקום תפוס מסומן עם שם הפרסומת שיושבת בו */
+    function slotOptionLabel(n: number, selfId: string): string {
+        const base = `${n} · ${slotPosName(n)}`;
+        const occ = slotOccupants.get(n);
+        if (!occ) return `${base} - פנוי`;
+        if (occ.id === selfId) return `${base} - המקום הנוכחי`;
+        return `${base} ⚠ ${shortTitle(occ.title)}`;
+    }
+    // אזהרה חיה מתחת לבורר ברגע שנבחר מקום תפוס (לפי מזהה השורה)
+    let slotWarning = $state<Record<string, string>>({});
+    function onSlotPick(e: Event, self: { id: string }) {
+        const n = Number((e.currentTarget as HTMLSelectElement).value);
+        const occ = slotOccupants.get(n);
+        slotWarning = {
+            ...slotWarning,
+            [self.id]: occ && occ.id !== self.id
+                ? `מקום ${n} תפוס ע"י "${shortTitle(occ.title)}" - לחיצה על "העבר" תחליף ביניהן`
+                : '',
+        };
     }
 
     // טבלת התזמון מסודרת לפי תאריך הפרסום - החדשות בראש
@@ -376,7 +406,7 @@
                         <div class="flex items-center gap-2 mb-3 pb-3 border-b border-white/10 flex-wrap">
                             <span class="inline-flex items-center justify-center min-w-7 h-7 px-1.5 rounded-lg border border-black/20 font-black text-sm whitespace-nowrap"
                                   style="background:{slotOptionBg(slotOf(ad, adIndex + 1))};color:#111"
-                                  title="רביעייה {slotGroupLetter(slotOf(ad, adIndex + 1))}׳ · הכרטיס ה{slotPosName(slotOf(ad, adIndex + 1))} בה">
+                                  title="רביעייה {slotGroupLetter(slotOf(ad, adIndex + 1))}׳ · המשבצת ה{slotPosName(slotOf(ad, adIndex + 1))} בטור">
                                 {slotOf(ad, adIndex + 1)} · {slotGroupLetter(slotOf(ad, adIndex + 1))}׳
                             </span>
                             <span class="text-[11px] md:text-xs text-gray-400 font-bold">
@@ -688,15 +718,14 @@
             </div>
         </div>
 
-        <!-- מקרא הרביעיות: הטור מציג רביעייה עוקבת אחת בכל רגע (כמו ב-RightAdBanner),
-             וכל רביעייה צבועה בצבע שלה. בתוך הרביעייה המספר הנמוך עליון והגבוה תחתון -->
+        <!-- מקרא הרביעיות: רביעייה = המקומות שמתחלפים באותה משבצת בטור (1,5,9,13 וכו'),
+             וכל רביעייה צבועה בצבע שלה. בכל רגע הטור מציג מקום אחד מכל רביעייה -->
         <div class="flex items-center gap-2 mb-3 flex-wrap text-[10px] md:text-xs font-bold text-gray-300">
-            <span>הטור מציג רביעייה אחת בכל רגע, לפי הסדר:</span>
-            <span class="px-2 py-0.5 rounded-full border border-black/20" style="background:#dbeafe;color:#111">א׳ · 1-4</span>
-            <span class="px-2 py-0.5 rounded-full border border-black/20" style="background:#dcfce7;color:#111">ב׳ · 5-8</span>
-            <span class="px-2 py-0.5 rounded-full border border-black/20" style="background:#fef9c3;color:#111">ג׳ · 9-12</span>
-            <span class="px-2 py-0.5 rounded-full border border-black/20" style="background:#f3e8ff;color:#111">ד׳ · 13-16</span>
-            <span class="text-gray-500">בתוך כל רביעייה: המספר הנמוך למעלה, הגבוה למטה</span>
+            <span>כל רביעייה מתחלפת באותה משבצת בטור:</span>
+            {#each groupSlotOptions(SLOT_NUMBERS) as grp (grp.letter)}
+                <span class="px-2 py-0.5 rounded-full border border-black/20" style="background:{slotOptionBg(grp.nums[0])};color:#111">{grp.letter}׳ · {grp.nums.join(', ')}</span>
+            {/each}
+            <span class="text-gray-500">א׳ למעלה, ד׳ למטה; בכל רגע מוצג מקום אחד מכל רביעייה</span>
         </div>
 
         {#if data.schedules.length === 0}
@@ -744,17 +773,22 @@
                                         <div class="flex items-center gap-1">
                                             <span class="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-lg border border-black/20 font-black text-xs whitespace-nowrap"
                                                   style="background:{typeof s.slot === 'number' ? slotOptionBg(s.slot) : '#fff'};color:#111"
-                                                  title={typeof s.slot === 'number' ? `רביעייה ${slotGroupLetter(s.slot)}׳ · הכרטיס ה${slotPosName(s.slot)} בה` : ''}>
+                                                  title={typeof s.slot === 'number' ? `רביעייה ${slotGroupLetter(s.slot)}׳ · המשבצת ה${slotPosName(s.slot)} בטור` : ''}>
                                                 {typeof s.slot === 'number' ? `${s.slot} · ${slotGroupLetter(s.slot)}׳` : '-'}
                                             </span>
                                             <select name="slot"
+                                                    onchange={(e) => onSlotPick(e, s)}
                                                     class="px-1.5 py-1 rounded-lg bg-black/40 border border-white/15 text-white text-[11px] focus:outline-none focus:border-amber-400/50">
-                                                <!-- כל רביעייה תחת כותרת משלה - הקשר מספר↔רביעייה קריא במילים, לא רק בצבע -->
+                                                <!-- כל רביעייה תחת כותרת משלה - הקשר מספר↔רביעייה קריא במילים, לא רק
+                                                     בצבע; מקום תפוס שומר את צבע הרביעייה ומסומן באדום מודגש עם שם הפרסומת -->
                                                 {#each groupSlotOptions(slotOptions) as grp (grp.letter)}
-                                                    <optgroup label="— רביעייה {grp.letter}׳ (מוצגות יחד) —">
+                                                    <optgroup label="— רביעייה {grp.letter}׳ · המשבצת ה{slotPosName(grp.nums[0])} בטור —">
                                                         {#each grp.nums as n (n)}
-                                                            <option value={n} selected={n === s.slot} style="background:{slotOptionBg(n)};color:#111">
-                                                                {n} · {slotPosName(n)}
+                                                            {@const occ = slotOccupants.get(n)}
+                                                            {@const takenByOther = !!occ && occ.id !== s.id}
+                                                            <option value={n} selected={n === s.slot}
+                                                                    style="background:{slotOptionBg(n)};color:{takenByOther ? '#b91c1c' : '#111'};font-weight:{takenByOther ? '700' : '400'}">
+                                                                {slotOptionLabel(n, s.id)}
                                                             </option>
                                                         {/each}
                                                     </optgroup>
@@ -766,6 +800,9 @@
                                                 title="העבר למקום שנבחר; אם המקום תפוס - שתי הפרסומות מתחלפות">
                                             ⇄ העבר
                                         </button>
+                                        {#if slotWarning[s.id]}
+                                            <span class="max-w-[150px] text-[10px] leading-snug font-bold text-amber-300">⚠ {slotWarning[s.id]}</span>
+                                        {/if}
                                     </form>
                                 </td>
                                 <!-- פרסומת + מפרסם + סטטוס בתא אחד, מוערמים -->
