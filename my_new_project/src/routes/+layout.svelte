@@ -19,7 +19,9 @@
 	import { closeAdPopup, registerPaidAds } from "$lib/adPopupStore";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
-	import { installFormGuard } from "$lib/formGuard";
+	import { installFormGuard, revealFieldError } from "$lib/formGuard";
+	import { needsNeighborhood, isNeighborhoodGateExempt, NEIGHBORHOOD_GATE_TARGET } from "$lib/neighborhoodGate";
+	import { get } from "svelte/store";
 	import { browser } from "$app/environment";
 
 	let { children, data } = $props();
@@ -116,13 +118,31 @@
 		goto(`/login?redirect=${encodeURIComponent(page.url.pathname)}`);
 	}
 
-	beforeNavigate(({ to, willUnload, cancel }) => {
+	beforeNavigate(({ to, type, willUnload, cancel }) => {
 		closeAdPopup();
 		// עלתה גרסה חדשה בזמן שהדף פתוח (version.pollInterval ב-svelte.config.js): ניווט SPA
 		// ימשוך chunks שכבר לא קיימים על השרת וייפול. במקום זה - טעינה מלאה של היעד מהשרת.
 		if (updated.current && !willUnload && to?.url) {
 			cancel();
 			location.href = to.url.href;
+			return;
+		}
+		// שער השכונה בדפדפן (תאום של השער ב-+layout.server.ts, ראו neighborhoodGate.ts):
+		// יעד שהשרת ממילא היה מחזיר ממנו ל-/onboarding/1 לא נשלף בכלל. בתוך האשף -
+		// במקום "לחצתי וחזרתי לאותו מסך" מראים מה חסר; מחוץ לו - ישר לאשף, סבב אחד במקום שניים.
+		if (
+			!willUnload && type !== 'popstate' && to?.url && to.url.origin === location.origin &&
+			data.session?.user && needsNeighborhood(data.layoutUser) &&
+			!isNeighborhoodGateExempt(to.url.pathname)
+		) {
+			cancel();
+			if (page.url.pathname === NEIGHBORHOOD_GATE_TARGET) {
+				const cityEl = document.getElementById('ob-city') as HTMLSelectElement | null;
+				revealFieldError(cityEl && !cityEl.value ? cityEl : 'ob-hood', get(_)('onboarding.nb_required_msg'));
+			} else {
+				// אחרי שהניווט המבוטל נסגר - לא goto מקונן בתוך beforeNavigate
+				setTimeout(() => goto(NEIGHBORHOOD_GATE_TARGET));
+			}
 		}
 	});
 
