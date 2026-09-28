@@ -84,6 +84,7 @@
     let highlightedRow = $state<number | null>(null);
     let confirmingRow = $state<number | null>(null);
     let calculatorEl: HTMLDivElement | null = $state(null);
+    let step4AnchorEl: HTMLDivElement | null = $state(null);
     let pricingHeadingEl: HTMLHeadingElement | null = $state(null);
     let flashTotal = $state(false);
 
@@ -434,11 +435,20 @@
         // easeInOutCubic - gentle accelerate/decelerate
         const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
+        // Long scrolls must not fight the user - any wheel/touch/key stops the animation
+        let cancelled = false;
+        const cancel = () => { cancelled = true; };
+        const cancelEvents = ['wheel', 'touchstart', 'keydown'] as const;
+        for (const ev of cancelEvents) window.addEventListener(ev, cancel, { passive: true, once: true });
+        const cleanup = () => { for (const ev of cancelEvents) window.removeEventListener(ev, cancel); };
+
         function step(now: number) {
+            if (cancelled) return cleanup();
             const elapsed = now - startTime;
             const t = Math.min(1, elapsed / duration);
             window.scrollTo(0, startY + distance * ease(t));
             if (t < 1) requestAnimationFrame(step);
+            else cleanup();
         }
         requestAnimationFrame(step);
     }
@@ -1383,6 +1393,14 @@
                 </div>
             {/if}
 
+            <!-- "הבנתי" - גלילה איטית מאוד לשלב 4 כדי להמשיך בתמחור -->
+            <div class="flex justify-center">
+                <button type="button" onclick={() => slowScrollTo(step4AnchorEl, 6000)}
+                    class="px-10 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-base md:text-lg font-black shadow-lg shadow-amber-500/20 transition-all active:scale-95">
+                    ✓ {$_('advertise.calc_got_it')}
+                </button>
+            </div>
+
         </div>
         {/if}
 
@@ -1398,6 +1416,7 @@
 
     <!-- ===== STEP 4 (מאוחד): אישור הכל - תקופה, סכום ופרטי קשר ===== -->
     {#if hasSelection}
+    <div bind:this={step4AnchorEl}></div>
     {#if periodFolded}
         <!-- שלב 4 מקופל - האישור והסכום בשורה אחת -->
         {@render foldedStrip('4', `${$_('advertise.confirm_period')} · ₪${fmt(effectiveTotal)}`, () => periodFolded = false)}
