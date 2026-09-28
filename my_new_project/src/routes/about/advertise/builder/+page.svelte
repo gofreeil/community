@@ -1602,13 +1602,13 @@
         </div>
         <p class="step-help">{$_('advertise.b_s3_help')}</p>
 
-        <input type="text" bind:value={title} maxlength="35"
+        <input type="text" bind:value={title} maxlength="40"
                onfocus={() => activeStep === "title" || (activeStep = "title")}
                onblur={() => title.trim() && commitField("title")}
                placeholder={$_('advertise.b_s3_ph')}
                class="text-input" />
         <div class="flex items-center justify-end gap-2 text-xs text-gray-500 mt-2">
-            <span>{title.length}/35</span>
+            <span>{title.length}/40</span>
         </div>
 
         <!-- Title vertical offset slider - move title up/down on the banner -->
