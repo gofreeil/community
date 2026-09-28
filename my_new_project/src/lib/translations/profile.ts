@@ -528,6 +528,18 @@ export const he = {
         transfer_done_to: "הועבר במתנה אל",
         transfer_done_fallback_name: "המשתמש שבחרתם",
         transfer_close: "סגירה",
+
+        // העברת בעלות על פרסומת (אותו מודל כמו העברת נכס)
+        transfer_ad: "🎁 העבר",
+        transfer_ad_title: "העברת הפרסומת לבעלות משתמש רשום אחר",
+        transfer_ad_heading: "העברת פרסומת למשתמש אחר",
+        transfer_ad_body_prefix: "הפרסומת",
+        transfer_ad_body_suffix:
+            'תעבור לבעלות המשתמש שתבחרו ותופיע אצלו ב"הפרסומות שלי", ומשם הוא יוכל לערוך אותה. היא נשארת באתר כמו שהיא - באותו מקום בטור ועם אותו תוקף. הוא יקבל על כך הודעה.',
+        transfer_ad_hint:
+            "שימו לב: אחרי ההעברה הפרסומת לא תופיע יותר אצלכם, ורק המקבל יוכל להעביר אותה חזרה.",
+        transfer_ad_done_title: "הפרסומת הועברה!",
+        transfer_ad_done_to: "הועברה אל",
     },
 };
 
@@ -1053,6 +1065,18 @@ export const en = {
         transfer_done_to: "was gifted to",
         transfer_done_fallback_name: "the user you chose",
         transfer_close: "Close",
+
+        // Transfer ownership of an ad (same dialog as listings)
+        transfer_ad: "🎁 Transfer",
+        transfer_ad_title: "Transfer this ad to another registered user",
+        transfer_ad_heading: "Transfer ad to another user",
+        transfer_ad_body_prefix: "The ad",
+        transfer_ad_body_suffix:
+            'will become the property of the user you choose and appear under their "My ads", where they can edit it. It stays on the site as is - same slot and same expiry date. They will be notified.',
+        transfer_ad_hint:
+            "Note: after the transfer the ad will no longer appear in your account - only the recipient can transfer it back.",
+        transfer_ad_done_title: "Ad transferred!",
+        transfer_ad_done_to: "was transferred to",
     },
 };
 
@@ -1578,5 +1602,17 @@ export const ru = {
         transfer_done_to: "подарен пользователю",
         transfer_done_fallback_name: "выбранному пользователю",
         transfer_close: "Закрыть",
+
+        // Передача прав на рекламу (тот же диалог, что и для объектов)
+        transfer_ad: "🎁 Передать",
+        transfer_ad_title: "Передать рекламу другому зарегистрированному пользователю",
+        transfer_ad_heading: "Передача рекламы другому пользователю",
+        transfer_ad_body_prefix: "Реклама",
+        transfer_ad_body_suffix:
+            'перейдёт к выбранному пользователю и появится у него в разделе "Мои объявления", где он сможет её редактировать. На сайте она остаётся как есть - на том же месте и с тем же сроком. Он получит уведомление.',
+        transfer_ad_hint:
+            "Внимание: после передачи реклама больше не будет отображаться у вас - вернуть её сможет только получатель.",
+        transfer_ad_done_title: "Реклама передана!",
+        transfer_ad_done_to: "передана пользователю",
     },
 };

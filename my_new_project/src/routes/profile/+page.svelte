@@ -225,15 +225,17 @@
 		republishingItemId = null;
 	}
 
-	// --- העברת נכס במתנה למשתמש אחר (לפי אימייל/טלפון של משתמש רשום) ---
-	let transferTarget = $state<{ id: string; label: string } | null>(null);
+	// --- העברת נכס/פרסומת במתנה למשתמש אחר (לפי אימייל/טלפון של משתמש רשום) ---
+	// אותו מודל לשניהם; kind קובע לאיזה נתיב פונים ואיזה ניסוח מוצג.
+	let transferTarget = $state<{ id: string; label: string; kind: "item" | "ad" } | null>(null);
 	let transferRecipient = $state("");
 	let transferError = $state("");
 	let transferBusy = $state(false);
 	let transferSuccessName = $state("");
 	let transferredItemIds = $state<string[]>([]);
-	function openTransfer(id: string, label: string) {
-		transferTarget = { id, label };
+	const isAdTransfer = $derived(transferTarget?.kind === "ad");
+	function openTransfer(id: string, label: string, kind: "item" | "ad" = "item") {
+		transferTarget = { id, label, kind };
 		transferRecipient = "";
 		transferError = "";
 		transferSuccessName = "";
@@ -250,18 +252,30 @@
 		}
 		transferBusy = true;
 		transferError = "";
+		const isAd = transferTarget.kind === "ad";
 		try {
-			const res = await fetch(`/api/items/${transferTarget.id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					action: "transfer_owner",
-					recipient: transferRecipient.trim(),
-				}),
-			});
+			const res = isAd
+				? await fetch("/api/ads/transfer", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ id: transferTarget.id, recipient: transferRecipient.trim() }),
+				})
+				: await fetch(`/api/items/${transferTarget.id}`, {
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						action: "transfer_owner",
+						recipient: transferRecipient.trim(),
+					}),
+				});
 			const data = await res.json();
 			if (data.success) {
-				transferredItemIds = [...transferredItemIds, transferTarget.id];
+				if (isAd) {
+					// הפרסומת כבר לא שלי - הרשימה והכרטיס "הפרסומת שלך" נטענים מחדש
+					await invalidateAll();
+				} else {
+					transferredItemIds = [...transferredItemIds, transferTarget.id];
+				}
 				transferSuccessName = data.recipientName || tFn("profile.transfer_done_fallback_name");
 			} else {
 				transferError = data.message ?? tFn("profile.network_error");
@@ -4811,6 +4825,11 @@
 											   class="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-black text-[11px] transition-colors">
 												{tFn("profile.my_ad_edit")}
 											</a>
+											<button type="button" class="ad-btn gift"
+											        onclick={() => openTransfer(myAdRow.id, myAdRow.title || tFn("profile.untitled"), "ad")}
+											        title={tFn("profile.transfer_ad_title")}>
+												{tFn("profile.transfer_ad")}
+											</button>
 										</span>
 										{#if isSuperAdmin && myAdRow.status === 'approved'}
 											<!-- סופר-אדמין בלבד: סנדיקציה לכל אתרי הרשת בלי לעבור דרך עמוד האישורים -->
@@ -7241,20 +7260,20 @@
 			role="dialog" aria-modal="true" tabindex="-1"
 			onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
 			{#if transferSuccessName}
-				<h3 class="text-white font-black text-lg mb-2 flex items-center gap-2">🎁 {tFn("profile.transfer_done_title")}</h3>
+				<h3 class="text-white font-black text-lg mb-2 flex items-center gap-2">🎁 {tFn(isAdTransfer ? "profile.transfer_ad_done_title" : "profile.transfer_done_title")}</h3>
 				<p class="text-gray-300 text-sm mb-4">
-					{tFn("profile.transfer_done_prefix")} <span class="font-bold text-white">"{transferTarget.label}"</span> {tFn("profile.transfer_done_to")} <span class="font-bold text-purple-300">{transferSuccessName}</span>.
+					{tFn(isAdTransfer ? "profile.transfer_ad_body_prefix" : "profile.transfer_done_prefix")} <span class="font-bold text-white">"{transferTarget.label}"</span> {tFn(isAdTransfer ? "profile.transfer_ad_done_to" : "profile.transfer_done_to")} <span class="font-bold text-purple-300">{transferSuccessName}</span>.
 				</p>
 				<div class="flex justify-end">
 					<button type="button" onclick={() => (transferTarget = null)}
 						class="text-sm font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-lg px-4 py-2 transition-all">{tFn("profile.transfer_close")}</button>
 				</div>
 			{:else}
-				<h3 class="text-white font-black text-lg mb-1 flex items-center gap-2">🎁 {tFn("profile.transfer_title")}</h3>
+				<h3 class="text-white font-black text-lg mb-1 flex items-center gap-2">🎁 {tFn(isAdTransfer ? "profile.transfer_ad_heading" : "profile.transfer_title")}</h3>
 				<p class="text-gray-300 text-sm mb-1">
-					{tFn("profile.transfer_body_prefix")} <span class="font-bold text-white">"{transferTarget.label}"</span> {tFn("profile.transfer_body_suffix")}
+					{tFn(isAdTransfer ? "profile.transfer_ad_body_prefix" : "profile.transfer_body_prefix")} <span class="font-bold text-white">"{transferTarget.label}"</span> {tFn(isAdTransfer ? "profile.transfer_ad_body_suffix" : "profile.transfer_body_suffix")}
 				</p>
-				<p class="text-amber-300/80 text-xs mb-3">{tFn("profile.transfer_hint")}</p>
+				<p class="text-amber-300/80 text-xs mb-3">{tFn(isAdTransfer ? "profile.transfer_ad_hint" : "profile.transfer_hint")}</p>
 
 				<label class="block text-xs font-bold text-gray-300 mb-1" for="transferRecipient">
 					{tFn("profile.transfer_recipient_label")}
@@ -7368,6 +7387,14 @@
 	}
 	.ad-btn.ok:hover {
 		background: rgba(34, 197, 94, 0.32);
+	}
+	.ad-btn.gift {
+		background: rgba(168, 85, 247, 0.16);
+		border-color: rgba(168, 85, 247, 0.45);
+		color: #d8b4fe;
+	}
+	.ad-btn.gift:hover {
+		background: rgba(168, 85, 247, 0.3);
 	}
 	.ad-btn.ghost {
 		background: rgba(255, 255, 255, 0.06);

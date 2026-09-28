@@ -707,6 +707,52 @@ export async function getOwnAdForEdit(
     return sameAdvertiser(ad, me) ? ad : null;
 }
 
+/**
+ * העברת בעלות על פרסומת למשתמש רשום אחר - אותו דגם כמו העברת נכס
+ * (action transfer_owner ב-/api/items/[id]). הפרסומת עצמה לא משתנה: אותו
+ * מקום בטור, אותו תוקף ואותו עיצוב. מתחלף רק submitted_by, ואיתו מי
+ * שרואה אותה ב"הפרסומות שלי" ויכול לערוך אותה בבילדר.
+ *
+ * submitted_by_email קודם לאימייל שבדף הנחיתה במפתחות הזהות, ולכן אחרי
+ * ההעברה הנותן כבר לא מזוהה כבעלים גם כשפרטי הקשר בדף הם שלו.
+ *
+ * בקשות עדכון ממתינות של אותה פרסומת עוברות איתה - אחרת הנותן היה נשאר
+ * עם גרסה ממתינה של פרסומת שכבר לא שלו, והמקבל לא היה רואה אותה.
+ *
+ * null = לא נמצאה, או שהמבקש אינו הבעלים (ואינו סופר-אדמין).
+ */
+export async function transferAdOwner(
+    id: string,
+    giver: { id?: string; email?: string; name?: string },
+    recipient: { id: string; email?: string; name?: string },
+    opts: { asSuperAdmin?: boolean } = {},
+): Promise<SubmittedAd | null> {
+    const ad = await resolveLatestVersion(id);
+    if (!ad) return null;
+    const me = { submittedBy: { id: giver.id, email: giver.email } };
+    if (!opts.asSuperAdmin && !sameAdvertiser(ad, me)) return null;
+
+    const pendingEdits = ad.status === 'pending' ? [] : await findStalePendingEditsOf(ad.id, ad);
+    const now = new Date().toISOString();
+    for (const a of [ad, ...pendingEdits]) {
+        await strapiPut(`${ENDPOINT}/${a.id}`, {
+            data: {
+                submitted_by_id:    recipient.id,
+                submitted_by_email: recipient.email || null,
+                submitted_by_name:  recipient.name || null,
+                landing: {
+                    ...(a.landing as unknown as Record<string, unknown>),
+                    // תיעוד על הרשומה עצמה - שקיפות למקבל ולמנהלים
+                    _transferredFrom: giver.name || giver.email || '',
+                    _transferredAt:   now,
+                },
+            },
+        });
+    }
+    invalidate('ads:');
+    return ad;
+}
+
 function toAdStatus(raw: unknown): AdStatus | null {
     return raw === 'pending' || raw === 'approved' || raw === 'rejected' ? raw : null;
 }
