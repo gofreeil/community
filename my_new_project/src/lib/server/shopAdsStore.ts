@@ -372,12 +372,20 @@ export function buildShopAdDrafts(
  * שאינן מושהות ושתוקפן לא פג. מי שאין לה מספר מקבלת - כמו באתר עצמו -
  * את המקום הפנוי הנמוך ביותר, כדי שלא נתנגש איתה.
  */
-function takenOrders(rows: Array<{ order?: number }>): Set<number> {
+function takenOrders(rows: Array<{ order?: number; extra?: unknown }>): Set<number> {
     const taken = new Set<number>();
     const noOrder: Array<{ order?: number }> = [];
     for (const r of rows) {
         if (typeof r.order === 'number' && r.order >= 0 && !taken.has(r.order)) taken.add(r.order);
         else noOrder.push(r);
+    }
+    // שכפל פרסומת: המקומות הנוספים של פרסומת (landing._extraSlots / extra_slots)
+    // תפוסים גם הם - מוצר שהיה נוחת שם היה מסתיר את השכפול
+    for (const r of rows) {
+        if (!Array.isArray(r.extra)) continue;
+        for (const n of r.extra) {
+            if (typeof n === 'number' && Number.isInteger(n) && n >= 0 && n < AD_SLOT_COUNT) taken.add(n);
+        }
     }
     let next = 0;
     for (const _ of noOrder) {
@@ -538,14 +546,14 @@ function submittedAtOf(r: Row): string | undefined {
 async function readSubmittedSite(site: ShopAdSite, allRows: Row[]): Promise<SiteRows> {
     const mine = allRows.filter(r => belongsTo(site, r));
     const ours: SiteRows['ours'] = [];
-    const others: Array<{ order?: number }> = [];
+    const others: Array<{ order?: number; extra?: unknown }> = [];
     for (const r of mine) {
         const l = landingOf(r);
         const order = typeof l._order === 'number' ? l._order : undefined;
         if (typeof l._shopProduct === 'string' && l._shopProduct) {
             ours.push({ id: String(r.documentId), product: l._shopProduct, order, submittedAt: submittedAtOf(r) });
         } else if (isLive(String(r.ad_status ?? ''), r.expires_at, l._paused)) {
-            others.push({ order });
+            others.push({ order, extra: l._extraSlots });
         }
     }
     return { ours, taken: takenOrders(others) };
@@ -554,14 +562,14 @@ async function readSubmittedSite(site: ShopAdSite, allRows: Row[]): Promise<Site
 async function readPgSite(): Promise<SiteRows> {
     const rows = await leanRows(PG_ENDPOINT, 'landing');
     const ours: SiteRows['ours'] = [];
-    const others: Array<{ order?: number }> = [];
+    const others: Array<{ order?: number; extra?: unknown }> = [];
     for (const r of rows) {
         const l = landingOf(r);
         const order = typeof l._order === 'number' ? l._order : undefined;
         if (typeof l._shopProduct === 'string' && l._shopProduct) {
             ours.push({ id: String(r.documentId), product: l._shopProduct, order, submittedAt: submittedAtOf(r) });
         } else if (isLive(String(r.ad_status ?? ''), r.expires_at, l._paused)) {
-            others.push({ order });
+            others.push({ order, extra: l._extraSlots });
         }
     }
     return { ours, taken: takenOrders(others) };
@@ -575,7 +583,7 @@ async function readNgSite(): Promise<SiteRows> {
         'fields[2]': 'extra_fields',
     }).catch(() => [] as Row[]);
     const ours: SiteRows['ours'] = [];
-    const others: Array<{ order?: number }> = [];
+    const others: Array<{ order?: number; extra?: unknown }> = [];
     for (const r of rows) {
         const x = extraOf(r);
         const order = typeof x.slot_order === 'number' ? x.slot_order : undefined;
@@ -584,7 +592,7 @@ async function readNgSite(): Promise<SiteRows> {
             const submittedAt = typeof x.submitted_at === 'string' ? x.submitted_at : undefined;
             ours.push({ id: String(r.documentId), product: x.shop_product, order, submittedAt });
         } else if (isLive(r.status1 === 'active' ? 'approved' : '', x.expires_at, x.paused)) {
-            others.push({ order });
+            others.push({ order, extra: x.extra_slots });
         }
     }
     return { ours, taken: takenOrders(others) };
@@ -599,7 +607,7 @@ async function readPrSite(): Promise<SiteRows> {
         'fields[2]': 'extra_fields',
     }).catch(() => [] as Row[]);
     const ours: SiteRows['ours'] = [];
-    const others: Array<{ order?: number }> = [];
+    const others: Array<{ order?: number; extra?: unknown }> = [];
     for (const r of rows) {
         const x = extraOf(r);
         const order = typeof x.slot_order === 'number' ? x.slot_order : undefined;
@@ -607,7 +615,7 @@ async function readPrSite(): Promise<SiteRows> {
             const submittedAt = typeof x.submitted_at === 'string' ? x.submitted_at : undefined;
             ours.push({ id: String(r.documentId), product: x.shop_product, order, submittedAt });
         } else if (isLive(r.status1 === 'active' ? 'approved' : '', x.expires_at, x.paused)) {
-            others.push({ order });
+            others.push({ order, extra: x.extra_slots });
         }
     }
     return { ours, taken: takenOrders(others) };

@@ -25,6 +25,8 @@
         adStyle?: AdStyle | null;
         /** מספר המקום בטור (1..16) - נקבע במסך הניהול; חסר במודעות ותיקות */
         slot?: number;
+        /** שכפל פרסומת: מקומות נוספים (1..16) שבהם אותה פרסומת מוצגת */
+        extraSlots?: number[];
     };
 
     let { approvedAds = [] }: { approvedAds?: ApprovedAd[] } = $props();
@@ -251,6 +253,13 @@
             }
             if (num <= AD_SLOT_COUNT) byNum.set(num, a);
             else overflow.push({ num, ad: a });
+        }
+        // שכפל פרסומת: אותה פרסומת גם במקומות הנוספים שלה (למשל 2 ו-6 -
+        // נשארת באותה משבצת בכל הסבב). מקום ראשי של אחרת גובר.
+        for (const a of paidAds) {
+            for (const n of a.extraSlots ?? []) {
+                if (n >= 1 && n <= AD_SLOT_COUNT && !byNum.has(n)) byNum.set(n, a);
+            }
         }
         const cells: BoardCell[] = [];
         for (let n = 1; n <= AD_SLOT_COUNT; n++) {

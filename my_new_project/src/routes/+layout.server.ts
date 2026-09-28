@@ -11,7 +11,7 @@ const NEIGHBORHOOD_GATE_EXEMPT = [
     '/forgot-password', '/reset-password', '/sso', '/sso-adopt', '/auth',
     '/admin/verify', '/coordinator/verify', '/about', '/sitemap.xml', '/api',
 ];
-import { listApprovedLive, computeAdSlots, adImageUrl } from '$lib/server/adsStore';
+import { listApprovedLive, computeAdSlots, computeAdExtraSlots, adImageUrl } from '$lib/server/adsStore';
 
 /**
  * תקציב זמן קשיח לשליפה בשכבת ה-layout.
@@ -99,6 +99,7 @@ export const load: LayoutServerLoad = async (event) => {
     // ולכן הטבעת התמונות כאן שלחה אותן מחדש בכל צפייה (4.07MB מתוך 4.44MB של
     // דף הבית, כל אחת פעמיים - ב-HTML ובנתוני ההידרציה). ראה adImageUrl.
     const liveSlots = computeAdSlots(adsRes.status === 'fulfilled' ? adsRes.value : []);
+    const liveExtras = computeAdExtraSlots(adsRes.status === 'fulfilled' ? adsRes.value : []);
     const approvedAds = adsRes.status === 'fulfilled'
         ? adsRes.value.map(a => ({
             id: a.id,
@@ -117,6 +118,8 @@ export const load: LayoutServerLoad = async (event) => {
             adStyle: a.adStyle,
             // מספר המקום בטור (1..16) - נקבע במסך הניהול
             slot: liveSlots.get(a.id),
+            // שכפל פרסומת - מקומות נוספים שבהם אותה פרסומת מוצגת
+            extraSlots: liveExtras.get(a.id) ?? [],
             // כרטיס מוצר מחנות החירות (ראה shopAdsStore)
             shop: !!(a.landing as { _shopProduct?: unknown } | undefined)?._shopProduct,
         }))
