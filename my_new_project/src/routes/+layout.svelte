@@ -66,7 +66,8 @@
 					mobileImageFit: a.mobileImage ? a.mobileImageFit : undefined,
 					color:          a.gradient,
 					hover:          a.hover,
-					shop:           a.shop,
+					// בלי כפתור בפופ-אפ: כרטיס מוצר מהחנות, או פרסומת שטקסט הכפתור שלה נמחק
+					shop:           a.shop || !a.cta,
 				})),
 		);
 	});

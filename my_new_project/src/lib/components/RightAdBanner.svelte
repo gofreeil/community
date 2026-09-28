@@ -389,8 +389,9 @@
                             </div>
                         </div>
                     </div>
-                    <!-- כרטיס מוצר מהחנות - בלי רצועת המחיר ("₪.. · לצפייה בחנות") -->
-                    {#if !ad.shop}
+                    <!-- כרטיס מוצר מהחנות - בלי רצועת המחיר ("₪.. · לצפייה בחנות").
+                         גם פרסומת שטקסט הכפתור שלה נמחק מוצגת בלי רצועה -->
+                    {#if !ad.shop && ad.cta}
                     <div class="relative group/cta bg-gradient-to-r {ad.gradient} p-2.5 text-center">
                         <p class="text-white font-bold text-xs leading-tight">{ad.cta || ad.title}</p>
                         {#if ad.hover}
