@@ -417,6 +417,8 @@ async function leanRows(endpoint: string, jsonField: string, filters: Record<str
         'fields[1]': 'ad_status',
         'fields[2]': 'expires_at',
         'fields[3]': jsonField,
+        // מועד העלייה המקורי - הסנכרון שומר אותו ולא מחתים את הכרטיס מחדש
+        'fields[4]': 'submitted_at',
     };
     try {
         return await strapiGetAll<Row>(endpoint, lean);
@@ -465,7 +467,12 @@ export interface PlacedShopAd {
 // ============================================================
 
 interface SiteRows {
-    /** רשומות הפרסומות של המוצרים שלנו באתר */
+    /**
+     * רשומות הפרסומות של המוצרים שלנו באתר. submittedAt = מתי הכרטיס עלה
+     * לראשונה; הסנכרון כותב אותו גם כמועד הפרסום (decided_at), אחרת כל
+     * סנכרון היה מחתים את הכרטיסים "פורסמו עכשיו" ומקפיץ אותם מעל פרסומות
+     * אמיתיות שעלו אחריהם בטבלת התזמון.
+     */
     ours: Array<{ id: string; product: string; order?: number; submittedAt?: string }>;
     /** המקומות שתפוסים ע"י פרסומות אחרות שעל המסך */
     taken: Set<number>;
@@ -523,6 +530,11 @@ function contentLanding(l: Record<string, any>): Record<string, unknown> {
     return out;
 }
 
+/** מועד ההגשה של רשומה מאוסף עמודות (submitted-ad / pg) */
+function submittedAtOf(r: Row): string | undefined {
+    return typeof r.submitted_at === 'string' && r.submitted_at ? r.submitted_at : undefined;
+}
+
 async function readSubmittedSite(site: ShopAdSite, allRows: Row[]): Promise<SiteRows> {
     const mine = allRows.filter(r => belongsTo(site, r));
     const ours: SiteRows['ours'] = [];
@@ -531,7 +543,7 @@ async function readSubmittedSite(site: ShopAdSite, allRows: Row[]): Promise<Site
         const l = landingOf(r);
         const order = typeof l._order === 'number' ? l._order : undefined;
         if (typeof l._shopProduct === 'string' && l._shopProduct) {
-            ours.push({ id: String(r.documentId), product: l._shopProduct, order });
+            ours.push({ id: String(r.documentId), product: l._shopProduct, order, submittedAt: submittedAtOf(r) });
         } else if (isLive(String(r.ad_status ?? ''), r.expires_at, l._paused)) {
             others.push({ order });
         }
@@ -547,7 +559,7 @@ async function readPgSite(): Promise<SiteRows> {
         const l = landingOf(r);
         const order = typeof l._order === 'number' ? l._order : undefined;
         if (typeof l._shopProduct === 'string' && l._shopProduct) {
-            ours.push({ id: String(r.documentId), product: l._shopProduct, order });
+            ours.push({ id: String(r.documentId), product: l._shopProduct, order, submittedAt: submittedAtOf(r) });
         } else if (isLive(String(r.ad_status ?? ''), r.expires_at, l._paused)) {
             others.push({ order });
         }
@@ -711,6 +723,8 @@ async function syncSite(
         const master = masters.get(p.documentId);
         const c = adContent(p, i, site, master);
         const existing = state.ours.find(r => r.product === p.documentId);
+        // מועד הפרסום = מתי הכרטיס עלה לראשונה, לא מתי רץ הסנכרון
+        const publishedAt = existing?.submittedAt ?? now;
 
         // המאסטר עצמו: התוכן נשאר כפי שנערך. מתעדכנים רק המקום בטור,
         // וטיוטה שנערכה לפני ההפצה עולה עכשיו לאוויר.
@@ -719,7 +733,7 @@ async function syncSite(
             const landing: Record<string, unknown> = { ...landingOf(full?.data ?? {}), _order: orders[i], _shopSyncedAt: now };
             delete landing._paused;
             delete landing._shopDraft;
-            await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(master.id)}`, { data: { landing } });
+            await strapiPut(`${ADS_ENDPOINT}/${encodeURIComponent(master.id)}`, { data: { landing, decided_at: publishedAt } });
             base.updated++;
             continue;
         }
@@ -734,8 +748,8 @@ async function syncSite(
                 ad_style:        { ...c.adStyle },
                 landing:         c.landing,
                 submitted_by:    { id: '', email: '', name: '' },
-                submitted_at:    existing?.submittedAt ?? now,
-                decided_at:      now,
+                submitted_at:    publishedAt,
+                decided_at:      publishedAt,
                 decided_by:      decidedBy,
                 payment:         'code',
                 code_requested:  false,
@@ -774,8 +788,8 @@ async function syncSite(
                 landing:                 { ...c.landing, image: '' },
                 submitted_by:            { name: c.companyName },
                 contact_email:           '',
-                submitted_at:            existing?.submittedAt ?? now,
-                decided_at:              now,
+                submitted_at:            publishedAt,
+                decided_at:              publishedAt,
                 decided_by:              decidedBy,
                 expires_at:              '',
                 duration_days:           30,
@@ -807,7 +821,7 @@ async function syncSite(
 
         const endpoint = site.kind === 'pg' ? PG_ENDPOINT : ADS_ENDPOINT;
         const landing = internalLanding(site, c, orders[i], p.documentId, now);
-        const columns: Record<string, unknown> = submittedColumns(c, landing, now, decidedBy);
+        const columns: Record<string, unknown> = submittedColumns(c, landing, publishedAt, decidedBy);
         if (site.kind === 'pg') {
             // לאוסף של רכישות קבוצתיות אין את העמודות האלה
             delete columns.decided_by;
