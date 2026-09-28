@@ -361,9 +361,10 @@
     );
 
     // ===== Validation + submit =====
-    let canSubmit = $derived(
-        Boolean(mainImage && title && subtitle && hoverText && (phone || website) && (landingHeadline || landingPitch))
-    );
+    // חובה רק מה שבלעדיו אין כרטיס (וגם השרת דורש). כל השאר מסומן בטופס
+    // "אופציונלי" ויש לו נפילה: דף הנחיתה לוקח את הכותרת הראשית, והכרטיס
+    // בלי טקסט ריחוף פשוט לא מחליף את התמונה.
+    let canSubmit = $derived(Boolean(mainImage && title && subtitle));
     let submitting = $state(false);
     let submitted  = $state(false);
 
