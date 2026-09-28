@@ -25,6 +25,8 @@
         const at = (ad as { landing?: { _syndicatedAt?: unknown } } | null)?.landing?._syndicatedAt;
         return typeof at === 'string' ? at : '';
     }
+    /** הפרסומת המלאה לפי מזהה - שורת טבלת התזמון לא נושאת את חותמת הפרסום ברשת */
+    let approvedById = $derived(new Map(data.approved.map(a => [a.id, a] as const)));
     // תקופות הפרסום שאפשר לקצוב מהטבלה (התקופה נספרת מיום הפרסום)
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
     // 16 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
@@ -896,6 +898,24 @@
                                                         class="px-2.5 py-1 rounded-lg bg-red-600/20 border border-red-500/40 text-red-300 text-[11px] font-black hover:bg-red-600/30 whitespace-nowrap"
                                                         onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${s.title}"?`)) e.preventDefault(); }}>
                                                     🗑 מחק
+                                                </button>
+                                            </form>
+                                        {/if}
+                                        <!-- פרסום בכל אתרי הרשת (סופר-אדמין) - אותו כפתור של טאב "פורסמו";
+                                             לחיצה חוזרת מרעננת את העותקים לפי הגרסה הנוכחית -->
+                                        {#if isSuperAdmin}
+                                            {@const syncedAt = syndicatedAt(approvedById.get(s.id))}
+                                            <form method="POST" action="?/publishEverywhere" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <button type="submit"
+                                                        class="px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-200 text-[11px] font-black hover:bg-sky-500/30 whitespace-nowrap"
+                                                        title={syncedAt
+                                                            ? `פורסמה בכל האתרים ב-${fmtDate(syncedAt)} - לחיצה מעדכנת את העותקים לפי הגרסה הנוכחית`
+                                                            : 'יצירת עותק מאושר בטור הפרסומות של כל אתרי הרשת: אינדקס העסקים, קבוצות רכישה והגמח הארצי'}
+                                                        onclick={(e) => { if (!confirm(syncedAt
+                                                            ? `לעדכן את "${s.title}" בכל האתרים לפי הגרסה הנוכחית?`
+                                                            : `לפרסם את "${s.title}" בכל האתרים שלך (אינדקס העסקים, קבוצות רכישה, הגמח הארצי)?`)) e.preventDefault(); }}>
+                                                    {syncedAt ? '🌐 עדכן בכל האתרים' : '🌐 פרסם בכל האתרים'}
                                                 </button>
                                             </form>
                                         {/if}
