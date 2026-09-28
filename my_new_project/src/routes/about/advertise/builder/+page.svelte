@@ -1989,9 +1989,12 @@
                                          onkeydown={logoKeyDown} />
                                 {/if}
                             </div>
+                            <!-- כרטיס מוצר מהחנות - בלי רצועת המחיר, כמו בטור -->
+                            {#if !shopEdit}
                             <div class="promo-cta bg-gradient-to-r {gradient}">
                                 <p>{cta}</p>
                             </div>
+                            {/if}
                         </div>
                     </div>
                         <p class="preview-caption preview-caption-side">{$_('advertise.b_desktop_caption')}</p>
@@ -2097,9 +2100,12 @@
                         <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
                     </div>
                 </div>
+                <!-- כרטיס מוצר מהחנות - בלי רצועת המחיר, כמו בטור -->
+                {#if !shopEdit}
                 <div class="promo-cta bg-gradient-to-r {gradient}">
                     <p>{cta}</p>
                 </div>
+                {/if}
             </div>
         </div>
     </aside>
