@@ -1547,6 +1547,12 @@
         // פנויים/פנויות אינם ננעצים על המפה (צנעת הפרט): הבחירה מציגה תצוגה
         // ארצית עם מספר הפנויים בכל עיר (rebuildMarkers → singlesCityMarkers).
         selectedCategory = categoryId;
+        // במצב חיפוש הסינון לא נראה (פאנל התוצאות מכסה את המפה) והכפתור נראה "מת" -
+        // בחירת קטגוריה יוצאת מהחיפוש וחוזרת למפה המסוננת
+        if (viewMode === 'search') {
+            searchQuery = '';
+            viewMode = 'map';
+        }
         // בתצוגת רשימה - פתח אוטומטית את הקטגוריה הנבחרת
         if (categoryId !== "benefits") {
             const next = new Set(expandedCategories);
