@@ -2789,7 +2789,16 @@
             <!-- מצב חיפוש -->
             <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
                 <!-- שדה חיפוש (דסקטופ; בנייד הקלט מגיע משדה החיפוש שבשורת הכפתורים) -->
-                <div class="hidden md:flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full">
+                <div class="hidden md:flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full relative">
+                    <!-- חץ מקפץ מימין לשדה (שם מתחילה ההקלדה ב-RTL) - מראה איפה לכתוב;
+                         נעלם ברגע שמתחילים להקליד -->
+                    {#if !searchQuery.trim()}
+                        <div class="search-arrow-hint absolute inset-y-0 flex items-center pointer-events-none" style="right: -64px;" aria-hidden="true">
+                            <svg width="52" height="36" viewBox="0 0 52 36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M48 18H6M20 4 6 18l14 14" />
+                            </svg>
+                        </div>
+                    {/if}
                     <!-- svelte-ignore a11y_autofocus -->
                     <!-- autofocus מכוון: השדה נפתח בתוך חלון החיפוש שהמשתמש בחר לפתוח -->
                     <input
@@ -3366,6 +3375,20 @@
     @keyframes mobileTooltipProgress {
         from { width: 0%; }
         to   { width: 100%; }
+    }
+
+    /* ===== חץ "כאן כותבים" ליד שדה החיפוש (דסקטופ) ===== */
+    .search-arrow-hint {
+        color: #c084fc;
+        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
+        animation: searchArrowNudge 0.9s ease-in-out infinite;
+    }
+    @keyframes searchArrowNudge {
+        0%, 100% { transform: translateX(0); }
+        50%      { transform: translateX(-14px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .search-arrow-hint { animation: none; }
     }
 
     @keyframes sheetSlideUp {
