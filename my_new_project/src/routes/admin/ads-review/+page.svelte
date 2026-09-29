@@ -2,7 +2,7 @@
     import type { PageData, ActionData } from './$types';
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
-    import { onMount, onDestroy } from 'svelte';
+    import { onMount, onDestroy, tick } from 'svelte';
     import { heMatches } from '$lib/search';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
@@ -189,6 +189,18 @@
         editHover = ad.hoverText ?? '';
     }
     function cancelEdit() { editingId = null; }
+    /** קיצור דרך מטבלת התזמון: קופץ לכרטיס הפרסומת בטאב "פורסמו" ופותח בו את העריכה */
+    async function editFromSchedule(id: string) {
+        const ad = approvedById.get(id);
+        if (!ad) return;
+        activeTab = 'approved';
+        clearSelection();
+        // חיפוש פעיל שמסתיר את הכרטיס - מנקים, אחרת אין לאן לקפוץ
+        if (!approvedList.some(a => a.id === id)) searchQuery = '';
+        startEdit(ad);
+        await tick();
+        document.getElementById(`ad-card-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     // רענון אוטומטי כל 30 שניות (כדי לראות פרסומות חדשות שנכנסות).
     //
@@ -420,7 +432,7 @@
     {:else}
         <div class="grid gap-3 md:gap-4">
             {#each visibleList as ad, adIndex (ad.id)}
-                <article class="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5">
+                <article id="ad-card-{ad.id}" class="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5">
                     {#if activeTab === 'approved'}
                         <!-- מיקום הפרסומת בטור הפרסומות באתר + החלפת מקום -->
                         <div class="flex items-center gap-2 mb-3 pb-3 border-b border-white/10 flex-wrap">
@@ -857,6 +869,16 @@
                                                     class="px-2.5 py-1 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-200 text-[11px] font-black hover:bg-blue-500/30 whitespace-nowrap"
                                                     title="פרטי התקופה והתשלום + שינוי תקופה או תאריך תפוגה">
                                                 ⏱ קצוב
+                                            </button>
+                                        {/if}
+
+                                        <!-- קיצור דרך לעריכה: אותה עריכה של הכרטיס בטאב "פורסמו" -->
+                                        {#if approvedById.has(s.id)}
+                                            <button type="button"
+                                                    onclick={() => editFromSchedule(s.id)}
+                                                    class="px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 text-[11px] font-black hover:bg-indigo-500/30 whitespace-nowrap"
+                                                    title="עריכת הכותרת, תת-הכותרת, ה-CTA וטקסט ה-hover">
+                                                ✏️ ערוך
                                             </button>
                                         {/if}
 
