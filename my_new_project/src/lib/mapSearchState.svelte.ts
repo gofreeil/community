@@ -18,8 +18,12 @@ class MapSearchState {
     /** מונה בקשות מההדר; המפה מגיבה לכל שינוי. */
     request = $state(0);
 
+    /** הכפתור שממנו הגיעה הבקשה - נקודת היציאה של החץ שעף אל שדה החיפוש. */
+    origin: HTMLElement | null = null;
+
     /** בקשת פתיחה/סגירה של מצב החיפוש במפה. */
-    toggle() {
+    toggle(origin: HTMLElement | null = null) {
+        this.origin = origin;
         this.request++;
     }
 }

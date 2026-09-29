@@ -214,8 +214,8 @@
 
     // כפתור "חיפוש" בהדר (דסקטופ): בדף הבית פותח/סוגר את מצב החיפוש של המפה;
     // בכל דף אחר (אין מפה מורכבת) מנווט לדף החיפוש הכללי.
-    function onHeaderSearchClick() {
-        if (mapSearchState.mounted) mapSearchState.toggle();
+    function onHeaderSearchClick(e: MouseEvent) {
+        if (mapSearchState.mounted) mapSearchState.toggle(e.currentTarget as HTMLElement);
         else goto('/search');
     }
 

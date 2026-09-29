@@ -264,7 +264,82 @@
     onDestroy(() => {
         mapSearchState.mounted = false;
         mapSearchState.open = false;
+        stopSearchArrow();
     });
+
+    // ---- חץ שעף מכפתור "חיפוש" בהדר אל שדה החיפוש ----
+    // נבנה ישירות ב-body (position: fixed) כדי שלא ייחתך/יוזז ע"י אב עם transform,
+    // ובכל פריים נמדדים מחדש הכפתור והשדה - כך החץ עוקב גם אחרי הגלילה אל המפה.
+    let desktopSearchInputEl = $state<HTMLInputElement | null>(null);
+    let searchArrowEl: HTMLDivElement | null = null;
+    let searchArrowRaf = 0;
+
+    function stopSearchArrow() {
+        // נקרא גם מ-onDestroy, שרץ בשרת (SSR) - שם אין cancelAnimationFrame
+        if (searchArrowRaf) cancelAnimationFrame(searchArrowRaf);
+        searchArrowRaf = 0;
+        searchArrowEl?.remove();
+        searchArrowEl = null;
+    }
+
+    function flySearchArrow(origin: HTMLElement) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        stopSearchArrow();
+        const TRAVEL = 1000, NUDGE = 800, FADE = 300;
+        const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+        const el = document.createElement('div');
+        el.setAttribute('aria-hidden', 'true');
+        el.style.cssText =
+            'position:fixed;left:0;top:0;width:52px;height:36px;z-index:100000;pointer-events:none;' +
+            'color:#c084fc;filter:drop-shadow(0 0 8px rgba(168,85,247,.9));transform-origin:100% 50%;opacity:0;';
+        // החץ מצויר פונה ימינה והחוד בקצה הימני - מסובבים סביב החוד לכיוון התנועה
+        el.innerHTML =
+            '<svg width="52" height="36" viewBox="0 0 52 36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h42M32 4l14 14-14 14"/></svg>';
+        document.body.appendChild(el);
+        searchArrowEl = el;
+
+        const t0 = performance.now();
+        const step = (now: number) => {
+            const input = desktopSearchInputEl;
+            const elapsed = now - t0;
+            if (viewMode !== 'search') return stopSearchArrow();
+            // השדה עוד לא נבנה (הרינדור של מצב החיפוש) - מחכים כמה פריימים
+            if (!input || input.offsetWidth === 0) {
+                if (elapsed > 500) return stopSearchArrow();
+                searchArrowRaf = requestAnimationFrame(step);
+                return;
+            }
+            const a = origin.getBoundingClientRect();
+            const b = input.getBoundingClientRect();
+            // מתחת לכפתור -> קצה השדה מימין (שם מתחילה ההקלדה ב-RTL)
+            const sx = a.left + a.width / 2, sy = a.bottom + 6;
+            const ex = b.right - 40, ey = b.top + 4;
+            const dx = ex - sx, dy = ey - sy;
+            const len = Math.hypot(dx, dy) || 1;
+            const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+            let x: number, y: number, opacity = 1;
+            if (elapsed < TRAVEL) {
+                const p = ease(elapsed / TRAVEL);
+                x = sx + dx * p;
+                y = sy + dy * p;
+                opacity = Math.min(1, elapsed / 150);
+            } else {
+                const k = elapsed - TRAVEL;
+                if (k > NUDGE + FADE) return stopSearchArrow();
+                // שתי "נקישות" קטנות אל תוך השדה ואז דעיכה
+                const back = k < NUDGE ? Math.abs(Math.sin((k / NUDGE) * Math.PI * 2)) * 12 : 0;
+                x = ex - (dx / len) * back;
+                y = ey - (dy / len) * back;
+                if (k > NUDGE) opacity = 1 - (k - NUDGE) / FADE;
+            }
+            el.style.opacity = String(opacity);
+            el.style.transform = `translate(${x - 52}px, ${y - 18}px) rotate(${angle}deg)`;
+            searchArrowRaf = requestAnimationFrame(step);
+        };
+        searchArrowRaf = requestAnimationFrame(step);
+    }
 
     // דיווח: האם מצב החיפוש פתוח (כדי שהכפתור בהדר ייראה "דלוק")
     $effect(() => {
@@ -285,6 +360,8 @@
                 const top = rootEl.getBoundingClientRect().top + window.scrollY - headerH - 12;
                 window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
             }
+            if (viewMode === 'search' && mapSearchState.origin) flySearchArrow(mapSearchState.origin);
+            else stopSearchArrow();
         });
     });
     let showAddMenu = $state(false);
@@ -2795,19 +2872,11 @@
             <!-- מצב חיפוש -->
             <div class="w-full h-[350px] md:h-[450px] flex flex-col p-3 md:p-5" style="border-radius: 20px;">
                 <!-- שדה חיפוש (דסקטופ; בנייד הקלט מגיע משדה החיפוש שבשורת הכפתורים) -->
-                <div class="hidden md:flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full relative">
-                    <!-- חץ מקפץ מימין לשדה (שם מתחילה ההקלדה ב-RTL) - מראה איפה לכתוב;
-                         נעלם ברגע שמתחילים להקליד -->
-                    {#if !searchQuery.trim()}
-                        <div class="search-arrow-hint absolute inset-y-0 flex items-center pointer-events-none" style="right: -64px;" aria-hidden="true">
-                            <svg width="52" height="36" viewBox="0 0 52 36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M48 18H6M20 4 6 18l14 14" />
-                            </svg>
-                        </div>
-                    {/if}
+                <div class="hidden md:flex gap-2 mb-4 mt-6 max-w-sm mx-auto w-full">
                     <!-- svelte-ignore a11y_autofocus -->
                     <!-- autofocus מכוון: השדה נפתח בתוך חלון החיפוש שהמשתמש בחר לפתוח -->
                     <input
+                        bind:this={desktopSearchInputEl}
                         bind:value={searchQuery}
                         type="text"
                         placeholder={$t('map.search_placeholder')}
@@ -3381,20 +3450,6 @@
     @keyframes mobileTooltipProgress {
         from { width: 0%; }
         to   { width: 100%; }
-    }
-
-    /* ===== חץ "כאן כותבים" ליד שדה החיפוש (דסקטופ) ===== */
-    .search-arrow-hint {
-        color: #c084fc;
-        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
-        animation: searchArrowNudge 0.9s ease-in-out infinite;
-    }
-    @keyframes searchArrowNudge {
-        0%, 100% { transform: translateX(0); }
-        50%      { transform: translateX(-14px); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .search-arrow-hint { animation: none; }
     }
 
     @keyframes sheetSlideUp {
