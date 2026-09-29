@@ -1483,6 +1483,61 @@ export async function updateAdFields(id: string, fields: EditableFields): Promis
     return fromStrapi(res.data);
 }
 
+/** מה שהבילדר שולח בשמירה - אותו מטען של הגשת פרסומת רגילה */
+export interface AdBuilderPayload {
+    title?: string;
+    subtitle?: string;
+    hoverText?: string;
+    cta?: string;
+    gradient?: string;
+    logo?: string;
+    mainImage?: string;
+    mainImageFit?: unknown;
+    mobileImage?: string;
+    mobileImageFit?: unknown;
+    adStyle?: unknown;
+    landing?: Record<string, unknown>;
+}
+
+/**
+ * עריכה בסטודיו של פרסומת קיימת *במקום* - הסופר-אדמין ערך אותה מ"ערוך"
+ * בטבלת התזמון, ולכן אין גרסה שממתינה לאישור: הרשומה עצמה מתעדכנת.
+ * כל המפתחות הפנימיים של landing (_order, _paused, _site, _syndicatedAt...)
+ * נשמרים כמות שהם - המקום בטור, ההשהיה והתאריכים לא זזים.
+ * פרסומת מוצר של החנות לא נגעת כאן: יש לה מסלול משלה (saveShopAdFromBuilder).
+ */
+export async function saveAdFromBuilderInPlace(id: string, payload: AdBuilderPayload): Promise<SubmittedAd | null> {
+    const row = await findByDocumentId(id);
+    if (!row) return null;
+    const existing = (row.landing ?? {}) as Record<string, unknown>;
+    if (typeof existing._shopProduct === 'string' && existing._shopProduct) return null;
+
+    const internal = Object.fromEntries(Object.entries(existing).filter(([k]) => k.startsWith('_')));
+    const landing: Record<string, unknown> = {
+        ...(payload.landing ?? {}),
+        ...internal,
+        mainImageFit:   parseAdImageFit(payload.mainImageFit),
+        mobileImage:    typeof payload.mobileImage === 'string' ? payload.mobileImage : '',
+        mobileImageFit: parseAdImageFit(payload.mobileImageFit),
+        adStyle:        parseAdStyle(payload.adStyle),
+    };
+    // שדה שנשאר ריק בבילדר לא מוחק את מה שיש בכרטיס - נשאר הקיים
+    const res = await strapiPut<{ data: StrapiAd }>(`${ENDPOINT}/${id}`, {
+        data: {
+            title:      payload.title?.trim() || row.title,
+            subtitle:   payload.subtitle?.trim() ?? row.subtitle,
+            hover_text: payload.hoverText ?? row.hover_text,
+            cta:        payload.cta ?? row.cta,
+            gradient:   payload.gradient || row.gradient,
+            logo:       payload.logo ?? '',
+            main_image: payload.mainImage || row.main_image,
+            landing,
+        },
+    });
+    invalidate('ads:');
+    return fromStrapi(res.data);
+}
+
 // ----- סטטיסטיקות -----
 
 export interface AdsStats {

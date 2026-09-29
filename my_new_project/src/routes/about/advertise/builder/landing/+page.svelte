@@ -5,7 +5,7 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
-    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, isAdEditInPlace, setAdEditInPlace, getAdEditReturn, setAdEditReturn, type AdIntent } from "$lib/adDraft";
+    import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, getAdEditInPlaceMode, setAdEditInPlace, getAdEditReturn, setAdEditReturn, type AdIntent } from "$lib/adDraft";
 
     let { data } = $props<{
         data: {
@@ -539,9 +539,11 @@
             // עריכה במקום (פרסומת מוצר של חנות החירות, ממסך הניהול):
             // מעדכנים את הרשומה הקיימת במקום ליצור גרסה שממתינה לאישור -
             // לפרסומת כזו אין מפרסם שממתין, והיא כבר על האוויר.
-            const inPlaceId = isAdEditInPlace() ? getAdEditTarget() : null;
+            // פרסומת רגילה שנפתחה מטבלת התזמון (?inplace=ad) - אותו דבר, בנתיב משלה
+            const inPlaceMode = getAdEditInPlaceMode();
+            const inPlaceId = inPlaceMode ? getAdEditTarget() : null;
             const res = inPlaceId
-                ? await fetch("/api/ads/shop-edit", {
+                ? await fetch(inPlaceMode === "ad" ? "/api/ads/admin-edit" : "/api/ads/shop-edit", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ ...payload, id: inPlaceId }),
@@ -562,7 +564,9 @@
                 setAdEditInPlace(false);
                 setAdEditReturn(null);
                 clearAdIntent();
-                await goto(`${returnTo || '/admin/shop-ads'}?shopEdited=${encodeURIComponent(inPlaceId)}#shop-ads`);
+                await goto(inPlaceMode === "ad"
+                    ? `${returnTo || '/admin/ads-review'}?adEdited=${encodeURIComponent(inPlaceId)}#schedule`
+                    : `${returnTo || '/admin/shop-ads'}?shopEdited=${encodeURIComponent(inPlaceId)}#shop-ads`);
                 return;
             }
             submitted = true;

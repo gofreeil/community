@@ -2,7 +2,8 @@
     import type { PageData, ActionData } from './$types';
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
-    import { onMount, onDestroy, tick } from 'svelte';
+    import { page } from '$app/state';
+    import { onMount, onDestroy } from 'svelte';
     import { heMatches } from '$lib/search';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
@@ -189,18 +190,18 @@
         editHover = ad.hoverText ?? '';
     }
     function cancelEdit() { editingId = null; }
-    /** קיצור דרך מטבלת התזמון: קופץ לכרטיס הפרסומת בטאב "פורסמו" ופותח בו את העריכה */
-    async function editFromSchedule(id: string) {
-        const ad = approvedById.get(id);
-        if (!ad) return;
-        activeTab = 'approved';
-        clearSelection();
-        // חיפוש פעיל שמסתיר את הכרטיס - מנקים, אחרת אין לאן לקפוץ
-        if (!approvedList.some(a => a.id === id)) searchQuery = '';
-        startEdit(ad);
-        await tick();
-        document.getElementById(`ad-card-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    /**
+     * "ערוך" בטבלת התזמון פותח את הפרסומת בסטודיו. השמירה שם מעדכנת אותה
+     * במקום (בלי גרסה שממתינה לאישור) וחוזרת לכאן עם ?adEdited=<id>.
+     * פרסומת מוצר של החנות נפתחת במסלול שלה (inplace=1).
+     */
+    function studioEditHref(id: string): string {
+        const shop = typeof (approvedById.get(id)?.landing as { _shopProduct?: unknown } | undefined)?._shopProduct === 'string';
+        return `/about/advertise/builder?edit=${encodeURIComponent(id)}&inplace=${shop ? '1' : 'ad'}&return=${encodeURIComponent('/admin/ads-review')}`;
     }
+    /** הפרסומת שנשמרה הרגע בסטודיו - הודעת הצלחה והדגשת השורה שלה */
+    let justEditedId = $derived(page.url.searchParams.get('adEdited') ?? '');
+    let justEditedTitle = $derived(approvedById.get(justEditedId)?.title ?? '');
 
     // רענון אוטומטי כל 30 שניות (כדי לראות פרסומות חדשות שנכנסות).
     //
@@ -347,6 +348,11 @@
             ✅ {form.message}
         </div>
     {/if}
+    {#if justEditedId && !form}
+        <div class="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-emerald-200 text-sm font-bold">
+            ✅ השינויים {justEditedTitle ? `ב"${justEditedTitle}"` : 'בפרסומת'} נשמרו ומוצגים באתר
+        </div>
+    {/if}
     {#if form && 'error' in form && form.error && !('shop' in form && form.shop)}
         <div class="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200 text-sm font-bold">
             ❌ {form.error}
@@ -432,7 +438,7 @@
     {:else}
         <div class="grid gap-3 md:gap-4">
             {#each visibleList as ad, adIndex (ad.id)}
-                <article id="ad-card-{ad.id}" class="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5">
+                <article class="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-5">
                     {#if activeTab === 'approved'}
                         <!-- מיקום הפרסומת בטור הפרסומות באתר + החלפת מקום -->
                         <div class="flex items-center gap-2 mb-3 pb-3 border-b border-white/10 flex-wrap">
@@ -735,7 +741,7 @@
     <!-- ============================================================ -->
     <!-- תזמון פרסומות פעילות + תאריכי פקיעה                          -->
     <!-- ============================================================ -->
-    <section class="mt-10">
+    <section id="schedule" class="mt-10">
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-2xl">📅</span>
@@ -796,7 +802,7 @@
                             {@const slotOptions = s.slot && !SLOT_NUMBERS.includes(s.slot)
                                 ? [...SLOT_NUMBERS, s.slot].sort((a, b) => a - b)
                                 : SLOT_NUMBERS}
-                            <tr class="border-t border-white/10 hover:bg-white/5">
+                            <tr class="border-t border-white/10 hover:bg-white/5 {s.id === justEditedId ? 'bg-emerald-500/10' : ''}">
                                 <!-- מספר המקום בטור + העברה ישירה למקום אחר (מקום תפוס - מתחלפות).
                                      פריסה אנכית צרה - כדי שכל הטבלה תיכנס ברוחב המסך בלי גלילה -->
                                 <td class="px-2 py-2">
@@ -872,14 +878,13 @@
                                             </button>
                                         {/if}
 
-                                        <!-- קיצור דרך לעריכה: אותה עריכה של הכרטיס בטאב "פורסמו" -->
-                                        {#if approvedById.has(s.id)}
-                                            <button type="button"
-                                                    onclick={() => editFromSchedule(s.id)}
-                                                    class="px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 text-[11px] font-black hover:bg-indigo-500/30 whitespace-nowrap"
-                                                    title="עריכת הכותרת, תת-הכותרת, ה-CTA וטקסט ה-hover">
+                                        <!-- קיצור דרך לעריכה בסטודיו (סופר-אדמין - רק הוא יכול לשמור שם במקום) -->
+                                        {#if approvedById.has(s.id) && isSuperAdmin}
+                                            <a href={studioEditHref(s.id)}
+                                               class="px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 text-[11px] font-black hover:bg-indigo-500/30 whitespace-nowrap"
+                                               title="פתיחת הפרסומת בסטודיו - השמירה מעדכנת אותה באתר">
                                                 ✏️ ערוך
-                                            </button>
+                                            </a>
                                         {/if}
 
                                         {#if s.state === 'paused'}

@@ -868,10 +868,12 @@
         if (editId) {
             // inplace=1 - הגעה ממסך פרסומות המוצרים: השליחה תעדכן את
             // הפרסומת הקיימת ולא תיצור גרסה שממתינה לאישור.
-            setAdEditInPlace(params.get("inplace") === "1");
-            shopEdit = params.get("inplace") === "1";
+            // inplace=ad - אותו דבר לפרסומת רגילה, מ"ערוך" בטבלת התזמון.
+            const inplace = params.get("inplace");
+            setAdEditInPlace(inplace === "1" ? "shop" : inplace === "ad" ? "ad" : false);
+            shopEdit = inplace === "1";
             // ומשם חוזרים למסך הניהול, לערוך את הכרטיס הבא
-            setAdEditReturn(params.get("inplace") === "1" ? params.get("return") : null);
+            setAdEditReturn(inplace === "1" || inplace === "ad" ? params.get("return") : null);
             setAdIntent("edit");
             adIntent = "edit";
             const continuingSameAd = getAdEditTarget() === editId;

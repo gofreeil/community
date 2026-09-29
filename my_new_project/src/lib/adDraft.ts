@@ -53,14 +53,26 @@ export function clearAdEditTarget(): void {
  * ליצור גרסה חדשה שממתינה לאישור, כי לפרסומת מוצר אין מפרסם שממתין
  * לאישור - היא כבר על האוויר. שמור לסופר-אדמין, והשרת אוכף זאת שוב
  * ומסרב לגעת ברשומה שאינה פרסומת מוצר.
+ *
+ * מצב שני, 'ad' (?inplace=ad): פרסומת רגילה שהסופר-אדמין פתח בסטודיו
+ * מ"ערוך" בטבלת התזמון - נשמרת במקום דרך /api/ads/admin-edit.
  */
 export const AD_EDIT_INPLACE_KEY = 'ad_builder_edit_inplace_v1';
+export type AdEditInPlaceMode = 'shop' | 'ad';
 
-export function setAdEditInPlace(on: boolean): void {
+export function setAdEditInPlace(mode: boolean | AdEditInPlaceMode): void {
     try {
-        if (on) localStorage.setItem(AD_EDIT_INPLACE_KEY, '1');
+        if (mode === 'ad') localStorage.setItem(AD_EDIT_INPLACE_KEY, 'ad');
+        else if (mode) localStorage.setItem(AD_EDIT_INPLACE_KEY, '1');
         else localStorage.removeItem(AD_EDIT_INPLACE_KEY);
     } catch { /* ignore */ }
+}
+
+export function getAdEditInPlaceMode(): AdEditInPlaceMode | null {
+    try {
+        const v = localStorage.getItem(AD_EDIT_INPLACE_KEY);
+        return v === '1' ? 'shop' : v === 'ad' ? 'ad' : null;
+    } catch { return null; }
 }
 
 /** לאן לחזור אחרי שמירה במקום - מסך הניהול שממנו הגיעו (נתיב פנימי בלבד) */
@@ -78,7 +90,7 @@ export function getAdEditReturn(): string | null {
 }
 
 export function isAdEditInPlace(): boolean {
-    try { return localStorage.getItem(AD_EDIT_INPLACE_KEY) === '1'; } catch { return false; }
+    return getAdEditInPlaceMode() !== null;
 }
 
 export function setAdIntent(intent: AdIntent): void {
