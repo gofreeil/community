@@ -273,13 +273,41 @@
     let desktopSearchInputEl = $state<HTMLInputElement | null>(null);
     let searchArrowEl: HTMLDivElement | null = null;
     let searchArrowRaf = 0;
+    const searchArrowDust = new Set<HTMLElement>();
 
-    function stopSearchArrow() {
+    function stopSearchArrow(keepDust = false) {
         // נקרא גם מ-onDestroy, שרץ בשרת (SSR) - שם אין cancelAnimationFrame
         if (searchArrowRaf) cancelAnimationFrame(searchArrowRaf);
         searchArrowRaf = 0;
         searchArrowEl?.remove();
         searchArrowEl = null;
+        // בסיום טבעי האבקה שכבר באוויר מסיימת לדעוך בעצמה
+        if (keepDust) return;
+        for (const d of searchArrowDust) d.remove();
+        searchArrowDust.clear();
+    }
+
+    // גרגר "אבקה" זוהרת שמתפזר מהנקודה (x,y) לכיוון אקראי ודועך
+    function sprinkleDust(x: number, y: number, spread = 22) {
+        const d = document.createElement('div');
+        const size = 3 + Math.random() * 5;
+        d.style.cssText =
+            `position:fixed;left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;` +
+            'border-radius:50%;pointer-events:none;z-index:99999;' +
+            'background:radial-gradient(circle,#fff 0%,#fef08a 45%,rgba(250,204,21,0) 75%);' +
+            'box-shadow:0 0 6px 2px rgba(250,204,21,.75);';
+        document.body.appendChild(d);
+        searchArrowDust.add(d);
+        const ang = Math.random() * Math.PI * 2;
+        const dist = spread * (0.4 + Math.random());
+        const anim = d.animate(
+            [
+                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                { transform: `translate(${Math.cos(ang) * dist}px, ${Math.sin(ang) * dist + 8}px) scale(0.2)`, opacity: 0 },
+            ],
+            { duration: 500 + Math.random() * 500, easing: 'ease-out' },
+        );
+        anim.onfinish = () => { d.remove(); searchArrowDust.delete(d); };
     }
 
     function flySearchArrow(origin: HTMLElement) {
@@ -287,12 +315,14 @@
         stopSearchArrow();
         const TRAVEL = 1000, NUDGE = 800, FADE = 300;
         const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+        let burstDone = false;
 
         const el = document.createElement('div');
         el.setAttribute('aria-hidden', 'true');
         el.style.cssText =
             'position:fixed;left:0;top:0;width:52px;height:36px;z-index:100000;pointer-events:none;' +
-            'color:#c084fc;filter:drop-shadow(0 0 8px rgba(168,85,247,.9));transform-origin:100% 50%;opacity:0;';
+            'color:#facc15;filter:drop-shadow(0 0 4px #fde047) drop-shadow(0 0 12px rgba(250,204,21,.85)) drop-shadow(0 0 22px rgba(250,204,21,.5));' +
+            'transform-origin:100% 50%;opacity:0;';
         // החץ מצויר פונה ימינה והחוד בקצה הימני - מסובבים סביב החוד לכיוון התנועה
         el.innerHTML =
             '<svg width="52" height="36" viewBox="0 0 52 36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h42M32 4l14 14-14 14"/></svg>';
@@ -312,30 +342,44 @@
             }
             const a = origin.getBoundingClientRect();
             const b = input.getBoundingClientRect();
-            // מתחת לכפתור -> קצה השדה מימין (שם מתחילה ההקלדה ב-RTL)
+            // מתחת לכפתור -> אמצע השדה (החוד נוגע בקצה העליון שלו)
             const sx = a.left + a.width / 2, sy = a.bottom + 6;
-            const ex = b.right - 40, ey = b.top + 4;
+            const ex = b.left + b.width / 2, ey = b.top + 4;
             const dx = ex - sx, dy = ey - sy;
             const len = Math.hypot(dx, dy) || 1;
+            const ux = dx / len, uy = dy / len;
             const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-            let x: number, y: number, opacity = 1;
+            let x: number, y: number, opacity = 1, dust = 0;
             if (elapsed < TRAVEL) {
                 const p = ease(elapsed / TRAVEL);
                 x = sx + dx * p;
                 y = sy + dy * p;
                 opacity = Math.min(1, elapsed / 150);
+                dust = 2;
             } else {
                 const k = elapsed - TRAVEL;
-                if (k > NUDGE + FADE) return stopSearchArrow();
+                if (k > NUDGE + FADE) return stopSearchArrow(true);
+                // נחיתה: פרץ אבקה סביב החוד
+                if (!burstDone) {
+                    burstDone = true;
+                    for (let i = 0; i < 18; i++) sprinkleDust(ex, ey, 34);
+                }
                 // שתי "נקישות" קטנות אל תוך השדה ואז דעיכה
                 const back = k < NUDGE ? Math.abs(Math.sin((k / NUDGE) * Math.PI * 2)) * 12 : 0;
-                x = ex - (dx / len) * back;
-                y = ey - (dy / len) * back;
+                x = ex - ux * back;
+                y = ey - uy * back;
                 if (k > NUDGE) opacity = 1 - (k - NUDGE) / FADE;
+                else dust = Math.random() < 0.5 ? 1 : 0;
             }
             el.style.opacity = String(opacity);
             el.style.transform = `translate(${x - 52}px, ${y - 18}px) rotate(${angle}deg)`;
+            // אבקה לאורך גוף החץ ומעט מאחוריו - שובל זוהר
+            for (let i = 0; i < dust; i++) {
+                const along = Math.random() * 56;
+                const side = (Math.random() - 0.5) * 22;
+                sprinkleDust(x - ux * along - uy * side, y - uy * along + ux * side);
+            }
             searchArrowRaf = requestAnimationFrame(step);
         };
         searchArrowRaf = requestAnimationFrame(step);
