@@ -20,6 +20,7 @@
 import { strapiGet, strapiGetAll, strapiPost, strapiPut } from './strapiClient.js';
 import { getAd, type SubmittedAd } from './adsStore.js';
 import { invalidate } from './cache.js';
+import { convertGradient } from '../shopAds.js';
 
 export type SyndicationSite = 'index' | 'pg' | 'ng';
 
@@ -181,6 +182,8 @@ const indexAdapter: SiteAdapter = {
 // ------------------------------------------------------------
 // pg - אוסף נפרד pg-submitted-ads. אין בו את העמודות decided_by /
 // company_name / payment_amount, והמפתחות הפנימיים כמו ב-index.
+// הגרדיאנט שם הוא מחרוזת CSS מלאה ולא זוג מחלקות Tailwind כמו כאן -
+// בלי התרגום הרצועה והכפתור יוצאים שם בלי צבע.
 // שים לב: ל-content type הזה יש controller שחוסם עדכון שלא מגיע
 // מ-super_admin או מ-API token של השרת - כשל עדכון מדווח ולא מפיל.
 // ------------------------------------------------------------
@@ -219,7 +222,7 @@ const pgAdapter: SiteAdapter = {
             subtitle:           src.subtitle,
             hover_text:         src.hoverText,
             cta:                src.cta,
-            gradient:           src.gradient,
+            gradient:           convertGradient(src.gradient, 'css'),
             logo:               src.logo,
             main_image:         src.mainImage,
             landing,
@@ -246,6 +249,7 @@ const pgAdapter: SiteAdapter = {
 // ng - רשומת item בקטגוריה הפנימית __ng_ad באוסף items המשותף:
 // label = כותרת, description = שורת משנה, status1 = 'active' (מאושרת),
 // וכל שאר שדות המודעה בתוך extra_fields במפתחות snake_case.
+// גם כאן הגרדיאנט הוא מחרוזת CSS מלאה.
 // ------------------------------------------------------------
 const ngAdapter: SiteAdapter = {
     site: 'ng',
@@ -274,7 +278,7 @@ const ngAdapter: SiteAdapter = {
         const extraFields = {
             hover_text:              src.hoverText,
             cta:                     src.cta,
-            gradient:                src.gradient,
+            gradient:                convertGradient(src.gradient, 'css'),
             logo:                    src.logo,
             main_image:              src.mainImage,
             main_image_fit:          src.mainImageFit,
