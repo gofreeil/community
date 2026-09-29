@@ -346,7 +346,7 @@
 
                 {#if s.inspiration}
                     <section class="border-r-4 {isMale ? 'border-cyan-500/50' : 'border-pink-500/50'} pr-4">
-                        <p class="text-gray-300 text-base italic leading-relaxed">{s.inspiration}</p>
+                        <p class="text-amber-300/90 text-base italic leading-relaxed">{s.inspiration}</p>
                     </section>
                 {/if}
 

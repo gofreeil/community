@@ -100,7 +100,7 @@
                 <p class="text-gray-400 text-xs mb-2">🎯 {card.interests}</p>
             {/if}
             {#if card.inspiration}
-                <p class="text-gray-400 text-xs italic border-r-2 border-pink-500/40 pr-2">{card.inspiration}</p>
+                <p class="text-amber-300/90 text-xs italic border-r-2 border-pink-500/40 pr-2">{card.inspiration}</p>
             {/if}
 
             <p class="text-gray-500 text-[11px] mt-4">🔒 פרטי הקשר אינם מוצגים — ההיכרות מתואמת דרך השדכן/ית.</p>

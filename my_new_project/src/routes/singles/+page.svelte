@@ -579,7 +579,7 @@
                             </div>
                         {/if}
                         {#if me.inspiration}
-                            <p class="text-gray-400 text-xs italic leading-snug mb-4 border-r-2 {isMale ? 'border-cyan-500/40' : 'border-pink-500/40'} pr-2">
+                            <p class="text-amber-300/90 text-xs italic leading-snug mb-4 border-r-2 {isMale ? 'border-cyan-500/40' : 'border-pink-500/40'} pr-2">
                                 {me.inspiration}
                             </p>
                         {/if}
@@ -706,7 +706,7 @@
                         {/if}
 
                         {#if person.inspiration}
-                            <p class="text-gray-400 text-xs italic leading-snug mb-4 border-r-2 {isMale ? 'border-cyan-500/40' : 'border-pink-500/40'} pr-2">
+                            <p class="text-amber-300/90 text-xs italic leading-snug mb-4 border-r-2 {isMale ? 'border-cyan-500/40' : 'border-pink-500/40'} pr-2">
                                 {person.inspiration}
                             </p>
                         {/if}
