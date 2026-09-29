@@ -2061,8 +2061,8 @@
                     {#if isSingles && inspiration}
                         <!-- משפט מעורר השראה - תמיד בתחתית התמונה, מעל הגרדיאנט -->
                         <div class="absolute inset-x-0 {galleryImages.length > 1 || builderMode ? 'bottom-9' : 'bottom-3'} z-10 px-4 pointer-events-none">
-                            <p class="mx-auto max-w-[95%] text-center text-white text-sm md:text-base font-semibold italic leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                                <span class="text-amber-300/90" aria-hidden="true">“</span>{inspiration}<span class="text-amber-300/90" aria-hidden="true">”</span>
+                            <p class="mx-auto max-w-[95%] text-center text-amber-300/90 text-sm md:text-base font-semibold italic leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                                <span aria-hidden="true">“</span>{inspiration}<span aria-hidden="true">”</span>
                             </p>
                         </div>
                     {/if}
