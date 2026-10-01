@@ -50,7 +50,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 export const actions: Actions = {
     // שלב 1: בדיקת אימייל
-    checkEmail: async ({ request, cookies }) => {
+    checkEmail: async ({ request, cookies, url }) => {
         const formData = await request.formData();
         const email = (formData.get('email') as string)?.trim().toLowerCase();
 
@@ -70,7 +70,7 @@ export const actions: Actions = {
                 return { hasQuestion: true, email, question: user.security_question };
             }
             // אין שאלה - שולחים מייל ישירות
-            await forgotPassword(email);
+            await forgotPassword(email, url.origin);
             clearAttempts(cookies);
             return { success: true };
         } catch (e) {
@@ -81,7 +81,7 @@ export const actions: Actions = {
     },
 
     // שלב 2: אימות תשובה לשאלת ביטחון
-    verifyAnswer: async ({ request, cookies }) => {
+    verifyAnswer: async ({ request, cookies, url }) => {
         const formData = await request.formData();
         const email  = (formData.get('email')  as string)?.trim().toLowerCase();
         const answer = (formData.get('answer') as string)?.trim().toLowerCase();
@@ -100,7 +100,7 @@ export const actions: Actions = {
         try {
             const user = await getUserByEmail(email);
             if (!user) {
-                await forgotPassword(email).catch(() => {});
+                await forgotPassword(email, url.origin).catch(() => {});
                 clearAttempts(cookies);
                 return { success: true };
             }
@@ -156,7 +156,7 @@ export const actions: Actions = {
 
             // תשובה נכונה
             clearAttempts(cookies);
-            await forgotPassword(email);
+            await forgotPassword(email, url.origin);
             return { success: true };
 
         } catch (e) {

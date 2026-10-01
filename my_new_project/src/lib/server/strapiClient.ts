@@ -214,16 +214,24 @@ export interface StrapiAuthResponse {
     user: StrapiUser;
 }
 
-/** שליחת מייל לאיפוס סיסמה */
-export async function forgotPassword(email: string): Promise<void> {
-    let res: Response;
-    try {
-        res = await fetch(STRAPI_URL + '/api/auth/forgot-password', {
+/**
+ * שליחת מייל לאיפוס סיסמה.
+ * עם origin - ה-Strapi מקבל resetUrl והמייל (בעיצוב החדש, עם הסבר למי שנרשם דרך
+ * Google/Facebook) מחזיר את המשתמש לאתר הזה. שרת ישן שדוחה שדה לא מוכר ב-400 -
+ * מנסים שוב בלי resetUrl (התנהגות Strapi המקורית).
+ */
+export async function forgotPassword(email: string, origin?: string): Promise<void> {
+    const send = (body: Record<string, string>) =>
+        fetch(STRAPI_URL + '/api/auth/forgot-password', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ email }),
+            body:    JSON.stringify(body),
             signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
         });
+    let res: Response;
+    try {
+        res = await send(origin ? { email, resetUrl: `${origin}/reset-password` } : { email });
+        if (origin && res.status === 400) res = await send({ email });
     } catch (e) {
         throw new StrapiAuthError('FORGOT_PASSWORD', 0, e instanceof Error ? e.message : String(e));
     }
