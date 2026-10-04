@@ -17,21 +17,33 @@
 	}
 
 	// התאוששות אוטומטית מתקלת ניווט חולפת (chunk ישן אחרי דיפלוי / ניתוק רשת):
-	// hooks.client.ts מסמן recover:'reload', וכאן טוענים את היעד מחדש מהשרת - פעם אחת
-	// בדקה לכל נתיב, כדי שתקלה עקבית תציג את העמוד הזה כרגיל ולא תיכנס ללולאת רענונים.
+	// hooks.client.ts מסמן recover:'reload', וכאן טוענים את היעד מחדש מהשרת. עד 3 ניסיונות
+	// עם השהיה גדלה: ניסיון מיידי יחיד נפל על אותה תקלה (about/legal, 29.9 - שתי כשלונות
+	// בהפרש של 1.6 שניות) כי לרשת לא היה זמן להתאושש. חלון של 3 דקות לכל נתיב מגביל את
+	// המספר, כדי שתקלה עקבית תציג את העמוד הזה כרגיל ולא תיכנס ללולאת רענונים.
 	// preload שנכשל לעולם לא מגיע לכאן (SvelteKit זורק את תוצאתו), ולכן ריחוף על קישור
 	// לא יגרור טעינה מחדש - רק ניווט אמיתי שנפל.
+	const RECOVER_DELAYS_MS = [400, 3_000, 8_000];
+	const RECOVER_WINDOW_MS = 3 * 60_000;
+
 	$effect(() => {
 		if (!browser || page.error?.recover !== "reload") return;
+		const href = page.url.href;
+		let attempt = 0;
 		try {
 			const key = `auto_recover:${page.url.pathname}`;
-			const last = Number(sessionStorage.getItem(key) ?? 0);
-			if (Date.now() - last < 60_000) return;
-			sessionStorage.setItem(key, String(Date.now()));
+			const prev = JSON.parse(sessionStorage.getItem(key) ?? "null") as { n?: number; t?: number } | null;
+			if (typeof prev?.n === "number" && typeof prev.t === "number" && Date.now() - prev.t < RECOVER_WINDOW_MS) {
+				attempt = prev.n;
+			}
+			if (attempt >= RECOVER_DELAYS_MS.length) return; // מוצו הניסיונות - נשארים עם "נסה שוב"
+			sessionStorage.setItem(key, JSON.stringify({ n: attempt + 1, t: Date.now() }));
 		} catch {
 			return; // בלי מונה אין הגנה מלולאה - נשארים בעמוד השגיאה עם "נסה שוב"
 		}
-		location.replace(page.url.href);
+		// הגולש שעזב את העמוד בזמן ההשהיה - הניסיון מתבטל
+		const timer = setTimeout(() => location.replace(href), RECOVER_DELAYS_MS[attempt]);
+		return () => clearTimeout(timer);
 	});
 </script>
 

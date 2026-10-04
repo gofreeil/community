@@ -29,9 +29,11 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
         );
         console.error(error instanceof Error ? (error.stack ?? error.message) : error);
         // בפיתוח לא שולחים — ה-.env המקומי מדבר עם ה-Strapi הייצורי והתיבה תוצף בכל באג.
+        // רק 5xx הוא תקלה שלנו: SvelteKit קורא ל-handleError גם על בקשות פסולות של הגולש
+        // (405 "POST method not allowed" מבוט שעושה POST ל-/, 403 CSRF, 400) - לא באג, לא מתריעים.
         // await (ולא fire-and-forget): על Vercel ה-lambda קופא אחרי שליחת התשובה,
         // ועבודה תלויה באוויר עלולה להיקטע. תקרת 2.5ש כדי לא לתקוע את עמוד השגיאה.
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'production' && status >= 500) {
             await Promise.race([
                 notifySuperAdminsOfError({
                     ref,

@@ -47,17 +47,47 @@ function classify(error: unknown): TransientKind | null {
     return null;
 }
 
-/** האם גרסת האתר על השרת שונה מזו שנבנתה לתוך הדפדפן הזה. כשל בבדיקה = "לא ידוע" (false). */
-async function buildChanged(): Promise<boolean> {
+/**
+ * האם גרסת האתר על השרת שונה מזו שנבנתה לתוך הדפדפן הזה. שלוש תוצאות ולא שתיים:
+ * כשל בבדיקה עצמה ("unknown") אינו "אותה גרסה" - הוא סימן שהרשת למטה, והכרטיס
+ * בתיבה טען בטעות שה-chunk חסר מהבנייה הנוכחית (about/legal, 29.9).
+ */
+type BuildCheck = 'changed' | 'same' | 'unknown';
+
+async function checkBuild(): Promise<BuildCheck> {
     try {
         const res = await fetch('/_app/version.json', {
             headers: { pragma: 'no-cache', 'cache-control': 'no-cache' },
         });
-        if (!res.ok) return false;
+        if (!res.ok) return 'unknown';
         const data = (await res.json()) as { version?: string };
-        return !!data.version && data.version !== version;
+        if (!data.version) return 'unknown';
+        return data.version !== version ? 'changed' : 'same';
     } catch {
-        return false;
+        return 'unknown';
+    }
+}
+
+/**
+ * אירוע תקלה חולפת אחד = ref אחד ודיווח אחד. ניסיונות ההתאוששות האוטומטית
+ * (+error.svelte) נופלים לעיתים על אותה תקלה ומגיעים לכאן שוב: בלי זה כל ניסיון
+ * הוציא כרטיס נוסף בתיבה (שני כרטיסים בהפרש 1.6 שניות), וה-ref שהגולש רואה בסוף
+ * לא התאים לאף כרטיס. לכן חוזרים על אותו ref ולא מדווחים שוב ל-15 דקות באותו נתיב.
+ */
+const INCIDENT_WINDOW_MS = 15 * 60 * 1000;
+
+function transientIncident(path: string): { ref: string; seen: boolean } {
+    const key = `client_error_incident:${path}`;
+    try {
+        const prev = JSON.parse(sessionStorage.getItem(key) ?? 'null') as { ref?: string; t?: number } | null;
+        if (typeof prev?.ref === 'string' && typeof prev.t === 'number' && Date.now() - prev.t < INCIDENT_WINDOW_MS) {
+            return { ref: prev.ref, seen: true };
+        }
+        const ref = newRef();
+        sessionStorage.setItem(key, JSON.stringify({ ref, t: Date.now() }));
+        return { ref, seen: false };
+    } catch {
+        return { ref: newRef(), seen: false };
     }
 }
 
@@ -124,19 +154,27 @@ export const handleError: HandleClientError = async ({ error, event, status, mes
         };
     }
 
-    const ref = newRef();
     const errMsg = errorText(error);
 
-    const kind = classify(error);
-    const stale = kind === 'stale_build' && (await buildChanged());
+    let kind = classify(error);
+    let stale = false;
+    if (kind === 'stale_build') {
+        const check = await checkBuild();
+        stale = check === 'changed';
+        // גם בדיקת הגרסה נכשלה = בעיית רשת, לא chunk חסר
+        if (check === 'unknown') kind = 'network';
+    }
     // בלי חיבור בכלל: אין למי לדווח ואין טעם לרענן — עמוד השגיאה עם "נסה שוב" הוא הנכון
     const offline = kind === 'network' && typeof navigator !== 'undefined' && navigator.onLine === false;
 
-    const tag = kind ? ` [${kind}${stale ? ', build changed' : ''}${offline ? ', offline' : ''}]` : '';
+    const incident = kind ? transientIncident(path) : { ref: newRef(), seen: false };
+    const ref = incident.ref;
+
+    const tag = kind ? ` [${kind}${stale ? ', build changed' : ''}${offline ? ', offline' : ''}${incident.seen ? ', retry' : ''}]` : '';
     console.error(`[client-error ${ref}] ${status} "${message}" @ ${path}${tag}`);
     console.error(error instanceof Error ? (error.stack ?? error.message) : error);
 
-    if (!offline) {
+    if (!offline && !incident.seen) {
         report({
             ref,
             status,
