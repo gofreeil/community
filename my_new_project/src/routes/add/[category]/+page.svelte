@@ -810,6 +810,10 @@
                 let count = 0;
                 try { count = JSON.parse(formValues[field.key] || '[]').length; } catch { count = 0; }
                 if (count === 0) return `השדה "${field.label}" הוא חובה`;
+            } else if (field.type === 'date') {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(formValues[field.key] ?? '') || /(^0000|-00)/.test(formValues[field.key])) {
+                    return `השדה "${field.label}" הוא חובה - בחרו יום, חודש ושנה`;
+                }
             } else if (!formValues[field.key]?.trim()) {
                 return `השדה "${field.label}" הוא חובה`;
             }
@@ -1648,6 +1652,34 @@
                                 </button>
                             {/if}
                         {/if}
+
+                    {:else if field.type === 'date'}
+                        <!-- בורר תאריך משלוש רשימות: ה-<input type="date"> המקורי לא נפתח/לא ניתן להקלדה בחלק מהנייד ובדפדפני אפליקציות -->
+                        {@const dv = getFieldValue(field.key).match(/^(\d{4})-(\d{2})-(\d{2})/)}
+                        {@const dY = dv?.[1] ?? ''}
+                        {@const dM = dv?.[2] ?? ''}
+                        {@const dD = dv?.[3] ?? ''}
+                        {@const setDate = (y: string, m: string, d: string) => setFieldValue(field.key, y || m || d ? `${y || '0000'}-${m || '00'}-${d || '00'}` : '')}
+                        <div id="field-{field.key}" class="grid grid-cols-3 gap-2">
+                            <select aria-label="יום" value={dD} onchange={(e) => setDate(dY, dM, (e.target as HTMLSelectElement).value)} class="{inputClass} bg-white text-gray-900">
+                                <option value="">יום</option>
+                                {#each Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')) as d}
+                                    <option value={d}>{Number(d)}</option>
+                                {/each}
+                            </select>
+                            <select aria-label="חודש" value={dM} onchange={(e) => setDate(dY, (e.target as HTMLSelectElement).value, dD)} class="{inputClass} bg-white text-gray-900">
+                                <option value="">חודש</option>
+                                {#each Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')) as m}
+                                    <option value={m}>{Number(m)}</option>
+                                {/each}
+                            </select>
+                            <select aria-label="שנה" value={dY} onchange={(e) => setDate((e.target as HTMLSelectElement).value, dM, dD)} class="{inputClass} bg-white text-gray-900">
+                                <option value="">שנה</option>
+                                {#each Array.from({ length: 85 }, (_, i) => String(new Date().getFullYear() - 16 - i)) as y}
+                                    <option value={y}>{y}</option>
+                                {/each}
+                            </select>
+                        </div>
 
                     {:else}
                         <input
