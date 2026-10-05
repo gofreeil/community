@@ -434,6 +434,13 @@
 					{/if}
 				</button>
 				<button
+					onclick={() => goto('/admin/quiz-suggestions')}
+					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-200 hover:bg-fuchsia-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
+					title="הצעות השדכנים לשאלון ההתאמה"
+				>
+					📝 הצעות לשאלון
+				</button>
+				<button
 					onclick={() => goto('/admin/ads-review')}
 					class="relative px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 hover:bg-amber-500/25 transition-all cursor-pointer font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-1.5 whitespace-nowrap"
 				>

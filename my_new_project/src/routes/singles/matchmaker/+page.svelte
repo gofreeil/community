@@ -96,6 +96,16 @@
             <a href="/singles" class="inline-flex items-center gap-1 text-gray-400 hover:text-white text-sm">→ חזרה ללוח הפנויים</a>
         </div>
 
+        <!-- שאלון ההתאמה: עיון והצעות שינוי -->
+        <a href="/singles/matchmaker/quiz"
+            class="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-pink-400/40 bg-pink-500/10 hover:bg-pink-500/20 px-4 py-3 transition-colors">
+            <span>
+                <span class="block font-black text-pink-100">📝 שאלון ההתאמה - עיון והצעות</span>
+                <span class="block text-xs text-pink-200/80">כל השאלות לגברים ולנשים, והצעת עריכה, הסרה או שאלה חדשה</span>
+            </span>
+            <span class="text-pink-200 text-lg" aria-hidden="true">←</span>
+        </a>
+
         <!-- כותרת -->
         <div class="text-center mb-6">
             <div class="text-4xl mb-2">💘</div>

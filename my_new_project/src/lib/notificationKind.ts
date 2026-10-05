@@ -19,6 +19,7 @@ export const SYSTEM_MSG_TYPES = new Set<string>([
     'singles_review',         // כרטיס פנויים ממתין לבדיקה
     'singles_access',         // בקשת גישה ללוח הפנויים
     'matchmaker_request',     // בקשה להיות שדכן/ית מערכת
+    'quiz_suggestion',        // הצעת שדכן/ית לשאלון ההתאמה
     'wish_request',           // משאלה חדשה ממתינה לאישור
     'design_help_request',    // בקשת עזרה בעיצוב פרסומת
     'new_user',               // נרשם חדש באתר
@@ -50,4 +51,5 @@ export const MSG_TYPE_LINKS: Record<string, string> = {
     new_user:             '/admin?tab=users',
     singles_access:       '/admin/singles-review',
     matchmaker_request:   '/admin/singles-review',
+    quiz_suggestion:      '/admin/quiz-suggestions',
 };
