@@ -531,11 +531,13 @@ const F_SCENARIOS: Question[] = [
 const OPEN_M: Question = { id: 'om_need', kind: 'text', text: 'מה אישה צריכה להבין עליי כדי שאהיה רגוע בקשר?' };
 const OPEN_F: Question = { id: 'of_need', kind: 'text', text: 'מה גבר צריך להבין עליי כדי שארגיש בטוחה בקשר?' };
 
-/** הרכבת השאלון לפי מגדר הנשאל/ת. שאלות המשך (when) מסוננות בשלב ההצגה. */
+/**
+ * הרכבת השאלון לפי מגדר הנשאל/ת. שאלות המשך (when) מסוננות בשלב ההצגה.
+ * קודם השאלות העקיפות (בלי דירוג), אחר כך הישירות (דירוג עצמי ודירוג בן/בת הזוג).
+ * "חידוד" נשאר אחרי הדירוג - התנאים (when) שלו נשענים על תשובות הדירוג.
+ */
 export function buildSections(g: G): QuizSection[] {
     return [
-        SELF_RATINGS,
-        PARTNER_RATINGS,
         g === 'm' ? M_BOTHER : F_BOTHER,
         g === 'm' ? M_ATTRACT : F_ATTRACT,
         {
@@ -545,6 +547,8 @@ export function buildSections(g: G): QuizSection[] {
         },
         DILEMMAS,
         VALUES,
+        SELF_RATINGS,
+        PARTNER_RATINGS,
         FOLLOWUPS,
         {
             id: 'open', icon: '✍️', title: 'במילים שלי',

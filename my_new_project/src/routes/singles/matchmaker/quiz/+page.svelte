@@ -118,9 +118,9 @@
     {:else}
         {@const g = tab as G}
         <div class="mt-4 space-y-3">
-            {#each banks[g] as s (s.id)}
+            {#each banks[g] as s, si (s.id)}
                 {@const qs = s.questions.filter((q) => !q.g || q.g === g)}
-                <details class="rounded-2xl border border-white/10 bg-white/[0.03]" open={s.id === 'self'}>
+                <details class="rounded-2xl border border-white/10 bg-white/[0.03]" open={si === 0}>
                     <summary class="cursor-pointer select-none px-4 py-3 flex items-center justify-between gap-2">
                         <span class="font-black text-white">{s.icon} {fmt(s.title, g)}</span>
                         <span class="text-xs text-gray-400">{qs.length} שאלות</span>
