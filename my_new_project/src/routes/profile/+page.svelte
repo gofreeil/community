@@ -25,6 +25,7 @@
 	import { getLikedItems, removeLike, type LikedItem } from "$lib/likedItems";
 	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
+	import { dbItemToProfile } from "$lib/singlesMap";
 	import { SMS_GROUPS, normalizeSmsPrefs, type SmsGroup } from "$lib/smsPrefs";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
 	import { heRank, normalizeHe, loosenHe } from "$lib/search";
@@ -4897,18 +4898,24 @@
 						</div>
 					{:else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{#each data.items.filter(i => !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)) as item}
+							<!-- כרטיס הפנויים שלי קודם לשאר, ומוצג בשמו/תמונתו (ה-label שלו הוא רק העיר) -->
+							{#each data.items.filter(i => !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)).sort((a, b) => Number(b.category === 'singles') - Number(a.category === 'singles')) as item}
 								{@const eff = restoredItemIds.includes(item.id) ? 'active' : item.status}
 								{@const daysLeft = eff === 'deleted' ? itemRestoreDaysLeft(item) : 0}
-								<div class="bg-white/5 rounded-2xl border border-white/10 p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
+								{@const sp = item.category === 'singles' ? dbItemToProfile(item) : null}
+								<div class="bg-white/5 rounded-2xl border {sp ? 'border-pink-500/30' : 'border-white/10'} p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
 								<a
-									href="/items/{item.id}"
+									href="/{sp ? 'singles' : 'items'}/{item.id}"
 									class="block"
 								>
 									<div class="flex items-start gap-3">
-										<span class="text-3xl flex-shrink-0 mt-0.5"
-											>{item.icon ?? "📋"}</span
-										>
+										{#if sp}
+											<img src={sp.avatar} alt={sp.nickname} class="w-12 h-12 rounded-full object-cover flex-shrink-0 bg-pink-500/20 border border-pink-500/30" />
+										{:else}
+											<span class="text-3xl flex-shrink-0 mt-0.5"
+												>{item.icon ?? "📋"}</span
+											>
+										{/if}
 										<div class="min-w-0 flex-1">
 											<div
 												class="flex items-center gap-2 flex-wrap mb-1"
@@ -4916,7 +4923,7 @@
 												<h3
 													class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
 												>
-													{item.label}
+													{sp ? `❤️ ${sp.nickname}${sp.label ? ' · ' + sp.label : ''}` : item.label}
 												</h3>
 												<span
 													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
