@@ -3086,6 +3086,126 @@
 	</div>
 {/snippet}
 
+<!-- כרטיס פריט ב"הנכסים שלי" (פרסומיי; כרטיס הפנויים מוצג גם הוא דרכו, למעלה) -->
+{#snippet itemCard(item: (typeof data.items)[number])}
+								{@const eff = restoredItemIds.includes(item.id) ? 'active' : item.status}
+								{@const daysLeft = eff === 'deleted' ? itemRestoreDaysLeft(item) : 0}
+								{@const sp = item.category === 'singles' ? dbItemToProfile(item) : null}
+								<div class="bg-white/5 rounded-2xl border {sp ? 'border-pink-500/30' : 'border-white/10'} p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
+								<a
+									href="/{sp ? 'singles' : 'items'}/{item.id}"
+									class="block"
+								>
+									<div class="flex items-start gap-3">
+										{#if sp}
+											<img src={sp.avatar} alt={sp.nickname} class="w-12 h-12 rounded-full object-cover flex-shrink-0 bg-pink-500/20 border border-pink-500/30" />
+										{:else}
+											<span class="text-3xl flex-shrink-0 mt-0.5"
+												>{item.icon ?? "📋"}</span
+											>
+										{/if}
+										<div class="min-w-0 flex-1">
+											<div
+												class="flex items-center gap-2 flex-wrap mb-1"
+											>
+												<h3
+													class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
+												>
+													{sp ? `❤️ ${sp.nickname}${sp.label ? ' · ' + sp.label : ''}` : item.label}
+												</h3>
+												<span
+													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
+											  {eff === 'active'
+														? 'bg-green-500/20 text-green-400 border border-green-500/30'
+														: eff === 'frozen'
+														? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+														: eff === 'deleted'
+														? 'bg-red-500/20 text-red-300 border border-red-500/30'
+														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
+												>
+													{eff === "active"
+														? tFn("status_active")
+														: eff === "frozen"
+															? tFn("profile.item_inactive")
+															: eff === "deleted"
+																? tFn("profile.item_deleted")
+																: eff}
+												</span>
+												{#if eff === 'deleted'}
+													<span class="text-[11px] font-bold {daysLeft > 0 ? 'text-amber-300' : 'text-gray-500'}">
+														{daysLeft > 0 ? tFn("profile.restore_days_left", { n: daysLeft }) : tFn("profile.restore_window_over")}
+													</span>
+												{/if}
+											</div>
+											{#if item.description}
+												<p
+													class="text-gray-400 text-xs line-clamp-2"
+												>
+													{item.description}
+												</p>
+											{/if}
+											<div class="flex items-center gap-3 mt-1.5 flex-wrap">
+												{#if item.neighborhood}
+													<span
+														class="text-purple-400/70 text-xs"
+														>📍 {item.neighborhood}</span
+													>
+												{/if}
+												<span class="text-gray-600 text-xs">
+													{new Date(
+														item.created_at,
+													).toLocaleDateString("he-IL")}
+												</span>
+												{#if item.view_count !== undefined}
+													<span
+														class="text-yellow-400/70 text-xs flex items-center gap-1"
+													>
+														{tFn("profile.item_visits", { n: item.view_count })}
+													</span>
+												{/if}
+											</div>
+										</div>
+									</div>
+								</a>
+								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end gap-2 flex-wrap">
+									{#if eff === 'deleted' && daysLeft > 0}
+										<button
+											type="button"
+											onclick={() => restoreOwnItem(item.id)}
+											disabled={restoringItemId === item.id}
+											class="text-[11px] font-bold text-emerald-400/90 hover:text-emerald-300 hover:bg-emerald-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+											title={tFn("profile.restore_item_title")}
+										>{restoringItemId === item.id ? '...' : tFn('profile.restore_item')}</button>
+									{:else if item.status === 'frozen' && !republishedItemIds.includes(item.id)}
+										<button
+											type="button"
+											onclick={() => republishOwnItem(item.id)}
+											disabled={republishingItemId === item.id}
+											class="text-[11px] font-bold text-green-400/90 hover:text-green-300 hover:bg-green-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+											title={tFn("profile.republish_title")}
+										>{republishingItemId === item.id ? '...' : tFn('profile.republish')}</button>
+									{:else if republishedItemIds.includes(item.id)}
+										<span class="text-[11px] font-bold text-green-300 px-2.5 py-1">{tFn("profile.republished")}</span>
+									{/if}
+									{#if eff !== 'deleted' && item.category !== 'singles'}
+										<button
+											type="button"
+											onclick={() => openTransfer(item.id, item.label)}
+											class="text-[11px] font-bold text-purple-300/90 hover:text-purple-200 hover:bg-purple-500/10 px-2.5 py-1 rounded-md transition-colors"
+											title={tFn("profile.transfer_item_title")}
+										>{tFn('profile.transfer_item')}</button>
+									{/if}
+									<button
+										type="button"
+										onclick={() => deleteOwnItem(item.id, item.label)}
+										disabled={deletingItemId === item.id}
+										class="text-[11px] font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+										title={tFn("profile.delete_forever_item_title")}
+									>{deletingItemId === item.id ? '...' : tFn('profile.delete_forever')}</button>
+								</div>
+							</div>
+{/snippet}
+
 <div class="dense-zone max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
 	<!-- כפתור התחברות/הרשמה לאורחים בלבד -->
 	{#if !data.user}
@@ -4656,6 +4776,10 @@
 				{#if hasSinglesCard}
 					{@render singlesStatusCard('assets')}
 				{/if}
+				<!-- ===== כרטיס הפנויים שלי - למעלה, בשמו ובתמונתו (ה-label שלו הוא רק העיר) ===== -->
+				{#each data.items.filter(i => i.category === 'singles' && !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)) as item (item.id)}
+					<div class="max-w-xl">{@render itemCard(item)}</div>
+				{/each}
 				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
 				<a href="/gatherings" class="inline-flex self-start max-w-[18rem] items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
 					<span class="text-3xl flex-shrink-0">🍽️</span>
@@ -4754,6 +4878,12 @@
 								{#each data.myAds ?? [] as myAdRow (myAdRow.id)}
 									{@const st = myAdRow.status === 'approved' ? (myAdRow.paused ? 'paused' : myAdRow.live ? 'live' : 'expired') : myAdRow.status}
 									<div class="ad-row flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-2.5 py-2">
+										<!-- תמונת הכרטיס לכל פרסומת (ולא רק לטיוטה שלמעלה); בממתינה/נדחית אין נתיב תמונה - מציין מקום -->
+										{#if myAdRow.thumb}
+											<img src={myAdRow.thumb} alt="" loading="lazy" class="w-11 h-11 rounded-lg object-cover flex-shrink-0 border border-white/10 bg-[#0a0f1a]" />
+										{:else}
+											<div class="w-11 h-11 rounded-lg flex-shrink-0 border border-white/10 bg-white/5 flex items-center justify-center text-lg" aria-hidden="true">🖼</div>
+										{/if}
 										<span class="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0
 											{st === 'live' ? 'bg-green-500/20 text-green-300 border border-green-500/40'
 											: st === 'paused' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
@@ -4898,124 +5028,8 @@
 						</div>
 					{:else}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							<!-- כרטיס הפנויים שלי קודם לשאר, ומוצג בשמו/תמונתו (ה-label שלו הוא רק העיר) -->
-							{#each data.items.filter(i => !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)).sort((a, b) => Number(b.category === 'singles') - Number(a.category === 'singles')) as item}
-								{@const eff = restoredItemIds.includes(item.id) ? 'active' : item.status}
-								{@const daysLeft = eff === 'deleted' ? itemRestoreDaysLeft(item) : 0}
-								{@const sp = item.category === 'singles' ? dbItemToProfile(item) : null}
-								<div class="bg-white/5 rounded-2xl border {sp ? 'border-pink-500/30' : 'border-white/10'} p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
-								<a
-									href="/{sp ? 'singles' : 'items'}/{item.id}"
-									class="block"
-								>
-									<div class="flex items-start gap-3">
-										{#if sp}
-											<img src={sp.avatar} alt={sp.nickname} class="w-12 h-12 rounded-full object-cover flex-shrink-0 bg-pink-500/20 border border-pink-500/30" />
-										{:else}
-											<span class="text-3xl flex-shrink-0 mt-0.5"
-												>{item.icon ?? "📋"}</span
-											>
-										{/if}
-										<div class="min-w-0 flex-1">
-											<div
-												class="flex items-center gap-2 flex-wrap mb-1"
-											>
-												<h3
-													class="text-white font-bold text-sm truncate group-hover:text-purple-300 transition-colors"
-												>
-													{sp ? `❤️ ${sp.nickname}${sp.label ? ' · ' + sp.label : ''}` : item.label}
-												</h3>
-												<span
-													class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0
-											  {eff === 'active'
-														? 'bg-green-500/20 text-green-400 border border-green-500/30'
-														: eff === 'frozen'
-														? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-														: eff === 'deleted'
-														? 'bg-red-500/20 text-red-300 border border-red-500/30'
-														: 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}"
-												>
-													{eff === "active"
-														? tFn("status_active")
-														: eff === "frozen"
-															? tFn("profile.item_inactive")
-															: eff === "deleted"
-																? tFn("profile.item_deleted")
-																: eff}
-												</span>
-												{#if eff === 'deleted'}
-													<span class="text-[11px] font-bold {daysLeft > 0 ? 'text-amber-300' : 'text-gray-500'}">
-														{daysLeft > 0 ? tFn("profile.restore_days_left", { n: daysLeft }) : tFn("profile.restore_window_over")}
-													</span>
-												{/if}
-											</div>
-											{#if item.description}
-												<p
-													class="text-gray-400 text-xs line-clamp-2"
-												>
-													{item.description}
-												</p>
-											{/if}
-											<div class="flex items-center gap-3 mt-1.5 flex-wrap">
-												{#if item.neighborhood}
-													<span
-														class="text-purple-400/70 text-xs"
-														>📍 {item.neighborhood}</span
-													>
-												{/if}
-												<span class="text-gray-600 text-xs">
-													{new Date(
-														item.created_at,
-													).toLocaleDateString("he-IL")}
-												</span>
-												{#if item.view_count !== undefined}
-													<span
-														class="text-yellow-400/70 text-xs flex items-center gap-1"
-													>
-														{tFn("profile.item_visits", { n: item.view_count })}
-													</span>
-												{/if}
-											</div>
-										</div>
-									</div>
-								</a>
-								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end gap-2 flex-wrap">
-									{#if eff === 'deleted' && daysLeft > 0}
-										<button
-											type="button"
-											onclick={() => restoreOwnItem(item.id)}
-											disabled={restoringItemId === item.id}
-											class="text-[11px] font-bold text-emerald-400/90 hover:text-emerald-300 hover:bg-emerald-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-											title={tFn("profile.restore_item_title")}
-										>{restoringItemId === item.id ? '...' : tFn('profile.restore_item')}</button>
-									{:else if item.status === 'frozen' && !republishedItemIds.includes(item.id)}
-										<button
-											type="button"
-											onclick={() => republishOwnItem(item.id)}
-											disabled={republishingItemId === item.id}
-											class="text-[11px] font-bold text-green-400/90 hover:text-green-300 hover:bg-green-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-											title={tFn("profile.republish_title")}
-										>{republishingItemId === item.id ? '...' : tFn('profile.republish')}</button>
-									{:else if republishedItemIds.includes(item.id)}
-										<span class="text-[11px] font-bold text-green-300 px-2.5 py-1">{tFn("profile.republished")}</span>
-									{/if}
-									{#if eff !== 'deleted' && item.category !== 'singles'}
-										<button
-											type="button"
-											onclick={() => openTransfer(item.id, item.label)}
-											class="text-[11px] font-bold text-purple-300/90 hover:text-purple-200 hover:bg-purple-500/10 px-2.5 py-1 rounded-md transition-colors"
-											title={tFn("profile.transfer_item_title")}
-										>{tFn('profile.transfer_item')}</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => deleteOwnItem(item.id, item.label)}
-										disabled={deletingItemId === item.id}
-										class="text-[11px] font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-										title={tFn("profile.delete_forever_item_title")}
-									>{deletingItemId === item.id ? '...' : tFn('profile.delete_forever')}</button>
-								</div>
-							</div>
+							{#each data.items.filter(i => i.category !== 'singles' && !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)) as item}
+								{@render itemCard(item)}
 							{/each}
 						</div>
 					{/if}

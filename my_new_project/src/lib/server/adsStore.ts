@@ -644,6 +644,8 @@ export interface MyAdSummary {
     rejectionReason?: string;
     /** מתי פורסמה לאחרונה בכל אתרי הרשת (סנדיקציה) - לכפתור הסופר-אדמין */
     syndicatedAt?: string;
+    /** כתובת תמונת הכרטיס (קאש immutable, ראה adImageUrl) - רק למאושרות; לממתינה/נדחית אין נתיב תמונה */
+    thumb?: string;
 }
 
 /**
@@ -681,6 +683,7 @@ export async function getMyAds(identity: { id?: string; email?: string }): Promi
                     live: a.status === 'approved' && isLiveNow(a, now),
                     rejectionReason: a.rejectionReason,
                     syndicatedAt: typeof syncAt === 'string' ? syncAt : undefined,
+                    thumb: a.status === 'approved' ? adImageUrl(a, 'main') || undefined : undefined,
                 };
             })
             .sort((a, b) => statusRank[a.status] - statusRank[b.status] || (a.slot ?? 99) - (b.slot ?? 99));
