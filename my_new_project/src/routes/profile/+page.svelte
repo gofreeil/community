@@ -4830,7 +4830,6 @@
 											        title={tFn("profile.transfer_ad_title")}>
 												{tFn("profile.transfer_ad")}
 											</button>
-										</span>
 										{#if isSuperAdmin && myAdRow.status === 'approved'}
 											<!-- סופר-אדמין בלבד: סנדיקציה לכל אתרי הרשת בלי לעבור דרך עמוד האישורים -->
 											{@const adSynced = Boolean(myAdRow.syndicatedAt) || syndicatedIds.includes(myAdRow.id)}
@@ -4855,6 +4854,7 @@
 												</button>
 											</form>
 										{/if}
+										</span>
 									</div>
 								{/each}
 							</div>
@@ -7412,14 +7412,13 @@
 	.ad-btn.danger:hover {
 		background: rgba(239, 68, 68, 0.26);
 	}
-	@media (max-width: 640px) {
-		.ad-row {
-			flex-wrap: wrap;
-		}
-		.ad-actions {
-			width: 100%;
-			justify-content: flex-start;
-		}
+	/* השורה עוטפת תמיד: סטטוס + כותרת למעלה, כל הכפתורים (כולל 🌐) בשורה משלהם */
+	.ad-row {
+		flex-wrap: wrap;
+	}
+	.ad-actions {
+		width: 100%;
+		justify-content: flex-start;
 	}
 
 	/* טוסט "בקשתך נקלטה" - עולה מלמטה, ונמוג לקראת ההיעלמות האוטומטית (4 שניות) */
