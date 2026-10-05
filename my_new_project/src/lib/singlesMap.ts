@@ -6,7 +6,7 @@ import type { DbItem } from './server/db';
 import type { SingleProfile, Religiosity, Gender } from './singlesMock';
 import { avatarUrl } from './singlesMock';
 import { categoryConfig } from './categoryFields';
-import { QUIZ_FIELD_KEY } from './singlesQuestionnaire';
+import { QUIZ_FIELD_KEY } from './singlesQuizKey';
 
 // שדות "מידע לשדכנים" לפי הגדרת הטופס - כך שאלה שנוספת לטופס מגיעה אוטומטית
 // לעמוד סקירת השדכנים בלי לגעת במיפוי.

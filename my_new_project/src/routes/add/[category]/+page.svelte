@@ -29,7 +29,7 @@
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
     import SinglesPersonalityQuiz from '$lib/components/SinglesPersonalityQuiz.svelte';
-    import { QUIZ_FIELD_KEY } from '$lib/singlesQuestionnaire';
+    import { QUIZ_FIELD_KEY } from '$lib/singlesQuizKey';
     import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
     import { autoGrow } from '$lib/actions/autoGrow';
     import { EXTRA_CONTACTS_KEY, serializeExtraContacts, parseExtraContacts } from '$lib/extraContacts';
@@ -1814,7 +1814,7 @@
                     <p class="text-fuchsia-300/80 text-xs mb-3">
                         שאלות ישירות ועקיפות שחושפות מה מושך אותך ומה מרתיע אותך, כדי למצוא בן/בת זוג שבאמת מתאים/ה. התשובות אינן מוצגות בכרטיס ואינן גלויות לאף משתמש - רק למנוע ההתאמה ולשדכנים המאושרים. אפשר לענות בהדרגה.
                     </p>
-                    <SinglesPersonalityQuiz bind:value={formValues[QUIZ_FIELD_KEY]} />
+                    <SinglesPersonalityQuiz bind:value={formValues[QUIZ_FIELD_KEY]} gender={formValues.gender} />
                 </div>
             {/if}
 
