@@ -7,7 +7,7 @@
     // שתי שאלות ותיקות נוסחו בגוף ראשון ("שאתה מחפש") — בתצוגת השדכן הן בגוף שלישי
     const THIRD_PERSON_LABELS: Record<string, string> = {
         match_partner_character: 'מהו אופי בן/בת הזוג שהוא/היא מחפש/ת',
-        match_self_advantage: 'היתרון שהוא/היא מביא/ה אל הזוגיות',
+        match_self_advantage: 'היתרון שאני מביא איתי אל הזוגיות',
     };
 
     let { answers = [] }: { answers?: { key: string; label: string; value: string }[] } = $props();

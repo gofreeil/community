@@ -12,7 +12,7 @@
     // ניסוח בגוף שלישי לשתי השאלות הוותיקות (כמו שהיה); שאר השאלות - תווית הטופס כמו שהיא
     const MATCHMAKER_ADMIN_LABELS: Record<string, string> = {
         match_partner_character: 'מהו אופי בן הזוג שהוא/היא מחפש/ת',
-        match_self_advantage:    'היתרון שהוא/היא מביא/ה אל הזוגיות',
+        match_self_advantage:    'היתרון שאני מביא איתי אל הזוגיות',
     };
 
     type Card = PageData['pending'][number];
