@@ -48,6 +48,8 @@ export const load: PageServerLoad = async (event) => {
             .map((f) => ({ key: f.key, label: f.label, value: String(extraFields[f.key] ?? '').trim() }))
             .filter((a) => a.value !== '');
         for (const f of matchmakerFields) delete extraFields[f.key];
+        // שאלון ההתאמה (רמה 3) - פרטי, לא יוצא לדף הפריט
+        delete extraFields.ai_quiz;
 
         // הרשאת שדכן נבדקת רק על כרטיסי פנויים ורק לצופה מחובר (קריאת Strapi נוספת)
         let viewerIsMatchmaker = false;

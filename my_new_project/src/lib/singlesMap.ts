@@ -6,13 +6,15 @@ import type { DbItem } from './server/db';
 import type { SingleProfile, Religiosity, Gender } from './singlesMock';
 import { avatarUrl } from './singlesMock';
 import { categoryConfig } from './categoryFields';
+import { QUIZ_FIELD_KEY } from './singlesQuestionnaire';
 
 // שדות "מידע לשדכנים" לפי הגדרת הטופס - כך שאלה שנוספת לטופס מגיעה אוטומטית
 // לעמוד סקירת השדכנים בלי לגעת במיפוי.
 const MATCHMAKER_FIELDS = (categoryConfig.singles?.fields ?? []).filter(f => f.group === 'matchmakers');
 
 /** מפתחות שדות "מידע לשדכנים" — השרת מסיר אותם מנתוני הדף למי שאינו שדכן מאושר */
-export const MATCHMAKER_FIELD_KEYS = MATCHMAKER_FIELDS.map((f) => f.key);
+// + שאלון ההתאמה (רמה 3): תשובות אישיות שנשמרות רק למנוע ההתאמה והשדכנים
+export const MATCHMAKER_FIELD_KEYS = [...MATCHMAKER_FIELDS.map((f) => f.key), QUIZ_FIELD_KEY];
 
 /**
  * מסיר מהפרופיל את התשובות ש"רק שדכן רואה". עד 22.9.2026 dbItemToProfile החזיר

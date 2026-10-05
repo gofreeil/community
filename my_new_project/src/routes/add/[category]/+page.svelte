@@ -28,6 +28,8 @@
     import { mapStepFields, cfCatKey, cfAddTitleKey, cfFieldKey, cfOptKey, trOr } from '$lib/categoryFields';
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
+    import SinglesPersonalityQuiz from '$lib/components/SinglesPersonalityQuiz.svelte';
+    import { QUIZ_FIELD_KEY } from '$lib/singlesQuestionnaire';
     import ExtraContactsField from '$lib/components/ExtraContactsField.svelte';
     import { autoGrow } from '$lib/actions/autoGrow';
     import { EXTRA_CONTACTS_KEY, serializeExtraContacts, parseExtraContacts } from '$lib/extraContacts';
@@ -336,6 +338,8 @@
         [EXTRA_CONTACTS_KEY]: serializeExtraContacts(
             parseExtraContacts((editItem?.extra_fields as Record<string, unknown> | undefined)?.[EXTRA_CONTACTS_KEY])
         ),
+        // שאלון ההתאמה (רמה 3 בכרטיס פנויים) - מחרוזת JSON אחת
+        [QUIZ_FIELD_KEY]: String((editItem?.extra_fields as Record<string, unknown> | undefined)?.[QUIZ_FIELD_KEY] ?? ''),
     });
 
     // ---- תמחור מסעדות - מסעדה 45 ₪, מזון מהיר 30 ₪ (תלוי בבחירת המשתמש) ----
@@ -360,6 +364,17 @@
     let savedPending    = $state(true);
     let shareCopied     = $state(false);
     const isSinglesCard = categoryId === 'singles';
+    // כרטיס פנויים בשלוש רמות: 1 = מה שמוצג בכרטיס, 2 = מידע לשדכנים, 3 = שאלון התאמה ל-AI.
+    // כל רמה נשמרת בפועל בשרת (שמירה והמשך), והשמירות הבאות מעדכנות את אותו כרטיס.
+    let level = $state<1 | 2 | 3>(1);
+    let stageSaved = $state<Record<number, boolean>>({});
+    let stageToast = $state('');
+    let activeEditId = $state<string>(untrack(() => (editItem?.id ? String(editItem.id) : '')));
+    const LEVELS = [
+        { n: 1 as const, icon: '🪪', title: 'הכרטיס', sub: 'מה שמוצג' },
+        { n: 2 as const, icon: '🤝', title: 'לשדכנים', sub: 'מידע פרטי' },
+        { n: 3 as const, icon: '🧠', title: 'התאמת AI', sub: 'שאלון אישיות' },
+    ];
     function singlesShareUrl(): string {
         const origin = browser ? window.location.origin : '';
         return origin + '/singles/' + savedId;
@@ -884,7 +899,7 @@
     }
 
     // ---- Submit ----
-    async function handleSubmit(e: Event) {
+    async function handleSubmit(e: Event, stayOnForm = false) {
         e.preventDefault();
         errorMsg = '';
         serverFailed = false;
@@ -965,7 +980,7 @@
                     neighborhood,
                     city,
                     // עריכה מעדכנת את הפריט הקיים - בלי edit_id נוצרת כפילות
-                    ...(isEditMode && editItem?.id ? { edit_id: editItem.id } : {}),
+                    ...(activeEditId ? { edit_id: activeEditId } : {}),
                     ...(pinLat != null && pinLng != null ? { lat: pinLat, lng: pinLng } : {}),
                     ...topLevel,
                     extra_fields: extra,
@@ -977,6 +992,18 @@
                 errorMsg = result.message ?? 'שגיאה בשמירה';
                 serverFailed = res.status >= 500;
                 submitting = false;
+                return;
+            }
+
+            if (result.id) activeEditId = String(result.id);
+            if (stayOnForm) {
+                // שמירת ביניים (רמה 1/2): הכרטיס נשמר, ממשיכים לרמה הבאה באותו טופס
+                stageSaved = { ...stageSaved, [level]: true };
+                stageToast = `✓ רמה ${level} נשמרה`;
+                setTimeout(() => (stageToast = ''), 3000);
+                submitting = false;
+                level = (level + 1) as 2 | 3;
+                if (browser) window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
 
@@ -1136,6 +1163,22 @@
             onsubmit={handleSubmit}
             class="rounded-2xl border {colors.border} {colors.bg} p-4 md:p-8 grid grid-cols-2 gap-x-3 gap-y-3.5 md:gap-5"
         >
+            {#if isSinglesCard}
+                <!-- שלוש רמות: כרטיס / מידע לשדכנים / שאלון התאמה ל-AI -->
+                <div class="col-span-2 flex items-stretch gap-1.5" style="grid-column: 1 / -1;" role="tablist">
+                    {#each LEVELS as lv}
+                        <button type="button" role="tab" aria-selected={level === lv.n}
+                            onclick={() => { level = lv.n; if (browser) window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            class="flex-1 rounded-xl border px-2 py-2 text-center transition-all
+                                {level === lv.n ? 'bg-fuchsia-500/25 border-fuchsia-300 text-white' : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
+                            <div class="text-lg leading-none">{lv.icon}{#if stageSaved[lv.n]}<span class="text-green-400 text-xs"> ✓</span>{/if}</div>
+                            <div class="text-xs font-black mt-1">רמה {lv.n} · {lv.title}</div>
+                            <div class="text-[10px] text-gray-400">{lv.sub}</div>
+                        </button>
+                    {/each}
+                </div>
+            {/if}
+            {#if !isSinglesCard || level === 1}
             <!-- מיקום הפרסום - העיר והשכונה שבהן הפריט יופיע בלוחות ועל המפה -->
             <div class="col-span-2 rounded-xl border border-white/15 bg-white/5 p-3 md:p-4">
                 <p class="text-[13px] md:text-sm font-bold text-gray-300 mb-2">
@@ -1729,8 +1772,10 @@
                 {/if}
             {/each}
 
+            {/if}
+
             <!-- תא "מידע לשדכנים": נשמר לצוות בלבד, אינו מוצג בכרטיס/בדף הפומבי -->
-            {#if matchmakerFields.length}
+            {#if matchmakerFields.length && (!isSinglesCard || level === 2)}
                 <div class="col-span-2 rounded-xl border border-purple-500/30 bg-purple-500/10 p-3 md:p-4" style="grid-column: 1 / -1;">
                     <p class="text-[13px] md:text-sm font-bold text-purple-100 mb-1 flex items-center gap-1.5">
                         🔒 מידע עבור השדכנים של המערכת - לא מוצג ברבים
@@ -1759,6 +1804,17 @@
                             </div>
                         {/each}
                     </div>
+                </div>
+            {/if}
+
+            <!-- רמה 3: שאלון אישיות והתאמה - מזין את מנוע ה-AI, פרטי לחלוטין -->
+            {#if isSinglesCard && level === 3}
+                <div class="col-span-2 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 p-3 md:p-4" style="grid-column: 1 / -1;">
+                    <p class="text-[13px] md:text-sm font-bold text-fuchsia-100 mb-1">🧠 שאלון התאמה חכם - למערכת ה-AI</p>
+                    <p class="text-fuchsia-300/80 text-xs mb-3">
+                        שאלות ישירות ועקיפות שחושפות מה מושך אותך ומה מרתיע אותך, כדי למצוא בן/בת זוג שבאמת מתאים/ה. התשובות אינן מוצגות בכרטיס ואינן גלויות לאף משתמש - רק למנוע ההתאמה ולשדכנים המאושרים. אפשר לענות בהדרגה.
+                    </p>
+                    <SinglesPersonalityQuiz bind:value={formValues[QUIZ_FIELD_KEY]} />
                 </div>
             {/if}
 
@@ -1823,7 +1879,36 @@
                 </div>
             {/if}
 
+            {#if stageToast}
+                <div class="col-span-2 rounded-xl border border-green-500/40 bg-green-900/20 px-4 py-2 text-green-300 text-sm font-bold text-center" style="grid-column: 1 / -1;" role="status">{stageToast}</div>
+            {/if}
+
             <!-- Submit -->
+            {#if isSinglesCard}
+                <div class="col-span-2 flex flex-col gap-2" style="grid-column: 1 / -1;">
+                    {#if level < 3}
+                        <button type="button" disabled={submitting} onclick={(e) => handleSubmit(e, true)}
+                            class="w-full rounded-xl px-6 py-3 md:py-4 font-black text-base transition-all shadow-lg
+                                {submitting ? 'bg-gray-700 text-gray-400 cursor-not-allowed' : 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white'}">
+                            {submitting ? 'שומר...' : `💾 שמור והמשך לרמה ${level + 1}`}
+                        </button>
+                        <button type="submit" disabled={submitting}
+                            class="w-full rounded-xl px-6 py-2.5 text-sm font-bold border border-white/20 bg-white/5 hover:bg-white/10 text-gray-200">
+                            שמור וסיים כאן (אפשר להשלים בהמשך)
+                        </button>
+                    {:else}
+                        <button type="submit" disabled={submitting}
+                            class="w-full rounded-xl px-6 py-3 md:py-4 font-black text-base transition-all shadow-lg
+                                {submitting ? 'bg-gray-700 text-gray-400 cursor-not-allowed' : 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white'}">
+                            {submitting ? 'שומר...' : '✅ שמור וסיים'}
+                        </button>
+                    {/if}
+                    {#if level > 1}
+                        <button type="button" onclick={() => (level = (level - 1) as 1 | 2)}
+                            class="text-sm text-gray-400 hover:text-white py-1">→ חזרה לרמה {level - 1}</button>
+                    {/if}
+                </div>
+            {:else}
             <div class="col-span-2 flex flex-col gap-2">
                 <button
                     type="submit"
@@ -1853,6 +1938,7 @@
                     {/if}
                 </p>
             </div>
+            {/if}
         </form>
     {/if}
 </div>
