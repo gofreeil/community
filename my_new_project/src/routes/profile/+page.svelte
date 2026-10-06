@@ -3996,7 +3996,10 @@
 									>{msg.time}</span
 								>
 							</div>
-							<p class="text-gray-300 text-xs leading-relaxed">{msg.text}</p>
+							<!-- pre-line: ההודעות נכתבות בשורות (\n) - בלי זה הכל מתמזג לפסקה אחת.
+							     plaintext: כיווניות לכל שורה בנפרד, כדי ששורת קואורדינטות/קישור
+							     לא תתערבב עם העברית שלידה; text-right משאיר את כולן מיושרות לימין -->
+							<p class="text-gray-300 text-xs leading-relaxed whitespace-pre-line [unicode-bidi:plaintext] text-right">{msg.text}</p>
 							{#if isDraft}
 								<div class="flex items-center gap-1.5 justify-between mt-2 flex-wrap">
 									<a href="/about/advertise/builder" onclick={() => setAdIntent('edit')}
