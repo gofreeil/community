@@ -13,7 +13,7 @@ export const MATCHMAKER_REQUEST_CATEGORY = 'matchmaker_request';
 
 /** פער-גיל מקסימלי (בשנים) שעדיין נחשב "גילאים דומים" להמלצת התאמה ראשונית.
  *  בהמשך יתווספו קריטריונים נוספים (מגזר, עיר, מצב משפחתי...). */
-export const AGE_MATCH_THRESHOLD = 5;
+export const AGE_MATCH_THRESHOLD = 10;
 
 function reqStatus(extra_fields: string | null | undefined): string {
     try { return String(JSON.parse(extra_fields || '{}').status || 'pending'); } catch { return 'pending'; }
