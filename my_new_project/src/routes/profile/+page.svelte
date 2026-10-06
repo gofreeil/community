@@ -234,6 +234,10 @@
 	let transferBusy = $state(false);
 	let transferSuccessName = $state("");
 	let transferredItemIds = $state<string[]>([]);
+	// כרטיס/י הפנויים שלי - מוצגים בראש "הנכסים שלי", ו"האהבתי" לצידם
+	const mySinglesCards = $derived(
+		data.items.filter((i) => i.category === 'singles' && !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id))
+	);
 	const isAdTransfer = $derived(transferTarget?.kind === "ad");
 	function openTransfer(id: string, label: string, kind: "item" | "ad" = "item") {
 		transferTarget = { id, label, kind };
@@ -3167,6 +3171,7 @@
 										</div>
 									</div>
 								</a>
+								{#if !sp || eff === 'deleted' || item.status === 'frozen' || republishedItemIds.includes(item.id)}
 								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end gap-2 flex-wrap">
 									{#if eff === 'deleted' && daysLeft > 0}
 										<button
@@ -3195,15 +3200,162 @@
 											title={tFn("profile.transfer_item_title")}
 										>{tFn('profile.transfer_item')}</button>
 									{/if}
-									<button
-										type="button"
-										onclick={() => deleteOwnItem(item.id, item.label)}
-										disabled={deletingItemId === item.id}
-										class="text-[11px] font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
-										title={tFn("profile.delete_forever_item_title")}
-									>{deletingItemId === item.id ? '...' : tFn('profile.delete_forever')}</button>
+									<!-- כרטיס פנויים: "מחק לצמיתות" רק אחרי שהמשתמש מחק אותו מתוך הכרטיס
+									     (סטטוס "מחוק") - לצד "שחזר". בכרטיס פעיל אין כאן מחיקה. -->
+									{#if !sp || eff === 'deleted'}
+										<button
+											type="button"
+											onclick={() => deleteOwnItem(item.id, item.label)}
+											disabled={deletingItemId === item.id}
+											class="text-[11px] font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-colors disabled:opacity-50"
+											title={tFn("profile.delete_forever_item_title")}
+										>{deletingItemId === item.id ? '...' : tFn('profile.delete_forever')}</button>
+									{/if}
 								</div>
+								{/if}
 							</div>
+{/snippet}
+
+<!-- "האהבתי" - בראש "הנכסים שלי" לצד כרטיס הפנויים, או במקומו הרגיל כשאין כרטיס -->
+{#snippet likedSection()}
+				<!-- ===== סאב-מקטע: האהבתי (קיצורי דרך לפריטים שאהבתי). @container: בטור צר לצד
+				     כרטיס הפנויים הרשתות הפנימיות יורדות לטור אחד, וברוחב מלא חוזרות לשניים ===== -->
+				<div class="@container min-w-0 bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
+					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+						<span class="text-lg" aria-hidden="true">❤️</span>
+						{tFn("profile.liked_title")}
+						{#if likedItems.length > 0}
+							<span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold">{likedItems.length}</span>
+						{/if}
+					</h3>
+
+					{#if likedItems.length === 0}
+						<div class="text-center py-6">
+							<span class="text-4xl block mb-2">💔</span>
+							<p class="text-gray-400 text-sm mb-3">
+								{tFn("profile.liked_empty")}
+							</p>
+							<p class="text-gray-500 text-xs leading-relaxed">
+								{tFn("profile.liked_hint_click")} <a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">{tFn("profile.liked_giveaways_link")}</a>{tFn("profile.liked_hint_page")} <a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">{tFn("profile.liked_singles_link")}</a> {tFn("profile.liked_hint_or")} <a href="/babysitters" class="text-rose-400 hover:text-rose-300 font-bold">{tFn("profile.liked_babysitter_link")}</a> {tFn("profile.liked_hint_suffix")}
+							</p>
+						</div>
+					{:else}
+						<div class="flex flex-col gap-4">
+							{#if likedGiveaways.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-orange-400">🎁</span>
+										{tFn("profile.liked_giveaways")} ({likedGiveaways.length})
+									</h4>
+									<div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
+										{#each likedGiveaways as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-orange-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													{#if it.image}
+														<img
+															src={it.image}
+															alt=""
+															loading="lazy"
+															class="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-[#0a0f1a]"
+														/>
+													{:else}
+														<div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
+													{/if}
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-orange-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label={tFn("profile.unlike")}
+													title={tFn("profile.unlike")}
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if likedSingles.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-pink-400">💑</span>
+										{tFn("profile.liked_singles")} ({likedSingles.length})
+									</h4>
+									<div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
+										{#each likedSingles as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-pink-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													<div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+														{it.summary?.startsWith("👨") ? "👨" : "👩"}
+													</div>
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label={tFn("profile.unlike")}
+													title={tFn("profile.unlike")}
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if likedBabysitters.length > 0}
+								<div>
+									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
+										<span class="text-rose-400">👶</span>
+										{tFn("profile.liked_babysitters")} ({likedBabysitters.length})
+									</h4>
+									<div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
+										{#each likedBabysitters as it (it.id)}
+											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-rose-500/40 rounded-2xl p-3 transition-all">
+												<a
+													href={it.url}
+													class="flex items-center gap-3 flex-1 min-w-0"
+												>
+													<div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-md">👶</div>
+													<div class="min-w-0 flex-1">
+														<p class="text-white text-sm font-bold truncate group-hover:text-rose-300 transition-colors">{it.label}</p>
+														{#if it.summary}
+															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
+														{/if}
+													</div>
+												</a>
+												<button
+													type="button"
+													onclick={() => unlike(it)}
+													aria-label={tFn("profile.unlike")}
+													title={tFn("profile.unlike")}
+													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
+												>❤️</button>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
 {/snippet}
 
 <div class="dense-zone max-w-3xl mx-auto px-4 py-8 overflow-x-hidden" dir="rtl">
@@ -4779,10 +4931,18 @@
 				{#if hasSinglesCard}
 					{@render singlesStatusCard('assets')}
 				{/if}
-				<!-- ===== כרטיס הפנויים שלי - למעלה, בשמו ובתמונתו (ה-label שלו הוא רק העיר) ===== -->
-				{#each data.items.filter(i => i.category === 'singles' && !deletedItemIds.includes(i.id) && !transferredItemIds.includes(i.id)) as item (item.id)}
-					<div class="max-w-xl">{@render itemCard(item)}</div>
-				{/each}
+				<!-- ===== כרטיס הפנויים שלי - למעלה, בשמו ובתמונתו (ה-label שלו הוא רק העיר);
+				     "האהבתי" לצידו בדסקטופ ומתחתיו בנייד ===== -->
+				{#if mySinglesCards.length > 0}
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+						<div class="flex flex-col gap-4 min-w-0">
+							{#each mySinglesCards as item (item.id)}
+								{@render itemCard(item)}
+							{/each}
+						</div>
+						{@render likedSection()}
+					</div>
+				{/if}
 				<!-- ===== ערבי מפגש / סעודות קהילתיות ===== -->
 				<a href="/gatherings" class="inline-flex self-start max-w-[18rem] items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500/15 to-rose-500/10 border border-amber-500/30 hover:border-amber-500/60 px-4 py-3.5 transition-all group">
 					<span class="text-3xl flex-shrink-0">🍽️</span>
@@ -5038,143 +5198,10 @@
 					{/if}
 				</div>
 
-				<!-- ===== סאב-מקטע: האהבתי (קיצורי דרך לפריטים שאהבתי) ===== -->
-				<div class="bg-[#0a1224]/60 rounded-2xl border border-white/10 p-3 md:p-4">
-					<h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
-						<span class="text-lg" aria-hidden="true">❤️</span>
-						{tFn("profile.liked_title")}
-						{#if likedItems.length > 0}
-							<span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full font-bold">{likedItems.length}</span>
-						{/if}
-					</h3>
-
-					{#if likedItems.length === 0}
-						<div class="text-center py-6">
-							<span class="text-4xl block mb-2">💔</span>
-							<p class="text-gray-400 text-sm mb-3">
-								{tFn("profile.liked_empty")}
-							</p>
-							<p class="text-gray-500 text-xs leading-relaxed">
-								{tFn("profile.liked_hint_click")} <a href="/giveaways" class="text-orange-400 hover:text-orange-300 font-bold">{tFn("profile.liked_giveaways_link")}</a>{tFn("profile.liked_hint_page")} <a href="/singles" class="text-pink-400 hover:text-pink-300 font-bold">{tFn("profile.liked_singles_link")}</a> {tFn("profile.liked_hint_or")} <a href="/babysitters" class="text-rose-400 hover:text-rose-300 font-bold">{tFn("profile.liked_babysitter_link")}</a> {tFn("profile.liked_hint_suffix")}
-							</p>
-						</div>
-					{:else}
-						<div class="flex flex-col gap-4">
-							{#if likedGiveaways.length > 0}
-								<div>
-									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
-										<span class="text-orange-400">🎁</span>
-										{tFn("profile.liked_giveaways")} ({likedGiveaways.length})
-									</h4>
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-										{#each likedGiveaways as it (it.id)}
-											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-orange-500/40 rounded-2xl p-3 transition-all">
-												<a
-													href={it.url}
-													class="flex items-center gap-3 flex-1 min-w-0"
-												>
-													{#if it.image}
-														<img
-															src={it.image}
-															alt=""
-															loading="lazy"
-															class="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-[#0a0f1a]"
-														/>
-													{:else}
-														<div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl flex-shrink-0">🎁</div>
-													{/if}
-													<div class="min-w-0 flex-1">
-														<p class="text-white text-sm font-bold truncate group-hover:text-orange-300 transition-colors">{it.label}</p>
-														{#if it.summary}
-															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
-														{/if}
-													</div>
-												</a>
-												<button
-													type="button"
-													onclick={() => unlike(it)}
-													aria-label={tFn("profile.unlike")}
-													title={tFn("profile.unlike")}
-													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-												>❤️</button>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/if}
-
-							{#if likedSingles.length > 0}
-								<div>
-									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
-										<span class="text-pink-400">💑</span>
-										{tFn("profile.liked_singles")} ({likedSingles.length})
-									</h4>
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-										{#each likedSingles as it (it.id)}
-											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-pink-500/40 rounded-2xl p-3 transition-all">
-												<a
-													href={it.url}
-													class="flex items-center gap-3 flex-1 min-w-0"
-												>
-													<div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center text-2xl flex-shrink-0">
-														{it.summary?.startsWith("👨") ? "👨" : "👩"}
-													</div>
-													<div class="min-w-0 flex-1">
-														<p class="text-white text-sm font-bold truncate group-hover:text-pink-300 transition-colors">{it.label}</p>
-														{#if it.summary}
-															<p class="text-gray-400 text-xs truncate mt-0.5">{it.summary}</p>
-														{/if}
-													</div>
-												</a>
-												<button
-													type="button"
-													onclick={() => unlike(it)}
-													aria-label={tFn("profile.unlike")}
-													title={tFn("profile.unlike")}
-													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-												>❤️</button>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/if}
-
-							{#if likedBabysitters.length > 0}
-								<div>
-									<h4 class="text-white font-bold text-xs mb-2 flex items-center gap-2">
-										<span class="text-rose-400">👶</span>
-										{tFn("profile.liked_babysitters")} ({likedBabysitters.length})
-									</h4>
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-										{#each likedBabysitters as it (it.id)}
-											<div class="group relative flex items-center gap-3 bg-white/5 hover:bg-white/8 border border-white/10 hover:border-rose-500/40 rounded-2xl p-3 transition-all">
-												<a
-													href={it.url}
-													class="flex items-center gap-3 flex-1 min-w-0"
-												>
-													<div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-md">👶</div>
-													<div class="min-w-0 flex-1">
-														<p class="text-white text-sm font-bold truncate group-hover:text-rose-300 transition-colors">{it.label}</p>
-														{#if it.summary}
-															<p class="text-gray-400 text-xs truncate mt-0.5">📍 {it.summary}</p>
-														{/if}
-													</div>
-												</a>
-												<button
-													type="button"
-													onclick={() => unlike(it)}
-													aria-label={tFn("profile.unlike")}
-													title={tFn("profile.unlike")}
-													class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-base transition-colors"
-												>❤️</button>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
+				<!-- ===== סאב-מקטע: האהבתי - כאן רק כשאין כרטיס פנויים (אחרת הוא לצד הכרטיס, למעלה) ===== -->
+				{#if mySinglesCards.length === 0}
+					{@render likedSection()}
+				{/if}
 			</div>
 		{/if}
 	</div>

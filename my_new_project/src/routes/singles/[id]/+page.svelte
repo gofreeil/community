@@ -25,6 +25,36 @@
     const s = $derived(data.single!);
     const isMale = $derived(s.gender === 'male');
 
+    // ---- מחיקה רכה ע"י בעל הכרטיס: יורד מהלוח ומופיע בפרופיל בסטטוס "מחוק",
+    // ושם אפשר לשחזר (עד 30 יום) או למחוק לצמיתות ----
+    let deletingCard = $state(false);
+    let deleteCardError = $state('');
+    async function softDeleteCard() {
+        const itemId = data.dbItem?.id;
+        if (!itemId) return;
+        if (!confirm('למחוק את הכרטיס?\n\nהכרטיס יורד מלוח הפנויים, אך יופיע בפרופיל בסטטוס "מחוק" וניתן יהיה לשחזר אותו תוך 30 יום. לאחר מכן לא ניתן לשחזר - רק ליצור כרטיס חדש.')) return;
+        deletingCard = true;
+        deleteCardError = '';
+        try {
+            const res = await fetch(`/api/items/${itemId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'soft_delete' }),
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || !d.success) {
+                deleteCardError = d.message || 'שגיאה במחיקה';
+                deletingCard = false;
+                return;
+            }
+            // ישר ל"הנכסים שלי" - שם הכרטיס מחכה בסטטוס "מחוק" עם שחזור / מחיקה לצמיתות
+            window.location.href = '/profile?tab=items';
+        } catch {
+            deleteCardError = 'בעיית תקשורת - נסו שוב';
+            deletingCard = false;
+        }
+    }
+
     let contactMenuOpen = $state(false);
     let selectedContact: 'request' | 'exchange' | 'message' | null = $state(null);
 
@@ -512,6 +542,18 @@
                             {data.isLoggedIn ? 'דקה אחת - וגם הכרטיס שלך משותף ככה' : 'הרשמה קצרה לאתר, ומיד אחריה יצירת הכרטיס'}
                         </span>
                     </a>
+                {:else}
+                    <div class="mt-4 flex flex-col items-center gap-1">
+                        <button
+                            type="button"
+                            onclick={softDeleteCard}
+                            disabled={deletingCard}
+                            class="text-xs font-bold text-red-400/80 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                        >{deletingCard ? 'מוחק...' : '🗑 מחיקת הכרטיס'}</button>
+                        {#if deleteCardError}
+                            <p class="text-red-400 text-xs">{deleteCardError}</p>
+                        {/if}
+                    </div>
                 {/if}
             </div>
         </div>
