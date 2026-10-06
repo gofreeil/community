@@ -72,6 +72,48 @@ export async function findOpenMatchmakerRequest(userId: string): Promise<'approv
     return null;
 }
 
+export interface TeamMember {
+    userId: string;
+    nickname: string;
+    gender: string;
+    city: string;
+    neighborhood: string;
+    phone: string;
+    /** מתי אושר/ה (או מתי הוגשה הבקשה, אם אין תאריך החלטה) */
+    since: string;
+}
+
+/**
+ * "צוות השדכנים": כל המשתמשים שאושרו כשדכנים, משני המסלולים (בקשת שדכן מערכת /
+ * בקשת גישה לשער הלוח בתפקיד שדכן), בלי כפילויות לפי משתמש.
+ */
+export async function listApprovedMatchmakers(): Promise<TeamMember[]> {
+    const [reqs, access] = await Promise.all([
+        getItemsByCategory(MATCHMAKER_REQUEST_CATEGORY).catch(() => []),
+        getItemsByCategory('singles_access').catch(() => []),
+    ]);
+    const byUser = new Map<string, TeamMember>();
+    const add = (it: (typeof reqs)[number]) => {
+        let ef: Record<string, unknown> = {};
+        try { ef = it.extra_fields ? JSON.parse(it.extra_fields) : {}; } catch { ef = {}; }
+        const snap = (ef.requester_snapshot ?? {}) as Record<string, unknown>;
+        const key = it.user_id || it.id;
+        if (byUser.has(key)) return;
+        byUser.set(key, {
+            userId: it.user_id ?? '',
+            nickname: String(snap.nickname ?? it.contact ?? ''),
+            gender: String(snap.gender ?? ''),
+            city: String(snap.city ?? ''),
+            neighborhood: String(snap.neighborhood ?? ''),
+            phone: it.phone ?? '',
+            since: String(ef.decided_at ?? ef.requested_at ?? it.created_at ?? ''),
+        });
+    };
+    reqs.filter((r) => reqStatus(r.extra_fields) === 'approved').forEach(add);
+    access.filter(isApprovedMatchmakerAccess).forEach(add);
+    return [...byUser.values()].sort((a, b) => a.since.localeCompare(b.since));
+}
+
 export type MatchmakerDecisionResult =
     | { ok: true; nickname: string; alreadyDecided: boolean }
     | { ok: false; notFound: true };

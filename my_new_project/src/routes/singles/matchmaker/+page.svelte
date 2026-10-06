@@ -108,6 +108,16 @@
             <span class="text-pink-200 text-lg" aria-hidden="true">←</span>
         </a>
 
+        <!-- צוות השדכנים -->
+        <a href="/singles/matchmaker/team"
+            class="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-purple-400/40 bg-purple-500/10 hover:bg-purple-500/20 px-4 py-3 transition-colors">
+            <span>
+                <span class="block font-black text-purple-100">👥 צוות השדכנים</span>
+                <span class="block text-xs text-purple-200/80">כל השדכנים המאושרים במערכת</span>
+            </span>
+            <span class="text-purple-200 text-lg" aria-hidden="true">←</span>
+        </a>
+
         <!-- כותרת -->
         <div class="text-center mb-6">
             <div class="text-4xl mb-2">💘</div>
