@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getNeighborhoods, createNeighborhoodRequest, createItem, getUserById, getAllSuperAdmins, getMessagesByUserId } from '$lib/server/db';
 import { isKnownNeighborhood } from '$lib/neighborhoodsData';
+import { hasPreciseCoords } from '$lib/neighborhoodCoords';
 import type { RequestHandler } from './$types';
 
 // נרמול שם מיקום לזיהוי כפילויות - זהה ל-normalizeLoc שבשאר המערכת (locationDecision).
@@ -49,6 +50,12 @@ export const POST: RequestHandler = async (event) => {
     // שכונה מובנית של העיר (למשל "מרכז" ברמלה) - כבר קיימת בבוררים ובמפה, אין מה לאשר.
     // מונע בקשות-סרק לאדמין על שמות שהוקלדו ידנית במסלול "לא מצאתי את השכונה שלי".
     if (isKnownNeighborhood(city, name)) {
+        return json({ success: true, alreadyApproved: true });
+    }
+    // "מרכז" הוא שם ממלא-מקום: כפתור "המפה לא מדויקת?" בפרופיל שולח אותו כשלא
+    // נבחרה שכונה. בעיר שכבר ממוקמת במפה (חיפה) זו לא שכונה חדשה - הבקשה הייתה
+    // יוצרת שכונה בשם "מרכז" שלא קיימת בעיר. ביישוב בלי מיקום היא עדיין נשלחת.
+    if (normalizeLoc(name) === 'מרכז' && hasPreciseCoords('', city)) {
         return json({ success: true, alreadyApproved: true });
     }
 
