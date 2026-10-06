@@ -137,6 +137,8 @@
                                         <span class="text-pink-300 font-black text-sm min-w-[1.5rem]">{i + 1}</span>
                                         <p class="flex-1 min-w-0 text-sm font-bold text-gray-100">{fmt(q.text, g)}</p>
                                         <span class="shrink-0 text-[10px] text-gray-400 border border-white/15 rounded-full px-2 py-0.5">{KIND_NAMES[q.kind]}</span>
+                                        <button type="button" onclick={() => openForm(key, 'edit')} title="הצע עריכה" aria-label="הצע עריכה"
+                                            class="shrink-0 text-base leading-none rounded-lg border border-pink-400/40 bg-pink-500/10 hover:bg-pink-500/25 px-2 py-1">✏️</button>
                                     </div>
 
                                     {#if q.kind === 'rate'}
@@ -163,11 +165,6 @@
                                         </p>
                                     {/each}
 
-                                    <button type="button" onclick={() => openForm(key, 'edit')}
-                                        class="mt-2 text-xs font-bold text-pink-200 hover:text-white border border-pink-400/40 rounded-lg px-3 py-1.5 bg-pink-500/10">
-                                        💬 הצע שינוי
-                                    </button>
-
                                     {#if openKey === key}
                                         {@render form(g, q.id, s.id)}
                                     {/if}
@@ -176,8 +173,9 @@
                         </ol>
 
                         <button type="button" onclick={() => openForm(`${g}:add:${s.id}`, 'add')}
-                            class="mt-3 w-full text-sm font-bold text-pink-200 border border-dashed border-pink-400/40 rounded-xl py-2 hover:bg-pink-500/10">
-                            ➕ הצע שאלה חדשה לפרק הזה
+                            title="הצע שאלה חדשה לפרק הזה" aria-label="הצע שאלה חדשה לפרק הזה"
+                            class="mt-3 w-full text-lg leading-none border border-dashed border-pink-400/40 rounded-xl py-2 hover:bg-pink-500/10">
+                            ➕
                         </button>
                         {#if openKey === `${g}:add:${s.id}`}
                             <div class="mt-2">{@render form(g, '', s.id)}</div>
