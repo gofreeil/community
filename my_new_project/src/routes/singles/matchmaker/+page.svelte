@@ -5,10 +5,36 @@
     import MatchScoreBadge from '$lib/components/MatchScoreBadge.svelte';
     import MatchBreakdown from '$lib/components/MatchBreakdown.svelte';
     import MatchmakerTeam from '$lib/components/MatchmakerTeam.svelte';
+    import MatchFeedbackRow from '$lib/components/MatchFeedback.svelte';
+    import { feedbackPairKey, type MatchFeedback } from '$lib/matchFeedbackShared';
 
     let { data }: { data: PageData } = $props();
 
     type Pair = PageData['pairs'][number];
+
+    // הדירוגים שהשדכן/ית כבר נתנ/ה לציוני ההתאמה (נטענים בנפרד מהרשימה, כדי לא להאט אותה).
+    // שורות הדירוג מוצגות רק אחרי הטעינה, כדי שכל שורה תיווצר כבר עם הדירוג הקודם שלה.
+    let myFeedback = $state<Record<string, MatchFeedback>>({});
+    let feedbackLoaded = $state(false);
+    const ratedCount = $derived(Object.keys(myFeedback).length);
+    const fbKey = (p: Pair) => feedbackPairKey(p.a.id, p.b.id);
+
+    $effect(() => {
+        fetch('/api/match-feedback')
+            .then((r) => r.json())
+            .then((out) => {
+                if (!out?.success) return;
+                myFeedback = Object.fromEntries((out.feedback as MatchFeedback[]).map((f) => [f.pair, f]));
+            })
+            .catch(() => { /* הדירוג עדיין עובד - רק לא מוצג מה שדורג בעבר */ })
+            .finally(() => { feedbackLoaded = true; });
+    });
+
+    function onFeedback(p: Pair, fb: MatchFeedback | null) {
+        const next = { ...myFeedback };
+        if (fb) next[fbKey(p)] = fb; else delete next[fbKey(p)];
+        myFeedback = next;
+    }
 
     // מצב ההמלצה לכל זוג: idle → sending → done / error
     let sent = $state<Record<string, 'sending' | 'done' | 'error'>>({});
@@ -122,6 +148,10 @@
             </p>
             <p class="text-gray-500 text-xs mt-2">
                 {data.maleCount} גברים · {data.femaleCount} נשים · {data.totalPairs} התאמות אפשריות · {data.quizCount} כרטיסים עם שאלון
+            </p>
+            <p class="text-pink-200/90 text-xs mt-2">
+                🧠 עזרו למערכת ללמוד מה נחשב התאמה: דרגו כל זוג "מתאים / אולי / לא מתאים" בכרטיס שלו.
+                {#if ratedCount > 0}<span class="font-bold text-pink-100">דירגת עד כה {ratedCount} זוגות - תודה!</span>{/if}
             </p>
         </div>
 
@@ -256,6 +286,11 @@
                             </summary>
                             <div class="px-3 pb-3 pt-1"><MatchBreakdown match={p.match} audience="matchmaker" /></div>
                         </details>
+
+                        <!-- פידבק על הציון: מלמד את המערכת מה נחשב התאמה -->
+                        {#if feedbackLoaded}
+                            <MatchFeedbackRow aId={p.a.id} bId={p.b.id} initial={myFeedback[fbKey(p)] ?? null} onchange={(fb) => onFeedback(p, fb)} />
+                        {/if}
 
                         <!-- פעולת ההמלצה -->
                         <div class="px-3 py-2.5 border-t border-white/10 bg-white/[0.02]">
