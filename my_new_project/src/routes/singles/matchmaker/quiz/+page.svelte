@@ -81,10 +81,9 @@
 
 <div class="max-w-3xl mx-auto px-4 py-5 md:py-8" dir="rtl">
     <a href="/singles/matchmaker" class="inline-flex items-center gap-1 text-gray-400 hover:text-white text-sm">→ חזרה לכלי השדכן</a>
-    <h1 class="text-2xl md:text-3xl font-black text-white mt-2 mb-1">שאלון ההתאמה - עיון והצעות</h1>
+    <h1 class="text-2xl md:text-3xl font-black text-white mt-2 mb-1">שאלון היכרות עמוק עבור מזהה ההתאמות</h1>
     <p class="text-gray-400 text-sm mb-4">
-        כאן כל השאלות שהמשתמשים עונים עליהן ברמה 3 של הכרטיס, בנוסח גברים ובנוסח נשים. אפשר להציע עריכת ניסוח, הסרה, הערה או שאלה חדשה.
-        כל הצעה מגיעה למנהל, והוא מחליט.
+        ע"י שאלון זה התוכנה מסוגלת למצוא התאמות בין בני זוג ולדרג אותם מ-1 עד 100 כמה הם עשויים להתאים.
     </p>
 
     <div class="sticky top-0 z-10 -mx-4 px-4 py-2 bg-[#0f172a]/95 backdrop-blur flex gap-2 border-b border-white/10" role="tablist">
