@@ -3,6 +3,8 @@
     import type { PageData } from './$types';
     import { religiosityLabel } from '$lib/singlesMock';
     import type { Religiosity, Gender } from '$lib/singlesMock';
+    import MatchScoreBadge from '$lib/components/MatchScoreBadge.svelte';
+    import MatchBreakdown from '$lib/components/MatchBreakdown.svelte';
 
     let { data }: { data: PageData } = $props();
 
@@ -121,6 +123,16 @@
                 <p class="text-gray-400 text-sm mt-1">הצצו לפרטים הראשונים והחליטו אם להמשיך בהליכים.</p>
             </div>
 
+            {#if data.match}
+                <div class="mb-4 rounded-2xl border border-pink-400/30 bg-pink-500/10 p-4 flex items-start gap-4">
+                    <MatchScoreBadge score={data.match.score} partial={data.match.partial} size="lg" />
+                    <div class="min-w-0 flex-1">
+                        <p class="text-pink-100 font-black text-sm mb-1">ציון ההתאמה שלכם</p>
+                        <MatchBreakdown match={data.match} audience="single" />
+                    </div>
+                </div>
+            {/if}
+
             {#if data.otherCard}
                 {@render cardView(data.otherCard)}
             {:else}
@@ -179,6 +191,16 @@
                     סטטוס: <span class="font-bold text-white">{stage === 'mutual' ? '💞 עניין הדדי' : stage === 'closed' ? 'נסגר' : 'ממתין לתשובות'}</span>
                 </p>
             </div>
+
+            {#if data.match}
+                <div class="mb-4 rounded-2xl border border-fuchsia-400/30 bg-fuchsia-500/10 p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <MatchScoreBadge score={data.match.score} partial={data.match.partial} size="lg" />
+                        <p class="text-fuchsia-100 font-black text-sm">ציון ההתאמה של המערכת</p>
+                    </div>
+                    <MatchBreakdown match={data.match} audience="matchmaker" />
+                </div>
+            {/if}
 
             <div class="space-y-4">
                 {#each [{ c: data.aCard, r: data.aResponse, ph: data.aPhone }, { c: data.bCard, r: data.bResponse, ph: data.bPhone }] as sideItem}

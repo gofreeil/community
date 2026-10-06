@@ -5,6 +5,7 @@ import { withSinglesImageUrls } from '$lib/server/singlesImages';
 import { withCharterAutoDetectOne, ownerEmail } from '$lib/server/charterSignatures';
 import { parseMatch, sideOf, type MatchData } from '$lib/server/singlesMatch';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
+import { candidateFromItem, scoreMatch, publicView, type MatchResult } from '$lib/singlesMatching';
 import type { PageServerLoad } from './$types';
 
 // כרטיס "פרטים ראשונים" שמוצג לצד השני — בלי טלפון ובלי פרטי השדכן.
@@ -35,6 +36,12 @@ async function limitedCard(item: Awaited<ReturnType<typeof getDbItemById>>) {
         avatar: p.avatar,
         // ⚠️ במכוון: אין phone / matchmaker / contact — הקשר נעשה דרך השדכן בלבד.
     };
+}
+
+/** ציון ההתאמה בין שני הכרטיסים (null אם אחד מהם חסר/בלי מין) */
+function matchBetween(a: Awaited<ReturnType<typeof getDbItemById>>, b: Awaited<ReturnType<typeof getDbItemById>>): MatchResult | null {
+    const ca = a && candidateFromItem(a), cb = b && candidateFromItem(b);
+    return ca && cb ? scoreMatch(ca, cb) : null;
 }
 
 export const load: PageServerLoad = async (event) => {
@@ -70,7 +77,11 @@ export const load: PageServerLoad = async (event) => {
     if (side) {
         const otherSide = side === 'a' ? 'b' : 'a';
         const otherCardId = m[otherSide].card_id;
-        const otherCard = await limitedCard(await getDbItemById(otherCardId));
+        const [ownItem, otherItem] = await Promise.all([getDbItemById(m[side].card_id), getDbItemById(otherCardId)]);
+        const otherCard = await limitedCard(otherItem);
+        // לפנוי/ה: רק הציון וניסוחים כלליים. הפירוט (חוזקות/חיכוכים) נשען על תשובות פרטיות של הצד השני.
+        const full = matchBetween(ownItem, otherItem);
+        const match = full ? publicView(full) : null;
         return {
             role: 'single' as const,
             matchId: item.id,
@@ -79,6 +90,7 @@ export const load: PageServerLoad = async (event) => {
             otherResponse: m[otherSide].response,
             matchmakerName: m.matchmaker_name,
             otherCard,
+            match,
         };
     }
 
@@ -99,5 +111,6 @@ export const load: PageServerLoad = async (event) => {
         bCard,
         bResponse: m.b.response,
         bPhone: cardB?.phone || '',
+        match: matchBetween(cardA, cardB),
     };
 };

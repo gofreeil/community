@@ -7,12 +7,16 @@
         TRAITS, quizFor, fmt, toG, parseAnswers, serializeQuiz, computeProfile, sectionProgress, totalProgress,
         topTraits, describeGap, type Answers, type G, type Question,
     } from '$lib/singlesQuestionnaire';
+    import { buildProfileSummary } from '$lib/singlesProfileSummary';
+    import QuizProfileCard from './QuizProfileCard.svelte';
 
     let { value = $bindable(''), gender = '' }: { value?: string; gender?: string } = $props();
 
     const g = $derived(toG(gender));
     let answers = $state<Answers>(untrack(() => parseAnswers(value)));
     let step = $state(0);
+    // השלב האחרון, אחרי כל הפרקים: הפרופיל המסכם. נפרד מ-step כי מספר הפרקים משתנה עם התשובות
+    let onProfile = $state(false);
 
     const sections = $derived(g ? quizFor(g, answers) : []);
     const section = $derived(sections[Math.min(step, Math.max(0, sections.length - 1))]);
@@ -22,6 +26,7 @@
     const seeksTop = $derived(topTraits(profile.seeks, 5));
     const seeksGap = $derived(profile.gaps.find((x) => x.kind === 'seeks'));
     const partnerG = $derived<G>(g === 'm' ? 'f' : 'm');
+    const summary = $derived(g ? buildProfileSummary(g, profile) : null);
 
     function commit() {
         value = serializeQuiz(answers, g);
@@ -45,7 +50,8 @@
     }
 
     function go(n: number) {
-        step = Math.max(0, Math.min(sections.length - 1, n));
+        onProfile = n >= sections.length;
+        if (!onProfile) step = Math.max(0, n);
         if (typeof window !== 'undefined') document.getElementById('quiz-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -81,7 +87,34 @@
                     {s.icon} {fmt(s.title, g)}{#if p.done === p.total} ✓{/if}
                 </button>
             {/each}
+            <button type="button" role="tab" aria-selected={onProfile} onclick={() => go(sections.length)}
+                class="shrink-0 rounded-full px-3 py-1.5 text-xs font-bold border transition-all
+                    {onProfile ? 'bg-fuchsia-500 border-fuchsia-300 text-white' : 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10'}">
+                📋 הפרופיל שלי
+            </button>
         </div>
+
+        {#if onProfile && summary}
+            <div class="rounded-xl border border-fuchsia-400/25 bg-fuchsia-950/20 p-3 md:p-4">
+                <h3 class="text-base md:text-lg font-black text-white">📋 הפרופיל שלי</h3>
+                <p class="text-fuchsia-200/80 text-xs md:text-sm mb-3">
+                    כל התשובות שלכם בתמונה אחת. המערכת משווה את הפרופיל הזה לשאר הפרופילים, נותנת לכל התאמה ציון מ-1 עד 100,
+                    ומציעה לשדכנים את ההתאמות הטובות ביותר. הפרופיל נשמר עם הכרטיס ונראה רק לכם, למנוע ההתאמה ולשדכנים המאושרים.
+                </p>
+                {#if summary.ready}
+                    <QuizProfileCard {summary} audience="self" />
+                {:else}
+                    <div class="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-center">
+                        <p class="text-amber-200 font-bold text-sm">עוד אין מספיק מידע כדי לבנות פרופיל ולחפש התאמה.</p>
+                        <p class="text-amber-100/80 text-xs mt-1">ענו על עוד כמה שאלות (בעיקר דירוגים ו"מה מפריע / מה מושך") והפרופיל יופיע כאן.</p>
+                    </div>
+                {/if}
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick={() => go(sections.length - 1)}
+                        class="flex-1 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-gray-200 font-bold py-2.5 text-sm">→ חזרה לשאלון</button>
+                </div>
+            </div>
+        {:else}
 
         <div class="rounded-xl border border-fuchsia-400/25 bg-fuchsia-950/20 p-3 md:p-4">
             <h3 class="text-base md:text-lg font-black text-white">{section.icon} {fmt(section.title, g)}</h3>
@@ -159,6 +192,9 @@
                 {#if step < sections.length - 1}
                     <button type="button" onclick={() => go(step + 1)}
                         class="flex-1 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black py-2.5 text-sm">הבא ←</button>
+                {:else}
+                    <button type="button" onclick={() => go(sections.length)}
+                        class="flex-1 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black py-2.5 text-sm">סיום - הפרופיל שלי ←</button>
                 {/if}
             </div>
         </div>
@@ -197,6 +233,7 @@
                     <p class="text-[11px] text-fuchsia-100/90 border-t border-white/10 pt-2">💡 נקודה למחשבה: {describeGap(seeksGap, g)}</p>
                 {/if}
             </div>
+        {/if}
         {/if}
     {/if}
 </div>

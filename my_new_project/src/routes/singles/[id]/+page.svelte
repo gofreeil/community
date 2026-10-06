@@ -2,6 +2,7 @@
     import type { PageData } from './$types';
     import { religiosityLabel, statusLabel } from '$lib/singlesMock';
     import MatchmakerNotes from '$lib/components/MatchmakerNotes.svelte';
+    import MatchmakerQuizPanel from '$lib/components/MatchmakerQuizPanel.svelte';
     import { onMount } from 'svelte';
     let { data }: { data: PageData } = $props();
 
@@ -352,6 +353,16 @@
 
                 <!-- מידע לשדכנים בלבד: השרת מחזיר את התשובות רק לשדכן/ית מאושר/ת -->
                 <MatchmakerNotes answers={s.matchmakerAnswers ?? []} />
+
+                <!-- התאמה חכמה (שאלון + חיפוש התאמה עם ציון): גם כן רק לשדכן מאושר -->
+                {#if data.isMatchmaker && data.dbItem}
+                    <MatchmakerQuizPanel
+                        subjectId={s.id}
+                        subjectGender={s.gender}
+                        profile={data.quizProfile}
+                        matches={data.topMatches}
+                    />
+                {/if}
 
                 <!-- פרטי קשר - רק דרך השדכן/חבר -->
                 <section class="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/10 p-5">

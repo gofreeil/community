@@ -2,6 +2,8 @@
     import type { PageData } from './$types';
     import { religiosityLabel } from '$lib/singlesMock';
     import type { Gender, Religiosity } from '$lib/singlesMock';
+    import MatchScoreBadge from '$lib/components/MatchScoreBadge.svelte';
+    import MatchBreakdown from '$lib/components/MatchBreakdown.svelte';
 
     let { data }: { data: PageData } = $props();
 
@@ -111,11 +113,11 @@
             <div class="text-4xl mb-2">💘</div>
             <h1 class="text-2xl md:text-3xl font-black text-white mb-1">כלים לשדכן — המלצות התאמה</h1>
             <p class="text-gray-400 text-sm">
-                המערכת מציעה זוגות לפי <span class="text-rose-300 font-bold">גילאים דומים</span> (עד {data.ageThreshold} שנות הפרש).
-                בהמשך יתווספו קריטריונים נוספים.
+                המערכת מציעה זוגות בטווח <span class="text-rose-300 font-bold">גילאים דומים</span> (עד {data.ageThreshold} שנות הפרש),
+                ומדרגת כל זוג בציון התאמה מ-1 עד 100: ציפיות הדדיות, אופי, ערכים וסגנון תקשורת משאלון ההתאמה, יחד עם גיל, מגזר ועיר.
             </p>
             <p class="text-gray-500 text-xs mt-2">
-                {data.maleCount} גברים · {data.femaleCount} נשים · {data.totalPairs} התאמות אפשריות
+                {data.maleCount} גברים · {data.femaleCount} נשים · {data.totalPairs} התאמות אפשריות · {data.quizCount} כרטיסים עם שאלון
             </p>
         </div>
 
@@ -219,7 +221,7 @@
 
                             <!-- מרכז: פער גיל + בונוסים -->
                             <div class="flex sm:flex-col items-center justify-center gap-1.5 px-3 py-2 bg-white/[0.03]">
-                                <span class="text-rose-300 text-lg leading-none">💞</span>
+                                <MatchScoreBadge score={p.match.score} partial={p.match.partial} />
                                 <span class="text-[11px] font-bold text-gray-300 whitespace-nowrap">פער {p.ageDiff} שנ׳</span>
                                 <div class="flex sm:flex-col gap-1">
                                     {#if p.sameCity}<span class="text-[10px] font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 rounded-full px-2 py-0.5">אותה עיר</span>{/if}
@@ -240,6 +242,16 @@
                                 </div>
                             </a>
                         </div>
+
+                        <!-- פירוט ציון ההתאמה -->
+                        <details class="border-t border-white/10">
+                            <summary class="cursor-pointer select-none px-3 py-2 text-xs flex items-center gap-2 text-gray-300 hover:bg-white/[0.03]">
+                                <span class="font-black text-white">{p.match.tierLabel}</span>
+                                {#if p.match.partial}<span class="text-amber-300">· ציון חלקי, חסר שאלון</span>{/if}
+                                <span class="ms-auto text-gray-500">פירוט ההתאמה ▾</span>
+                            </summary>
+                            <div class="px-3 pb-3 pt-1"><MatchBreakdown match={p.match} audience="matchmaker" /></div>
+                        </details>
 
                         <!-- פעולת ההמלצה -->
                         <div class="px-3 py-2.5 border-t border-white/10 bg-white/[0.02]">
@@ -263,7 +275,7 @@
                 {/each}
             </div>
             {#if data.totalPairs > data.pairs.length}
-                <p class="text-center text-gray-500 text-xs mt-4">מוצגות {data.pairs.length} מתוך {data.totalPairs} התאמות (הקרובות ביותר בגיל)</p>
+                <p class="text-center text-gray-500 text-xs mt-4">מוצגות {data.pairs.length} מתוך {data.totalPairs} התאמות (בציון הגבוה ביותר)</p>
             {/if}
         {/if}
     </div>

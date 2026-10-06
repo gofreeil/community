@@ -34,6 +34,34 @@ export const TRAITS: Record<TraitId, TraitDef> = {
     parents:     { label: 'קרבה למשפחת המוצא',        low: '{עצמאי|עצמאית} מההורים',                            high: '{קרוב|קרובה} מאוד להורים ו{מתייעץ|מתייעצת} איתם' },
 };
 
+/**
+ * מילה אחת לכל קוטב - לכותרת הפרופיל המסכם ולהסברי ההתאמה (נפרד מ-TRAITS: שם משפטים ארוכים).
+ * סימון מגדר כמו ב-TRAITS: {|ה} = סיומת נקבה. מי שמתאר גבר מקבל את הצורה הזכרית.
+ */
+export const TRAIT_WORDS: Record<TraitId, { low: string; high: string }> = {
+    ego:         { low: 'צנוע{|ה}',          high: 'בולט{|ת}' },
+    sensitivity: { low: '{עבה|עבת} עור',     high: 'רגיש{|ה}' },
+    warmth:      { low: 'מאופק{|ת}',         high: 'חם{|ה}' },
+    humor:       { low: 'רציני{|ת}',         high: 'מצחיק{|ה}' },
+    dominance:   { low: 'משתף{|ת} פעולה',    high: 'מוביל{|ה}' },
+    independence:{ low: 'שיתופי{|ת}',        high: 'עצמאי{|ת}' },
+    calm:        { low: 'סוער{|ת}',          high: 'רגוע{|ה}' },
+    ambition:    { low: 'מסתפק{|ת}',         high: 'שאפתן{|ית}' },
+    order:       { low: 'זורם{|ת}',          high: 'מסודר{|ת}' },
+    spontaneity: { low: 'אוהב{|ת} שגרה',     high: 'ספונטני{|ת}' },
+    sociability: { low: 'אינטימי{|ת}',       high: 'חברותי{|ת}' },
+    generosity:  { low: 'חסכוני{|ת}',        high: 'נדיב{|ה}' },
+    jealousy:    { low: '{סומך|סומכת}',         high: 'זקוק{|ה} לביטחון' },
+    flexibility: { low: 'נחוש{|ה}',          high: 'גמיש{|ה}' },
+    romance:     { low: 'מעשי{|ת}',          high: 'רומנטי{|ת}' },
+    family:      { low: 'ממוקד{|ת} קריירה',  high: 'משפחתי{|ת}' },
+    depth:       { low: 'קליל{|ה}',          high: 'עמוק{|ה}' },
+    directness:  { low: 'עדין{|ה}',          high: 'ישיר{|ה}' },
+    support:     { low: 'ממוקד{|ת} פתרון',   high: '{תומך|תומכת}' },
+    provider:    { low: 'רגוע{|ה} בכסף',     high: 'אחראי{|ת} כלכלית' },
+    parents:     { low: 'עצמאי{|ת} מההורים', high: 'קרוב{|ה} להורים' },
+};
+
 // ───────────── בנאים קצרים ─────────────
 
 const rateSelf = (trait: TraitId, text: string): RateQ => ({ id: `r_${trait}`, kind: 'rate', about: 'self', trait, text });

@@ -75,12 +75,18 @@ export function toG(v: unknown): G | null {
 
 const otherG = (g: G): G => (g === 'm' ? 'f' : 'm');
 
-/** מחיל מגדר על טקסט. self = מגדר הנושא של {..|..}; <..|..> תמיד הצד ההפוך. */
+const FINAL_TO_REGULAR: Record<string, string> = { 'ם': 'מ', 'ן': 'נ', 'ך': 'כ', 'ף': 'פ', 'ץ': 'צ' };
+
+/**
+ * מחיל מגדר על טקסט. self = מגדר הנושא של {..|..}; <..|..> תמיד הצד ההפוך.
+ * סיומת שמודבקת למילה שנגמרת באות סופית ({|ה} אחרי "חם") הופכת אותה לאות רגילה: חם -> חמה.
+ */
 export function fmt(text: string, self: G): string {
     const partner = otherG(self);
     return text
         .replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (_m, m: string, f: string) => (self === 'm' ? m : f))
-        .replace(/<([^<>|]*)\|([^<>|]*)>/g, (_m, m: string, f: string) => (partner === 'm' ? m : f));
+        .replace(/<([^<>|]*)\|([^<>|]*)>/g, (_m, m: string, f: string) => (partner === 'm' ? m : f))
+        .replace(/[םןךףץ](?=[א-ת])/g, (c) => FINAL_TO_REGULAR[c]);
 }
 
 // ───────────── חשיפת השאלון לפי מגדר ותשובות ─────────────
