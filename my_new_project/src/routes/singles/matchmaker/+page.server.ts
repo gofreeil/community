@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { getItemsByCategory, getUserById, getUserByEmail } from '$lib/server/db';
 import { dbItemToProfile } from '$lib/singlesMap';
-import { candidateFromItem, scoreMatch, type MatchResult, type MatchCandidate } from '$lib/singlesMatching';
+import { candidateFromItem, scoreMatch, isQuizBased, type MatchResult, type MatchCandidate } from '$lib/singlesMatching';
 import { withSinglesImageUrls } from '$lib/server/singlesImages';
 import { getMatchmakerStatus, AGE_MATCH_THRESHOLD } from '$lib/server/matchmaker';
 import type { PageServerLoad } from './$types';
@@ -77,14 +77,15 @@ export const load: PageServerLoad = async (event) => {
     const males = profiles.filter((p) => p.gender === 'male').map(toMini).filter((m): m is MiniCard => !!m);
     const females = profiles.filter((p) => p.gender === 'female').map(toMini).filter((m): m is MiniCard => !!m);
 
-    // המלצות לפי גילאים דומים (קריטריון ראשון; בהמשך יתווספו נוספים)
+    // המלצות: טווח גילאים סביר, ואז דירוג לפי ציון ההתאמה המלא מהשאלון
     const pairs: Pair[] = [];
     for (const a of males) {
         for (const b of females) {
             const ageDiff = Math.abs(a.age - b.age);
             if (ageDiff > AGE_MATCH_THRESHOLD) continue;
             const ca = cands.get(a.id), cb = cands.get(b.id);
-            if (!ca || !cb) continue;
+            // רק זוגות ששניהם מילאו שאלון: בלעדיו הציון נשען על גיל/מגזר/עיר בלבד
+            if (!ca || !cb || !isQuizBased(ca, cb)) continue;
             pairs.push({
                 a,
                 b,

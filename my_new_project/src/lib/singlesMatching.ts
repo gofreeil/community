@@ -616,6 +616,14 @@ export function publicView(r: MatchResult): MatchResult {
 export interface RankedMatch { candidate: MatchCandidate; result: MatchResult }
 
 /**
+ * המלצה נשענת על שאלון ההתאמה של שני הצדדים. זוג שלפחות אחד מהם לא מילא שאלון מקבל רק ציון
+ * "חלקי" (גיל/מגזר/עיר), ולכן לא מומלץ ולא מדורג.
+ */
+export function isQuizBased(a: MatchCandidate, b: MatchCandidate): boolean {
+    return !!(a.profile && b.profile);
+}
+
+/**
  * "מחפש התאמה" עבור `subject`: מדרג את כל המועמדים מהמין השני לפי ציון.
  * maxAgeGap = פער גיל מקסימלי (גם הקריטריון הקיים של כלי השדכן).
  */
@@ -623,6 +631,7 @@ export function rankMatches(subject: MatchCandidate, pool: MatchCandidate[], opt
     const out: RankedMatch[] = [];
     for (const c of pool) {
         if (c.id === subject.id || c.g === subject.g) continue;
+        if (!isQuizBased(subject, c)) continue;
         if (opts.maxAgeGap !== undefined) {
             if (subject.age === null || c.age === null || Math.abs(subject.age - c.age) > opts.maxAgeGap) continue;
         }
