@@ -393,11 +393,12 @@
 
         <!-- ── שדכן מערכת: בקשה / סטטוס (מוצג לגברים ולנשים כאחד) ── -->
         <!-- שדכן/ית מאושר/ת: כרטיס "כלים לשדכן" עבר לאזור האישי (/profile) -->
-        {#if mmStatus === 'pending'}
+        <!-- סופר-אדמין (מאושר אוטומטית) רואה את כרטיס הבקשה תמיד, כדי שיוכל לבדוק אותו -->
+        {#if mmStatus === 'pending' && !data.isSuperAdmin}
             <div class="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/30 px-4 py-3.5 text-center">
                 <p class="text-amber-200 text-sm font-bold">⏳ {$_('extras.s_mm_pending')}</p>
             </div>
-        {:else if mmStatus !== 'approved'}
+        {:else if mmStatus !== 'approved' || data.isSuperAdmin}
             <div class="mb-6 rounded-2xl bg-gradient-to-r from-rose-500/12 to-purple-500/8 border border-rose-500/30 px-4 py-4">
                 <div class="flex items-start gap-3">
                     <div class="text-2xl">💘</div>
