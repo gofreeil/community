@@ -13,6 +13,7 @@
 	import MobileAdPopup from "$lib/components/MobileAdPopup.svelte";
 	import ImageCropper from "$lib/components/ImageCropper.svelte";
 	import WelcomeScreen from "$lib/components/WelcomeScreen.svelte";
+	import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
 	import { signOut } from "@auth/sveltekit/client";
 	import { goto, beforeNavigate } from "$app/navigation";
 	import { page, navigating, updated } from "$app/state";
@@ -208,6 +209,7 @@
 		     approvedAds מגיע ל-RightAdBanner בלבד - אין פרסומות בטור השמאלי. -->
 		<RightAdBanner approvedAds={data.approvedAds ?? []} />
 		<main id="main-content" tabindex="-1" class="main-content">
+			<Breadcrumbs />
 			{@render children()}
 		</main>
 		<AdsSidebar />
