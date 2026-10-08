@@ -12,6 +12,7 @@ import {
     getAllSuperAdmins,
 } from '$lib/server/db';
 import { categoryConfig } from '$lib/categoryFields';
+import { getDagSharesByEmail } from '$lib/server/dagShares';
 
 // פרסום = נכס של המשתמש: מודעה/מקום אמיתי מקטגוריה מוגדרת (גמ"ח, מסירה, עסק,
 // פנוי/ה וכו'). כל השאר (הודעות, בקשות מיקום/רכז, קריאות שכנים, התראות) אינם
@@ -107,9 +108,10 @@ export const load: PageServerLoad = async (event) => {
     if (!user) throw error(404, 'המשתמש לא נמצא');
 
     // שתי השליפות במקביל - סדרתי מסתכן ב-timeout של הדף כולו
-    const [itemsRes, threadRes] = await Promise.allSettled([
+    const [itemsRes, threadRes, sharesRes] = await Promise.allSettled([
         getItemsByUserId(userId),
         loadThread(admin.id, user.id),
+        getDagSharesByEmail(user.email),
     ]);
 
     // פרסומים = הנכסים של המשתמש - רק קטגוריות פרסום אמיתיות מ-categoryConfig
@@ -133,6 +135,8 @@ export const load: PageServerLoad = async (event) => {
         adminId: admin.id,
         draft,
         totpEnabled: exactUser?.totp_enabled ?? false,
+        // מניות הפלטפורמה מ-DAG (null = אין חשבון מקושר / ה-API לא זמין)
+        dagShares: sharesRes.status === 'fulfilled' ? sharesRes.value : null,
     };
 };
 

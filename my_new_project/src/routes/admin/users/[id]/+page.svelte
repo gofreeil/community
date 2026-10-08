@@ -52,8 +52,8 @@
 		return 'צופה';
 	}
 
-	// מספר מניות פלטפורמה - ברירת מחדל 0 לכל משתמש עד להודעה חדשה
-	const shares = $derived(Number((u as any).shares ?? 0));
+	// מספר מניות פלטפורמה - מ-DAG (ה-NFT של הפלטפורמה); 0 למי שאין לו חשבון מקושר
+	const shares = $derived((data.dagShares?.shares ?? 0).toLocaleString('he-IL'));
 
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '';

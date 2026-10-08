@@ -2506,8 +2506,16 @@
 		} catch {}
 	}
 
-	// מספר מניות פלטפורמה - ברירת מחדל 0 לכל משתמש עד להודעה חדשה
-	let userShares = $derived(0);
+	// מספר מניות פלטפורמה - נשלף מ-DAG (ה-NFT של הפלטפורמה); 0 למי שאין לו חשבון מקושר
+	let userShares = $state(0);
+	$effect(() => {
+		fetch("/api/dag/shares")
+			.then((r) => (r.ok ? r.json() : null))
+			.then((j) => {
+				if (j && Number.isFinite(j.shares)) userShares = j.shares;
+			})
+			.catch(() => {});
+	});
 
 	// טיוטות במסירה - מודעות שהמשתמש התחיל אך טרם הוסיף תמונה
 	let giveawayDrafts = $derived(
@@ -3825,7 +3833,7 @@
 						class="text-sm text-amber-300 font-bold"
 						title={tFn("profile.shares_title")}
 					>
-						📈 {userShares} {tFn("profile.shares")}
+						📈 {userShares.toLocaleString("he-IL")} {tFn("profile.shares")}
 					</span>
 				</div>
 				<div
