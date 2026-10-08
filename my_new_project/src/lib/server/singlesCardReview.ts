@@ -54,20 +54,13 @@ async function notifyCardOwner(card: DbItem, decision: SinglesCardDecision): Pro
 export async function decideSinglesCard(
     cardId: string,
     decision: SinglesCardDecision,
-): Promise<{ ok: boolean; label: string; alreadyDecided?: boolean; status?: string }> {
+): Promise<{ ok: boolean; label: string; alreadyDecided?: boolean }> {
     const card = await getDbItemById(cardId);
     if (!card || card.category !== 'singles') return { ok: false, label: '' };
-    if (card.status !== 'pending') return { ok: false, label: card.label ?? '', alreadyDecided: true, status: card.status };
+    if (card.status !== 'pending') return { ok: false, label: card.label ?? '', alreadyDecided: true };
     await updateItem(cardId, { status: decision === 'approved' ? 'active' : 'rejected' });
     await notifyCardOwner(card, decision);
     return { ok: true, label: card.label ?? '' };
-}
-
-/** הודעה לכרטיס שכבר לא ממתין - לפי מה שקרה בפועל (אושר/נדחה), לא "הוכרע" המעורפל. */
-export function singlesCardDecidedText(status: string | undefined): string {
-    if (status === 'active') return 'הכרטיס כבר אושר';
-    if (status === 'rejected') return 'הכרטיס כבר נדחה';
-    return 'הכרטיס כבר טופל';
 }
 
 /** סימון עותק התראת "פנוי חדש" של מנהל כטופל - יורד מהתיבה בכל המכשירים. */

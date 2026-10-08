@@ -18,7 +18,7 @@ import { approveCoordinatorRequest, rejectCoordinatorRequest, findPendingCoordin
 import { decideSinglesAccess } from '$lib/server/singlesAccess';
 import { decideMatchmakerRequest, getMatchmakerStatus, MATCHMAKER_REQUEST_CATEGORY } from '$lib/server/matchmaker';
 import { markSinglesRequestMessageHandled } from '$lib/server/singlesRequestNotifications';
-import { decideSinglesCard, markSinglesReviewMessageHandled, singlesCardDecidedText } from '$lib/server/singlesCardReview';
+import { decideSinglesCard, markSinglesReviewMessageHandled } from '$lib/server/singlesCardReview';
 import { decideWish } from '$lib/server/wishDecision';
 
 // קטגוריות פרסום אמיתיות (גמ"ח, למסירה, חוגים וכו') - לא קריאות שכונה
@@ -1193,7 +1193,7 @@ async function handleSinglesCard(
         const res = await decideSinglesCard(cardId, decision);
         if (!res.ok) {
             if (res.alreadyDecided && msg) { try { await markSinglesReviewMessageHandled(msg, decision); } catch { /* ריק */ } }
-            return fail(404, { singlesCardError: res.alreadyDecided ? `${singlesCardDecidedText(res.status)} במקום אחר` : 'הכרטיס לא נמצא' });
+            return fail(404, { singlesCardError: res.alreadyDecided ? 'הכרטיס כבר טופל במקום אחר' : 'הכרטיס לא נמצא' });
         }
         if (msg) { try { await markSinglesReviewMessageHandled(msg, decision); } catch { /* ריק */ } }
         return { singlesCardSuccess: decision, singlesCardLabel: res.label };
@@ -1227,7 +1227,7 @@ async function handleWishRequest(
                     if (msg && !ef.handled) await updateItem(msg.id, { extra_fields: { ...ef, handled: true, read: true, handled_at: new Date().toISOString() } });
                 } catch { /* ריק */ }
             }
-            return fail(404, { wishError: res.alreadyDecided ? `המשאלה כבר ${res.status === 'active' ? 'אושרה' : res.status === 'rejected' ? 'נדחתה' : 'טופלה'} במקום אחר` : 'המשאלה לא נמצאה' });
+            return fail(404, { wishError: res.alreadyDecided ? 'המשאלה כבר טופלה במקום אחר' : 'המשאלה לא נמצאה' });
         }
         return { wishSuccess: decision };
     } catch (e) {

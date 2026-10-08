@@ -76,11 +76,11 @@ export async function finalizeWishDecision(wish: DbItem | undefined, decision: W
 export async function decideWish(
     wishId: string,
     decision: WishDecision,
-): Promise<{ ok: boolean; alreadyDecided?: boolean; status?: string; text: string }> {
+): Promise<{ ok: boolean; alreadyDecided?: boolean; text: string }> {
     const wish = await getDbItemByIdFresh(wishId);
     if (!wish) return { ok: false, text: '' };
     const text = wish.description || wish.label || '';
-    if (wish.status !== 'pending') return { ok: false, alreadyDecided: true, status: wish.status, text };
+    if (wish.status !== 'pending') return { ok: false, alreadyDecided: true, text };
     await updateItem(wishId, { status: decision === 'approve' ? 'active' : 'rejected' });
     await finalizeWishDecision(wish, decision);
     return { ok: true, text };
