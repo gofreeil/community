@@ -21,7 +21,6 @@
 	let neighborhood = $state(untrack(() => data.profile.neighborhood) ?? '');
 	let address = $state(untrack(() => data.profile.address) ?? '');
 	let phone = $state(untrack(() => data.profile.phone) ?? '');
-	let status = $state(untrack(() => (data.profile.status && data.profile.status !== 'active' ? data.profile.status : '')));
 	let avatarPreview = $state<string | null>(untrack(() => data.avatar));
 	let avatarDataUrl = $state<string | null>(null); // חדש שהועלה בשלב הזה
 
@@ -79,7 +78,6 @@
 		if (neighborhood.trim()) p.neighborhood = neighborhood.trim();
 		if (address.trim()) p.address = address.trim();
 		if (phone.trim()) p.phone = phone.trim();
-		if (status.trim()) p.status = status.trim();
 		if (avatarDataUrl) p.avatar_url = avatarDataUrl;
 		return p;
 	}
@@ -200,13 +198,6 @@
 	<div class="mb-3">
 		<label for="ob-phone" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.phone')}</label>
 		<input id="ob-phone" type="tel" inputmode="tel" bind:value={phone} placeholder={tFn('onboarding.phone_ph')}
-			class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" />
-	</div>
-
-	<!-- סטטוס -->
-	<div class="mb-2">
-		<label for="ob-status" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.status')}</label>
-		<input id="ob-status" type="text" bind:value={status} placeholder={tFn('onboarding.status_ph')}
 			class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" />
 	</div>
 
