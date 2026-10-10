@@ -158,11 +158,15 @@
 	<!-- עיר -->
 	<div class="mb-3">
 		<label for="ob-city" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.city')}</label>
-		<select id="ob-city" bind:value={city}
-			class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition">
-			<option value="">{tFn('onboarding.choose_city')}</option>
-			{#each cityList as c}<option value={c}>{c}</option>{/each}
-		</select>
+		<NeighborhoodSelect
+			id="ob-city"
+			bind:value={city}
+			neighborhoods={cityList}
+			placeholder={tFn('onboarding.choose_city')}
+			searchPlaceholder={tFn('onboarding.city_search_ph')}
+			noResultsLabel={tFn('onboarding.city_search_none')}
+			buttonClass="w-full text-right bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition flex items-center justify-between gap-2 cursor-pointer"
+		/>
 	</div>
 
 	<!-- רחוב -->

@@ -15,6 +15,9 @@
 		name?: string;
 		disabled?: boolean;
 		placeholder?: string;
+		/** טקסטי שדה החיפוש - לשימוש הרכיב לרשימה שאינה שכונות (למשל ערים) */
+		searchPlaceholder?: string;
+		noResultsLabel?: string;
 		/** עקיפת עיצוב כפתור הטריגר - כדי להתאים לשדות הטופס המארח */
 		buttonClass?: string;
 		/** פריט פעולה בתחתית הרשימה (למשל "השכונה שלי לא ברשימה") */
@@ -30,6 +33,8 @@
 		name,
 		disabled = false,
 		placeholder,
+		searchPlaceholder,
+		noResultsLabel,
 		buttonClass = '',
 		extraOptionLabel,
 		onpick,
@@ -128,7 +133,7 @@
 						type="text"
 						use:focusOnMount
 						bind:value={query}
-						placeholder={tFn('profile.nb_search_placeholder')}
+						placeholder={searchPlaceholder || tFn('profile.nb_search_placeholder')}
 						onkeydown={(e) => {
 							if (e.key === 'Enter') {
 								e.preventDefault();
@@ -144,7 +149,7 @@
 			{/if}
 			{#if searchable && query.trim() && filtered.length === 0}
 				<li role="presentation" class="px-4 py-2 text-sm text-white/40">
-					{tFn('profile.nb_search_no_results')}
+					{noResultsLabel || tFn('profile.nb_search_no_results')}
 				</li>
 			{/if}
 			{#each filtered as n}
