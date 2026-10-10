@@ -33,8 +33,15 @@
 		const list = effectiveNeighborhoods(city, []);
 		return list.includes('מרכז') ? list : ['מרכז', ...list];
 	});
+	// "העיר שלי לא ברשימה": עיר ושכונה בהקלדה חופשית (נשמרות בפרופיל + התראה לאדמין).
+	// נפתח גם כשבפרופיל כבר שמורה עיר שאינה ברשימה, כדי שלא תיעלם.
+	let customCity = $state(untrack(() => !!city && !cityList.includes(city)));
+	function enableCustomCity() { customCity = true; city = ''; neighborhood = ''; }
+	function backToList() { customCity = false; city = ''; neighborhood = ''; }
+
 	// החלפת עיר שאין בה את השכונה הנבחרת → איפוס
 	$effect(() => {
+		if (customCity) return;
 		if (city && neighborhood && !hoods.includes(neighborhood)) neighborhood = '';
 	});
 
@@ -94,6 +101,14 @@
 		}
 		const payload = buildPayload();
 		if (Object.keys(payload).length === 0) { goto('/onboarding/2'); return; }
+		// עיר שאינה ברשימה: התראה לאדמין, best-effort - לא חוסם את ההמשך
+		if (customCity && city.trim()) {
+			fetch('/api/city-request', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ city: city.trim(), neighborhood: neighborhood.trim() }),
+			}).catch(() => {});
+		}
 		saving = true;
 		errorMsg = '';
 		try {
@@ -158,15 +173,26 @@
 	<!-- עיר -->
 	<div class="mb-3">
 		<label for="ob-city" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.city')}</label>
-		<NeighborhoodSelect
-			id="ob-city"
-			bind:value={city}
-			neighborhoods={cityList}
-			placeholder={tFn('onboarding.choose_city')}
-			searchPlaceholder={tFn('onboarding.city_search_ph')}
-			noResultsLabel={tFn('onboarding.city_search_none')}
-			buttonClass="w-full text-right bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition flex items-center justify-between gap-2 cursor-pointer"
-		/>
+		{#if customCity}
+			<input id="ob-city" type="text" bind:value={city} maxlength="80" placeholder={tFn('onboarding.city_custom_ph')}
+				class="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" />
+			<p class="text-white/45 text-[11px] mt-1 leading-relaxed">
+				{tFn('onboarding.city_custom_hint')}
+				<button type="button" onclick={backToList} class="text-purple-300 underline cursor-pointer">{tFn('onboarding.city_back_to_list')}</button>
+			</p>
+		{:else}
+			<NeighborhoodSelect
+				id="ob-city"
+				bind:value={city}
+				neighborhoods={cityList}
+				placeholder={tFn('onboarding.choose_city')}
+				searchPlaceholder={tFn('onboarding.city_search_ph')}
+				noResultsLabel={tFn('onboarding.city_search_none')}
+				extraOptionLabel={tFn('onboarding.city_not_listed')}
+				onextra={enableCustomCity}
+				buttonClass="w-full text-right bg-[#1e293b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition flex items-center justify-between gap-2 cursor-pointer"
+			/>
+		{/if}
 	</div>
 
 	<!-- רחוב -->
@@ -179,6 +205,10 @@
 	<!-- שכונה -->
 	<div class="mb-3">
 		<label for="ob-hood" class="block text-sm font-medium text-gray-300 mb-1">{tFn('onboarding.neighborhood')}</label>
+		{#if customCity}
+			<input id="ob-hood" type="text" bind:value={neighborhood} maxlength="80" disabled={!city.trim()} placeholder={tFn('onboarding.nb_custom_ph')}
+				class="w-full bg-[#1e293b] border {required && !neighborhood.trim() ? 'border-yellow-500/50' : 'border-white/10'} rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition disabled:opacity-50" />
+		{:else}
 		<NeighborhoodSelect
 			id="ob-hood"
 			bind:value={neighborhood}
@@ -186,7 +216,8 @@
 			disabled={!city}
 			buttonClass="w-full text-right bg-[#1e293b] border {required && !neighborhood.trim() ? 'border-yellow-500/50' : 'border-white/10'} rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition disabled:opacity-50 flex items-center justify-between gap-2 cursor-pointer"
 		/>
-		{#if required}
+		{/if}
+		{#if required && !customCity}
 			<p class="text-white/45 text-[11px] mt-1 leading-relaxed">{tFn('onboarding.nb_not_listed_hint')}</p>
 		{/if}
 	</div>
