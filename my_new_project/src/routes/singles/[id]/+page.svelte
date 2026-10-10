@@ -3,8 +3,12 @@
     import { religiosityLabel, statusLabel } from '$lib/singlesMock';
     import MatchmakerNotes from '$lib/components/MatchmakerNotes.svelte';
     import MatchmakerQuizPanel from '$lib/components/MatchmakerQuizPanel.svelte';
+    import ImageLightbox from '$lib/components/ImageLightbox.svelte';
     import { onMount } from 'svelte';
     let { data }: { data: PageData } = $props();
+
+    // אינדקס התמונה הפתוחה במסך מלא (null = סגור)
+    let lightboxIndex = $state<number | null>(null);
 
     // הגעה מהטופס (?saved=1): פאנל "נשמר ומוכן לשיתוף" מעל הכרטיס - שיתוף,
     // מה קורה עכשיו (בדיקת צניעות, רק כשהכרטיס ממתין), לערוך שוב, לאזור האישי
@@ -345,6 +349,19 @@
 
             <!-- גוף -->
             <div class="p-6 md:p-8 space-y-6">
+                {#if (s.images?.length ?? 0) > 1}
+                    <!-- גלריית תמונות: לחיצה פותחת תמונה במסך מלא עם חצים -->
+                    <div class="flex gap-2 overflow-x-auto pb-1 snap-x" aria-label="גלריית תמונות">
+                        {#each s.images ?? [] as img, i}
+                            <button type="button" onclick={() => (lightboxIndex = i)} aria-label="הגדלת תמונה {i + 1}"
+                                class="flex-shrink-0 snap-start rounded-xl cursor-zoom-in focus-visible:outline-2 focus-visible:outline-white/70">
+                                <img src={img} alt="תמונה {i + 1} של {s.nickname}" loading="lazy"
+                                    class="h-32 w-28 rounded-xl object-cover ring-1 ring-white/15 hover:ring-white/40 transition" />
+                            </button>
+                        {/each}
+                    </div>
+                {/if}
+
                 {#if s.description}
                     <section>
                         <h2 class="{isMale ? 'text-cyan-300' : 'text-pink-300'} text-sm font-black mb-2 uppercase tracking-wider">קצת עליי</h2>
@@ -697,3 +714,5 @@
         </div>
     {/if}
 </div>
+
+<ImageLightbox images={s.images ?? []} bind:index={lightboxIndex} alt={s.nickname} />
