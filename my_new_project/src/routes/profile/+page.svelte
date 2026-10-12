@@ -3931,6 +3931,11 @@
 						title={tFn("profile.matchmakers_title")}
 					>
 						💞 {tFn("profile.matchmakers")}
+							{#if pendingMatchmakerCount > 0}
+								<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-black text-[11px] font-black shadow-lg animate-pulse">
+									{pendingMatchmakerCount}
+								</span>
+							{/if}
 					</a>
 			</div>
 		</div>
