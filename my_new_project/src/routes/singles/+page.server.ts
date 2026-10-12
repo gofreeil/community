@@ -3,7 +3,7 @@ import { getItemsByCategory, getUserById, getUserByEmail, getItemsByUserId } fro
 import { dbItemToProfile, stripMatchmakerOnly, stripMatchmakerItemFields } from '$lib/singlesMap';
 import { getSinglesAccessStatus } from '$lib/server/singlesAccess';
 import { getMatchmakerStatus } from '$lib/server/matchmaker';
-import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
+import { withSinglesImageUrls, withViewerImageUrls, stripSinglesItemImages, cardShareKey } from '$lib/server/singlesImages';
 import { withCharterAutoDetect, withCharterAutoDetectOne } from '$lib/server/charterSignatures';
 import type { PageServerLoad } from './$types';
 
@@ -94,8 +94,9 @@ export const load: PageServerLoad = async (event) => {
     try {
         const items = await getItemsByCategory('singles');
         // כל הכרטיסים הפעילים מוצגים - כולל כאלה שלא שילמו.
-        // כרטיסים שסומנו "רק לשדכנים שלנו" לא מופיעים בלוח הפומבי - אבל שדכן/ית
-        // מערכת מאושר/ת כן רואה אותם בלוח (הוא צריך את כל הכרטיסים כדי לשדך).
+        // כרטיסים דיסקרטיים ("רק לשדכנים שלנו") לא מופיעים בלוח הפומבי, וכרטיסים "בלוח עם
+        // פנים מטושטשות" מופיעים עם תמונה מטושטשת בלבד - אבל שדכן/ית מערכת מאושר/ת רואה
+        // את כולם במלואם (צריך את כל הכרטיסים כדי לשדך), ומקבל/ת את מפתח הקישור הישיר.
         // "מידע לשדכנים בלבד" מנוקה מנתוני הדף לכל מי שאינו שדכן מאושר.
         // התמונות יוצאות ככתובות לנתיב מוגן-קאש ולא כ-base64 בתוך נתוני הדף:
         // כך היה הדף שוקל ~4MB ולוקח ~18 שניות למשתמש מחובר (singlesImages.ts).
@@ -104,10 +105,13 @@ export const load: PageServerLoad = async (event) => {
             items
                 .map(dbItemToProfile)
                 .filter((p) => isMatchmaker || p.visibility !== 'matchmakers')
-                .map(withSinglesImageUrls)
-                .map((p) => (isMatchmaker ? p : stripMatchmakerOnly(p))),
+                .map((p) => withViewerImageUrls(p, !isMatchmaker && p.visibility === 'blurred'))
+                .map((p) => (isMatchmaker ? { ...p, shareKey: p.visibility !== 'public' ? cardShareKey(p.id) : undefined } : stripMatchmakerOnly(p))),
         );
+        // הרשומות הגולמיות - רק של הכרטיסים שמוצגים לצופה (לא דיסקרטיים למי שאינו שדכן)
+        const shown = new Set(profiles.map((p) => p.id));
         const safeItems = items
+            .filter((it) => shown.has(String(it.id)))
             .map(stripSinglesItemImages)
             .map((it) => (isMatchmaker ? it : stripMatchmakerItemFields(it)));
         return { ...base, gated: false, accessStatus: 'granted' as const, items: safeItems, profiles };

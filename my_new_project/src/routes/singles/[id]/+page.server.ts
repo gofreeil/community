@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { getDbItemById, getItemsByCategory } from '$lib/server/db';
 import { mockSingles } from '$lib/singlesMock';
 import { dbItemToProfile } from '$lib/singlesMap';
-import { withSinglesImageUrls, stripSinglesItemImages } from '$lib/server/singlesImages';
+import { withSinglesImageUrls, withViewerImageUrls, stripSinglesItemImages, cardShareKey, cardShareKeyMatches } from '$lib/server/singlesImages';
 import { withCharterAutoDetectOne, ownerEmail } from '$lib/server/charterSignatures';
 import { stripMatchmakerOnly, stripMatchmakerItemFields } from '$lib/singlesMap';
 import { getMatchmakerStatus, AGE_MATCH_THRESHOLD } from '$lib/server/matchmaker';
@@ -33,10 +33,6 @@ export const load: PageServerLoad = async (event) => {
         // תמונות ככתובות ולא base64 בנתוני הדף - ראה singlesImages.ts
         // isOwner: הכפתור "צור כרטיס פנוי משלך" מוצג לכל צופה חוץ מבעל הכרטיס
         const isOwner = !!viewerId && dbItem.user_id === viewerId;
-        const full = await withCharterAutoDetectOne(
-            withSinglesImageUrls(dbItemToProfile(dbItem)),
-            await ownerEmail(dbItem.user_id),
-        );
 
         // "מידע לשדכנים בלבד" יוצא מהשרת רק לשדכן/ית מערכת מאושר/ת (וסופר-אדמין).
         // לכל שאר הצופים - גם לבעלים - התשובות מנוקות מהפרופיל ומהרשומה הגולמית.
@@ -45,6 +41,19 @@ export const load: PageServerLoad = async (event) => {
             try { isMatchmaker = (await getMatchmakerStatus(viewerId, isSuperAdmin(session))) === 'approved'; }
             catch (e) { console.warn('[singles/[id]] matchmaker status failed:', e instanceof Error ? e.message : e); }
         }
+
+        // ── נראות (singlesMock.ts): גלוי — פתוח לכולם; מטושטש — פתוח, אבל התמונות מטושטשות;
+        //    דיסקרטי — 404. בעלים, סופר-אדמין, שדכן מאושר, ומי שהגיע בקישור ישיר (?k= שהבעלים
+        //    או שדכן שלחו) — רואים הכול. זהה לאתר הפנויים.
+        const profileRaw = dbItemToProfile(dbItem);
+        const viaShareKey = cardShareKeyMatches(dbItem.id, event.url.searchParams.get('k'));
+        const fullView = isOwner || isSuperAdmin(session) || isMatchmaker || viaShareKey;
+        if (profileRaw.visibility === 'matchmakers' && !fullView) throw error(404, 'הפרופיל לא נמצא');
+        const blurred = profileRaw.visibility === 'blurred' && !fullView;
+        const full = await withCharterAutoDetectOne(
+            withViewerImageUrls(profileRaw, blurred),
+            await ownerEmail(dbItem.user_id),
+        );
         const single = isMatchmaker || !full ? full : stripMatchmakerOnly(full);
         const item = stripSinglesItemImages(dbItem);
 
@@ -83,11 +92,13 @@ export const load: PageServerLoad = async (event) => {
             isMatchmaker,
             quizProfile,
             topMatches,
+            // מפתח הקישור הישיר — לשיתוף כרטיס שאינו גלוי (רק למי שכבר רשאי לראות אותו במלואו)
+            shareKey: fullView && profileRaw.visibility !== 'public' ? cardShareKey(dbItem.id) : '',
         };
     }
 
     const single = mockSingles.find((s) => s.id === id);
     if (!single) throw error(404, 'הפרופיל לא נמצא');
 
-    return { single, dbItem: null, isBot, origin, isLoggedIn, isOwner: false, isMatchmaker: false, quizProfile: null, topMatches: [] };
+    return { single, dbItem: null, isBot, origin, isLoggedIn, isOwner: false, isMatchmaker: false, quizProfile: null, topMatches: [], shareKey: '' };
 };

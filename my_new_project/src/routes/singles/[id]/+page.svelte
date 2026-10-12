@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { PageData } from './$types';
-    import { religiosityLabel, statusLabel } from '$lib/singlesMock';
+    import { religiosityLabel, statusLabel, VISIBILITY_OPTIONS } from '$lib/singlesMock';
     import MatchmakerNotes from '$lib/components/MatchmakerNotes.svelte';
     import MatchmakerQuizPanel from '$lib/components/MatchmakerQuizPanel.svelte';
     import ImageLightbox from '$lib/components/ImageLightbox.svelte';
@@ -65,7 +65,7 @@
     // צפייה חופשית לכולם; אינטראקציה מחייבת התחברות - מפנים להרשמה עם חזרה לכרטיס
     function openContact(kind: 'request' | 'exchange' | 'message') {
         if (!data.isLoggedIn) {
-            window.location.href = '/login?redirect=' + encodeURIComponent(`/singles/${s.id}`);
+            window.location.href = '/login?redirect=' + encodeURIComponent(`/singles/${s.id}${data.shareKey ? `?k=${data.shareKey}` : ''}`);
             return;
         }
         selectedContact = kind;
@@ -158,7 +158,8 @@
 
     function buildShareText(): { title: string; text: string; url: string } {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kehila-bashchuna.co.il';
-        const url = `${origin}/singles/${s.id}`;
+        // כרטיס דיסקרטי / מטושטש: הקישור הישיר עם המפתח, שפותח אותו במלואו
+        const url = `${origin}/singles/${s.id}${data.shareKey ? `?k=${data.shareKey}` : ''}`;
         const meta = [s.age ? `🎂 ${s.age}` : '', s.city ? `📍 ${s.city}` : ''].filter(Boolean).join(' · ');
         const heading = s.gender === 'female'
             ? `💑 הכירו את ${s.nickname} - פנויה מלוח קהילה בשכונה`
@@ -213,6 +214,7 @@
     // כל תגי ה-SEO נגזרים מ-s/origin, ולכן גם הם $derived - אחרת הם היו
     // נתקעים על הכרטיס הראשון שנטען
     const canonicalUrl = $derived(`${origin}/singles/${s.id}`);
+    const visOpt = $derived(VISIBILITY_OPTIONS.find((o) => o.id === (s.visibility ?? 'public'))!);
     const ogTitle = $derived(`${s.nickname} · ${[s.age, s.city].filter(Boolean).join(', ')} | ${isMale ? 'פנוי' : 'פנויה'} מקהילה בשכונה`);
     const ogDescBits = $derived([
         s.description,
@@ -232,7 +234,7 @@
     <meta property="og:site_name" content="קהילה בשכונה" />
     <meta property="og:title" content={ogTitle} />
     <meta property="og:description" content={ogDescription} />
-    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:url" content={data.shareKey ? `${canonicalUrl}?k=${data.shareKey}` : canonicalUrl} />
     <meta property="og:locale" content="he_IL" />
     {#if ogImg}
         <meta property="og:image" content={ogImg} />
@@ -255,6 +257,16 @@
                 → חזרה ללוח
             </a>
         </div>
+
+        {#if data.isOwner && s.visibility && s.visibility !== 'public'}
+            <div class="mb-4 rounded-2xl border border-purple-400/40 bg-purple-500/10 px-4 py-3 text-center">
+                <p class="text-purple-200 font-bold text-sm">{visOpt.icon} {visOpt.title}</p>
+                <p class="text-purple-300/70 text-xs mt-0.5">{visOpt.desc} כפתורי השיתוף כאן שולחים את הקישור הישיר. <a class="underline" href="/add/singles?edit={s.id}">שינוי</a></p>
+            </div>
+        {/if}
+        {#if s.photoBlurred}
+            <p class="mb-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs text-gray-300">🌫️ התמונה מטושטשת לבקשת בעל/ת הכרטיס. בקישור ישיר ממנו/ה או משדכן/ית — היא גלויה.</p>
+        {/if}
 
         {#if savedPanel}
             <div class="mb-4 rounded-2xl border-2 border-green-500/40 bg-green-900/20 p-4 md:p-5 text-center relative">

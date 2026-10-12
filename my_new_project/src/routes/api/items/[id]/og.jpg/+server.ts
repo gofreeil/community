@@ -5,6 +5,10 @@ import { getDemoItemById } from '$lib/demoUserItems';
 import { getItemById as getStaticItemById } from '$lib/itemsData';
 import { categoryConfig } from '$lib/categoryFields';
 import { satoriRtl, loadLogoBase64 } from '$lib/server/ogCard';
+import { visibilityFromValue } from '$lib/singlesMock';
+import { decodeDataImage } from '$lib/server/inlineImage';
+import { blurJpeg } from '$lib/server/blurImage';
+import { cardShareKeyMatches } from '$lib/server/singlesImages';
 
 /**
  * GET /api/items/[id]/og.jpg
@@ -26,6 +30,30 @@ export const GET: RequestHandler = async (event) => {
     const extraFields: Record<string, unknown> = (() => {
         try { return JSON.parse(dbItem?.extra_fields ?? '{}'); } catch { return {}; }
     })();
+
+    // כרטיס פנויים: התמונה האמיתית רק לכרטיס גלוי. מטושטש — הגרסה המטושטשת;
+    // דיסקרטי — בלי תמונה (הכרטיס הממותג). הנתיב פתוח לכל מי שמחזיק מזהה.
+    // עם ?k= של הקישור הישיר (קדימון של קישור שהבעלים או שדכן שלחו) — התמונה כרגיל.
+    if (dbItem?.category === 'singles' && !cardShareKeyMatches(dbItem.id, event.url.searchParams.get('k'))) {
+        const vis = visibilityFromValue(extraFields.visibility);
+        const first = Array.isArray(extraFields.images) && typeof extraFields.images[0] === 'string' ? extraFields.images[0] : '';
+        if (vis === 'matchmakers') {
+            delete extraFields.avatar; delete extraFields.images; delete extraFields.image;
+        } else if (vis === 'blurred') {
+            delete extraFields.avatar; delete extraFields.images; delete extraFields.image;
+            const img = decodeDataImage(first);
+            const blurred = img && /jpe?g/i.test(img.mime) ? blurJpeg(img.bytes) : null;
+            if (blurred) {
+                return new Response(blurred, {
+                    headers: {
+                        'Content-Type': 'image/jpeg',
+                        'Content-Length': String(blurred.byteLength),
+                        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+                    },
+                });
+            }
+        }
+    }
 
     const candidate: string =
         (typeof extraFields?.avatar === 'string' && extraFields.avatar)

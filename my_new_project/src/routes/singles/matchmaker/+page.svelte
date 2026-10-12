@@ -249,7 +249,7 @@
                                 <div class="min-w-0">
                                     <p class="text-white font-bold text-sm leading-tight truncate">{p.a.nickname}</p>
                                     <p class="text-blue-200/80 text-xs mt-0.5">👨 {p.a.age}{#if p.a.city} · {p.a.city}{/if}</p>
-                                    <p class="text-gray-500 text-[11px]">{relLabel(p.a.religiosity, 'male')}{#if p.a.visibility === 'matchmakers'} · 🔒 דיסקרטי{/if}</p>
+                                    <p class="text-gray-500 text-[11px]">{relLabel(p.a.religiosity, 'male')}{#if p.a.visibility === 'matchmakers'} · 🔒 דיסקרטי{:else if p.a.visibility === 'blurred'} · 🌫️ מטושטש{/if}</p>
                                 </div>
                             </a>
 
@@ -272,7 +272,7 @@
                                 <div class="min-w-0">
                                     <p class="text-white font-bold text-sm leading-tight truncate">{p.b.nickname}</p>
                                     <p class="text-pink-200/80 text-xs mt-0.5">👩 {p.b.age}{#if p.b.city} · {p.b.city}{/if}</p>
-                                    <p class="text-gray-500 text-[11px]">{relLabel(p.b.religiosity, 'female')}{#if p.b.visibility === 'matchmakers'} · 🔒 דיסקרטי{/if}</p>
+                                    <p class="text-gray-500 text-[11px]">{relLabel(p.b.religiosity, 'female')}{#if p.b.visibility === 'matchmakers'} · 🔒 דיסקרטי{:else if p.b.visibility === 'blurred'} · 🌫️ מטושטש{/if}</p>
                                 </div>
                             </a>
                         </div>

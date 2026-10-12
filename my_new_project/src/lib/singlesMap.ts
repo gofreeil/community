@@ -4,7 +4,7 @@
 
 import type { DbItem } from './server/db';
 import type { SingleProfile, Religiosity, Gender } from './singlesMock';
-import { avatarUrl } from './singlesMock';
+import { avatarUrl, visibilityFromValue } from './singlesMock';
 import { categoryConfig } from './categoryFields';
 import { QUIZ_FIELD_KEY } from './singlesQuizKey';
 
@@ -100,8 +100,7 @@ export function dbItemToProfile(item: DbItem): SingleProfile {
     const matchmakerPhone = extractPhone(matchmaker) || item.phone || '';
 
     // נראות הכרטיס: ברירת מחדל = פומבי. נשמר בעברית ב-extra_fields.visibility.
-    const visibility: 'public' | 'matchmakers' =
-        String(ef.visibility ?? '').includes('שדכ') ? 'matchmakers' : 'public';
+    const visibility = visibilityFromValue(ef.visibility);
 
     // תווית "לא מחוסן": מוצגת רק אם המפרסם סימן במפורש (checkbox נשמר כ-'1').
     // כרטיסים ישנים / מי שלא סימן — הערך ריק, ולכן לא מוצג דבר.

@@ -1195,7 +1195,10 @@
         }
     }
 
+    // כרטיס פנויים דיסקרטי / מטושטש: מפתח הקישור הישיר, שפותח אותו במלואו (רק למי שרואה אותו במלואו)
+    const singlesKey = $derived((item as { singlesShareKey?: string } | null)?.singlesShareKey ?? '');
     function shareUrl(): string {
+        if (item && singlesKey) return `${origin}/items/${item.id}?k=${singlesKey}`;
         return typeof window !== 'undefined' ? window.location.href : '';
     }
     // כותרת השיתוף: שם הדף + תת-כותרת קבועה של האתר
@@ -2662,7 +2665,7 @@
                                     <div class="bg-gradient-to-br from-rose-600 to-pink-600 p-2 rounded-xl shadow-md text-center">
                                         <h3 class="text-white font-bold text-base mb-1">🔒 הטלפון מוגן</h3>
                                         <p class="text-white/80 text-xs mb-2">כדי לבקש את הטלפון יש להתחבר. רק לאחר אישור הצד השני - תקבל את מספרו.</p>
-                                        <a href="/login?redirect=/items/{item.id}" class="block w-full bg-white text-rose-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-[1.02] transition-transform text-sm">התחבר כדי לבקש</a>
+                                        <a href="/login?redirect={encodeURIComponent(`/items/${item.id}${singlesKey ? `?k=${singlesKey}` : ''}`)}" class="block w-full bg-white text-rose-600 font-bold py-2 rounded-lg text-center shadow-lg hover:scale-[1.02] transition-transform text-sm">התחבר כדי לבקש</a>
                                     </div>
                                 {:else if singlesState === 'pending'}
                                     <div class="bg-gradient-to-br from-amber-600 to-orange-600 p-2 rounded-xl shadow-md text-center">

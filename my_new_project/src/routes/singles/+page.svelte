@@ -3,7 +3,7 @@
     import { _ } from 'svelte-i18n';
     import { goto } from '$app/navigation';
     import { toggleLike, isLiked } from '$lib/likedItems';
-    import { avatarUrl as avatar } from '$lib/singlesMock';
+    import { avatarUrl as avatar, VISIBILITY_OPTIONS } from '$lib/singlesMock';
     import type { SingleProfile } from '$lib/singlesMock';
     import JsonLd from "$lib/components/JsonLd.svelte";
     import { breadcrumbSchema, collectionSchema, canonical } from "$lib/seo";
@@ -153,9 +153,10 @@
     // --- שיתוף כרטיס ---
     let shareMenuItemId = $state<string | null>(null);
     let copiedItemId = $state<string | null>(null);
-    function buildShareText(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }): { title: string; text: string; url: string } {
+    function buildShareText(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string; shareKey?: string }): { title: string; text: string; url: string } {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kehila-bashchuna.co.il';
-        const url = `${origin}/items/${it.id}`;
+        // כרטיס שאינו גלוי (שדכן משתף): הקישור הישיר עם המפתח, שפותח אותו במלואו
+        const url = `${origin}/items/${it.id}${it.shareKey ? `?k=${it.shareKey}` : ''}`;
         const who = it.nickname || it.label;
         const meta = [it.age ? `🎂 ${it.age}` : '', it.city ? `📍 ${it.city}` : ''].filter(Boolean).join(' · ');
         const heading = it.gender === 'female'
@@ -170,14 +171,14 @@
         const text = lines.join('\n');
         return { title: $_('extras.s_share_title'), text, url };
     }
-    async function nativeShare(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }) {
+    async function nativeShare(it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string; shareKey?: string }) {
         const payload = buildShareText(it);
         if (typeof navigator !== 'undefined' && (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }).share) {
             try { await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share(payload); return; } catch {}
         }
         shareMenuItemId = it.id;
     }
-    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string }) {
+    function shareTo(network: 'whatsapp' | 'telegram' | 'facebook' | 'x' | 'copy', it: { id: string; nickname?: string; label: string; gender?: 'male' | 'female'; age?: string; city?: string; description?: string; shareKey?: string }) {
         const { text, url } = buildShareText(it);
         const textWithUrl = `${text}\n${url}`;
         const enc = encodeURIComponent;
@@ -474,6 +475,12 @@
                         <p class="text-purple-200 text-sm font-bold">{$_('extras.s_mm_only_title')}</p>
                         <p class="text-purple-300/70 text-xs mt-0.5">{$_('extras.s_mm_only_sub')}</p>
                     </div>
+                {:else if me.visibility === 'blurred'}
+                    {@const vo = VISIBILITY_OPTIONS.find((o) => o.id === 'blurred')!}
+                    <div class="w-full max-w-md mb-2 rounded-xl bg-purple-500/15 border border-purple-400/40 px-4 py-2.5 text-center">
+                        <p class="text-purple-200 text-sm font-bold">{vo.icon} {vo.title}</p>
+                        <p class="text-purple-300/70 text-xs mt-0.5">{vo.desc}</p>
+                    </div>
                 {/if}
                 <div
                     role="link"
@@ -609,6 +616,9 @@
                         <div class="w-16 h-16 rounded-full bg-white/25 ring-2 ring-white/30 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-md">
                             <img src={person.avatar} alt={person.nickname} class="w-full h-full object-cover transition-all {isGuest ? 'blur-md scale-110' : ''}" loading="lazy" />
                         </div>
+                        {#if person.photoBlurred}
+                            <span class="absolute bottom-2 right-14 rounded-full bg-black/50 px-1.5 text-xs leading-5" title="תמונה מטושטשת לבקשת בעל/ת הכרטיס">🌫️</span>
+                        {/if}
                         <div class="flex-1 min-w-0">
                             <h3 class="text-white font-black text-lg leading-tight mb-1">{person.nickname}</h3>
                             <div class="flex items-center gap-3 text-white/85 text-sm">

@@ -9,6 +9,8 @@ import { isPrivateCategory } from '$lib/itemCategories';
 import { categoryConfig } from '$lib/categoryFields';
 import { getDemoItemById } from '$lib/demoUserItems';
 import { buildShareImage } from '$lib/server/shareImage';
+import { withBlurredImageUrls, cardShareKey, cardShareKeyMatches } from '$lib/server/singlesImages';
+import { visibilityFromValue } from '$lib/singlesMock';
 import type { PageServerLoad } from './$types';
 
 export interface SinglesPhoneStatus {
@@ -60,9 +62,35 @@ export const load: PageServerLoad = async (event) => {
                 console.warn('[items/load] matchmaker status failed:', e instanceof Error ? e.message : e);
             }
         }
-        const galleryImages: string[] = Array.isArray(extraFields?.images)
+        let galleryImages: string[] = Array.isArray(extraFields?.images)
             ? (extraFields.images as unknown[]).filter((s): s is string => typeof s === 'string')
             : (typeof extraFields?.image === 'string' ? [extraFields.image] : []);
+
+        // ── כרטיס פנויים: נראות (singlesMock.ts) — אותם כללים כמו /singles/[id] ──
+        // דיסקרטי — לא נמצא; מטושטש — רק התמונה הראשית, בגרסה המטושטשת. בעלים, סופר-אדמין,
+        // שדכן מאושר, ומי שהגיע בקישור ישיר (?k=) — רואים הכול, ומקבלים את מפתח הקישור לשיתוף.
+        let singlesShareKey = '';
+        if (dbItem.category === 'singles') {
+            const vis = visibilityFromValue(extraFields.visibility);
+            if (vis !== 'public') {
+                let fullView = (!!viewerId && dbItem.user_id === viewerId) || isSuperAdmin(session)
+                    || cardShareKeyMatches(dbItem.id, event.url.searchParams.get('k'));
+                if (!fullView && viewerId) {
+                    try { fullView = (await getMatchmakerStatus(viewerId, false)) === 'approved'; }
+                    catch (e) { console.warn('[items/load] matchmaker status failed:', e instanceof Error ? e.message : e); }
+                }
+                if (vis === 'matchmakers' && !fullView) return { origin, item: null, matchmakerAnswers: [] };
+                if (fullView) {
+                    singlesShareKey = cardShareKey(dbItem.id);
+                } else {
+                    const blurredAvatar = withBlurredImageUrls({ id: dbItem.id, images: galleryImages, avatar: galleryImages[0] ?? '' }).avatar;
+                    galleryImages = blurredAvatar ? [blurredAvatar] : [];
+                    delete extraFields.images;
+                    delete extraFields.image;
+                    delete extraFields.avatar;
+                }
+            }
+        }
 
         // ---- Singles: הסתר טלפון אלא אם בעלים / מבקש מאושר ----
         let phone = dbItem.phone;
@@ -201,6 +229,8 @@ export const load: PageServerLoad = async (event) => {
             viewCount:   dbItem.view_count,
             singlesStatus,
             incomingRequests,
+            // כרטיס פנויים שאינו גלוי: מפתח הקישור הישיר לשיתוף (רק למי שרואה אותו במלואו)
+            singlesShareKey,
         };
 
         // תמונת השיתוף (og:image + מידות) מחושבת בשרת - כך ה-head לא תלוי
@@ -210,6 +240,8 @@ export const load: PageServerLoad = async (event) => {
             || galleryImages[0]
             || '';
         const share = buildShareImage(origin, dbItem.id, shareCandidate);
+        // קישור ישיר לכרטיס פנויים שאינו גלוי: גם הקדימון נפתח עם המפתח (og.jpg בודק אותו)
+        if (singlesShareKey && share.image.startsWith(`${origin}/api/items/`)) share.image += `?k=${singlesShareKey}`;
 
         if (botOgPreview) {
             // תצוגת-קדימון לבוט: רק מה שתגי ה-OG צריכים (כינוי/גיל/מגדר/עיר).

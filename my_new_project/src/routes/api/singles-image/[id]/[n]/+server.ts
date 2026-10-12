@@ -1,13 +1,16 @@
 import type { RequestHandler } from './$types';
 import { getDbItemById } from '$lib/server/db';
 import { decodeDataImage, immutableImageResponse } from '$lib/server/inlineImage';
-import { singlesImageToken, singlesImageTokenMatches } from '$lib/server/singlesImages';
+import { singlesImageToken, singlesImageTokenMatches, singlesBlurToken } from '$lib/server/singlesImages';
+import { blurJpeg, BLUR_PLACEHOLDER } from '$lib/server/blurImage';
 
 /**
  * תמונה מס' n של כרטיס פנויים/פנויות - במקום base64 מוטבע בנתוני /singles.
  * מוגש רק עם ?v=<HMAC> תואם (ראה singlesImages.ts): הלוח סגור למי שלא אושר,
  * והאסימון הוא מה שמונע דפדוף בתמונות לפי מזהים רציפים. הנתיב עוקף את
  * שרשרת ה-auth (PUBLIC_IMAGE_PATH ב-hooks.server) כדי שהקצה ישמור בקאש.
+ *
+ * ?b=<HMAC> (במקום v) — הגרסה המטושטשת בלבד, לכרטיס "בלוח עם פנים מטושטשות".
  */
 export const GET: RequestHandler = async ({ params, url }) => {
     const notFound = () => new Response(null, { status: 404 });
@@ -26,9 +29,16 @@ export const GET: RequestHandler = async ({ params, url }) => {
 
     const raw = images[index];
     if (typeof raw !== 'string') return notFound();
-    if (!singlesImageTokenMatches(singlesImageToken(item.id, index, raw), url.searchParams.get('v'))) return notFound();
 
     const img = decodeDataImage(raw);
-    if (!img) return notFound();
-    return immutableImageResponse(img);
+    if (singlesImageTokenMatches(singlesImageToken(item.id, index, raw), url.searchParams.get('v'))) {
+        return img ? immutableImageResponse(img) : notFound();
+    }
+    if (singlesImageTokenMatches(singlesBlurToken(item.id, index, raw), url.searchParams.get('b'))) {
+        const blurred = img && /jpe?g/i.test(img.mime) ? blurJpeg(img.bytes) : null;
+        if (blurred) return immutableImageResponse({ mime: 'image/jpeg', bytes: blurred });
+        const svg = new TextEncoder().encode(BLUR_PLACEHOLDER);
+        return immutableImageResponse({ mime: 'image/svg+xml', bytes: svg.buffer as ArrayBuffer });
+    }
+    return notFound();
 };

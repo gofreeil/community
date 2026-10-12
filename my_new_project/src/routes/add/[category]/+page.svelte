@@ -27,6 +27,7 @@
     import { _ } from 'svelte-i18n';
     import { FREE_PROMO_PUBLIC, FREE_PROMO_CODE_TEXT } from '$lib/freePromo';
     import { mapStepFields, cfCatKey, cfAddTitleKey, cfFieldKey, cfOptKey, trOr } from '$lib/categoryFields';
+    import { VISIBILITY_OPTIONS, visibilityFromValue } from '$lib/singlesMock';
     import { MAP_IMAGE_PRICE_YEARLY } from '$lib/mapImage';
     import { imageDrop } from '$lib/imageDrop';
     import SinglesPersonalityQuiz from '$lib/components/SinglesPersonalityQuiz.svelte';
@@ -281,6 +282,11 @@
     // ---- ערכי ברירת מחדל לשדות מפרופיל המשתמש ----
     // במצב עריכה (?edit=<id>) - מועדף ערך מהפריט הקיים על פני userProfile.
     function profileDefault(key: string, type: string, options?: string[], defaultVal?: string): string {
+        // נראות כרטיס פנויים בעריכה: כפי שהכרטיס מוצג בפועל (ערך חסר = גלוי) — ולא ברירת המחדל של שדה ריק
+        if (editItem && categoryId === 'singles' && key === 'visibility') {
+            const vis = visibilityFromValue((editItem.extra_fields as Record<string, unknown> | undefined)?.visibility);
+            return VISIBILITY_OPTIONS.find((o) => o.id === vis)!.value;
+        }
         // Edit mode: ערכים מהפריט הקיים גוברים על הכל
         if (editItem) {
             const ef = editItem.extra_fields ?? {};
@@ -812,6 +818,8 @@
 
     // ---- Visibility (showIf) ----
     function isFieldVisible(field: typeof config.fields[number]): boolean {
+        // כרטיס פנויים חדש: הנראות נשאלת בחלון נפרד אחרי המילוי (visModal), לא בטופס
+        if (isSinglesCard && field.key === 'visibility' && !isEditMode) return false;
         // מפה מוצגת רק כשהכתובת לא נפתרה (רחוב מהרשימה + מספר). אחרת - רק הרשימה הנפתחת.
         // ביישוב בלי רשימת רחובות/שכונות המפה חובה - תמיד מוצגת.
         if (field.type === 'map_pin' && addressResolved && !forceMapPin) return false;
@@ -902,6 +910,17 @@
         saveDraftBackup(DRAFT_KEY, textOnly);
     }
 
+    // ---- נראות כרטיס פנויים חדש: שלושה מצבים, נשאלים בשמירה הראשונה (אחרי המילוי) ----
+    let visAsked = $state(false);
+    let visModal = $state<{ stay: boolean } | null>(null);
+    function chooseVisibility(value: string) {
+        const stay = visModal?.stay ?? false;
+        setFieldValue('visibility', value);
+        visAsked = true;
+        visModal = null;
+        handleSubmit(new Event('submit'), stay);
+    }
+
     // ---- Submit ----
     async function handleSubmit(e: Event, stayOnForm = false) {
         e.preventDefault();
@@ -919,6 +938,8 @@
             }, 2200);
             return;
         }
+
+        if (isSinglesCard && !isEditMode && !visAsked) { visModal = { stay: stayOnForm }; return; }
 
         submitting = true;
 
@@ -1281,6 +1302,18 @@
                             </a>
                         {/if}
 
+                    {:else if isSinglesCard && field.key === 'visibility'}
+                        <!-- עריכת כרטיס פנויים: שלושת מצבי הנראות (בכרטיס חדש — בחלון אחרי המילוי) -->
+                        <div class="grid gap-2 sm:grid-cols-3">
+                            {#each VISIBILITY_OPTIONS as o (o.id)}
+                                <button type="button" onclick={() => setFieldValue('visibility', o.value)}
+                                    class="rounded-xl border px-3 py-2 text-right transition-all
+                                        {getFieldValue('visibility') === o.value ? 'border-pink-400 bg-pink-500/20' : 'border-white/15 bg-white/5'}">
+                                    <span class="block text-sm font-black text-white">{o.icon} {o.title}</span>
+                                    <span class="block text-[11px] leading-snug text-gray-400">{o.desc}</span>
+                                </button>
+                            {/each}
+                        </div>
                     {:else if field.type === 'toggle' && field.options}
                         <div class="relative mx-auto w-full max-w-[280px]">
                             <div class="flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm gap-1">
@@ -1963,6 +1996,25 @@
         <div class="rounded-2xl bg-gray-900 border border-red-500/50 shadow-2xl px-5 py-3.5 flex items-center gap-3">
             <span class="text-xl leading-none flex-shrink-0">⚠️</span>
             <p class="flex-1 min-w-0 text-sm text-red-200 font-bold leading-snug">{uploadErrorMsg}</p>
+        </div>
+    </div>
+{/if}
+
+{#if visModal}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm" dir="rtl">
+        <div role="dialog" aria-modal="true" aria-labelledby="vis-title" class="w-full max-w-md rounded-2xl border border-pink-500/30 bg-[#0f172a] p-4 shadow-2xl">
+            <h2 id="vis-title" class="text-lg font-black text-white">איך להציג את הכרטיס?</h2>
+            <p class="mb-3 text-xs text-gray-400">אפשר לשנות בכל עת בעריכת הכרטיס.</p>
+            <div class="space-y-2">
+                {#each VISIBILITY_OPTIONS as o (o.id)}
+                    <button type="button" onclick={() => chooseVisibility(o.value)}
+                        class="block w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-right transition-colors hover:border-pink-400 hover:bg-pink-500/15">
+                        <span class="block text-sm font-black text-white">{o.icon} {o.title}</span>
+                        <span class="block text-xs leading-snug text-gray-400">{o.desc}</span>
+                    </button>
+                {/each}
+            </div>
+            <button type="button" onclick={() => (visModal = null)} class="mt-3 w-full text-center text-xs text-gray-500 hover:text-gray-300">חזרה לטופס</button>
         </div>
     </div>
 {/if}

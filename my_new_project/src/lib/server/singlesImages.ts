@@ -54,6 +54,50 @@ export function withSinglesImageUrls<T extends Pick<SingleProfile, 'id' | 'image
     return { ...p, images, avatar };
 }
 
+// ───── גרסה מטושטשת (מצב "בלוח עם פנים מטושטשות") — זהה לאתר הפנויים ─────
+// אסימון נפרד (?b=) עם קידומת אחרת ב-HMAC: מי שקיבל כתובת מטושטשת לא יכול לגזור ממנה
+// את ?v= של המקור. הנתיב מגיש עם ?b= רק את הגרסה המטושטשת (blurImage.ts).
+
+export function singlesBlurToken(itemId: string, index: number, dataUri: string): string {
+    return createHmac('sha256', SECRET)
+        .update(`blur:${itemId}:${index}:`)
+        .update(dataUri)
+        .digest('base64url')
+        .slice(0, 27);
+}
+
+/**
+ * כמו withSinglesImageUrls, לצופה שאינו רשאי לראות את הפנים: בלי הגלריה,
+ * והאווטאר (התמונה הראשית) — בגרסה המטושטשת בלבד.
+ */
+export function withBlurredImageUrls<T extends Pick<SingleProfile, 'id' | 'images' | 'avatar' | 'photoBlurred'>>(p: T): T {
+    const srcImages = p.images ?? [];
+    let avatar = p.avatar;
+    if (isDataUri(avatar)) {
+        const i = Math.max(0, srcImages.indexOf(avatar));
+        const raw = srcImages[i] ?? avatar;
+        avatar = `/api/singles-image/${encodeURIComponent(p.id)}/${i}?b=${singlesBlurToken(p.id, i, raw)}`;
+    }
+    return { ...p, images: [], avatar, photoBlurred: true };
+}
+
+/** תמונות הכרטיס כפי שהצופה רשאי לראות אותן: מטושטשות או רגילות */
+export function withViewerImageUrls<T extends Pick<SingleProfile, 'id' | 'images' | 'avatar' | 'photoBlurred'>>(p: T, blurred: boolean): T {
+    return blurred ? withBlurredImageUrls(p) : withSinglesImageUrls(p);
+}
+
+// ───── קישור ישיר לכרטיס (?k=) ─────
+// כרטיס דיסקרטי / מטושטש נפתח במלואו למי שמחזיק את הקישור הישיר שהבעלים או שדכן שלחו.
+// המפתח הוא HMAC על המזהה. הוא תלוי ב-AUTH_SECRET של האתר הזה — קישור של אתר אחד לא פותח באחר.
+
+export function cardShareKey(itemId: string): string {
+    return createHmac('sha256', SECRET).update(`share:${itemId}`).digest('base64url').slice(0, 16);
+}
+
+export function cardShareKeyMatches(itemId: string, given: string | null | undefined): boolean {
+    return singlesImageTokenMatches(cardShareKey(itemId), given ?? null);
+}
+
 /**
  * גרסת DbItem שבה מערך התמונות ב-extra_fields מוחלף בכתובות לנתיב המגיש -
  * לדפים שקוראים את הרשומה הגולמית (למשל רשימת הפרסומים בפרופיל).

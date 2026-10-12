@@ -25,8 +25,12 @@ export interface SingleProfile {
     matchmakerPhone?: string;
     images?: string[];
     status?: UserStatus;
-    /** 'public' = מוצג בלוח הפומבי; 'matchmakers' = גלוי רק לצוות השדכנים */
-    visibility?: 'public' | 'matchmakers';
+    /** מי רואה את הכרטיס — ראו VISIBILITY_OPTIONS */
+    visibility?: Visibility;
+    /** התמונות הוחלפו בגרסה מטושטשת (צופה בכרטיס "בלוח עם פנים מטושטשות" בלי קישור ישיר) */
+    photoBlurred?: boolean;
+    /** מפתח הקישור הישיר (?k=) — יוצא רק לבעלים / שדכן / מנהל, או למי שהגיע עם הקישור */
+    shareKey?: string;
     /** מידע לשדכנים בלבד - נאסף בטופס ולא מוצג בכרטיס/בדף הפומבי */
     matchPartnerCharacter?: string;
     matchSelfAdvantage?: string;
@@ -38,6 +42,29 @@ export interface SingleProfile {
     smoker?: string;
     /** חתום/ה על אמנת המוסר - מוצג על הכרטיס רק אם המפרסם סימן אותה במפורש */
     ethicsCharter?: boolean;
+}
+
+/**
+ * נראות הכרטיס — שלושה מצבים. הערך נשמר בעברית ב-extra_fields.visibility (זהה באתר הפנויים):
+ *   matchmakers — דיסקרטי: לא בלוח. רואים רק שדכנים, ומי שקיבל קישור ישיר (?k=) מהבעלים או משדכן
+ *   blurred     — בלוח, אבל התמונות מטושטשות (בשרת). בקישור ישיר — גלוי
+ *   public      — גלוי בלוח
+ * הערכים של matchmakers ו-public הם הערכים הישנים (שני מצבים) — כרטיסים קיימים נקראים כמו שהיו.
+ */
+export type Visibility = 'public' | 'blurred' | 'matchmakers';
+
+export const VISIBILITY_OPTIONS: { id: Visibility; value: string; icon: string; title: string; desc: string }[] = [
+    { id: 'matchmakers', value: 'רק לשדכנים שלנו', icon: '🔒', title: 'דיסקרטי', desc: 'לא מופיע בלוח. רואים אותו רק השדכנים, ומי שמקבל ממך או משדכן קישור ישיר.' },
+    { id: 'blurred', value: 'בלוח עם פנים מטושטשות', icon: '🌫️', title: 'בלוח, פנים מטושטשות', desc: 'מופיע בלוח עם תמונה מטושטשת. בקישור ישיר ממך או משדכן — התמונות גלויות.' },
+    { id: 'public', value: 'גלוי לכולם', icon: '👁️', title: 'כרטיס גלוי', desc: 'מופיע בלוח עם התמונות.' },
+];
+
+/** הערך השמור → מצב. ריק/לא מוכר = גלוי (כמו בגרסה הקודמת) */
+export function visibilityFromValue(raw: unknown): Visibility {
+    const v = String(raw ?? '');
+    if (v.includes('מטושטש')) return 'blurred';
+    if (v.includes('שדכ')) return 'matchmakers';
+    return 'public';
 }
 
 // תצוגת רמה דתית - מותאם למגדר
