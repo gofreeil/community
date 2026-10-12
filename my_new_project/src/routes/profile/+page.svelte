@@ -26,6 +26,7 @@
 	import { restoreDaysLeft } from "$lib/placeStatus";
 	import { statusLabel, type UserStatus } from "$lib/singlesMock";
 	import { dbItemToProfile } from "$lib/singlesMap";
+	import { singlesUpgradeNeeded } from "$lib/singlesUpgrade";
 	import { SMS_GROUPS, normalizeSmsPrefs, type SmsGroup } from "$lib/smsPrefs";
 	import NeighborhoodPicker from "$lib/components/NeighborhoodPicker.svelte";
 	import { heRank, normalizeHe, loosenHe } from "$lib/search";
@@ -3103,7 +3104,18 @@
 								{@const eff = restoredItemIds.includes(item.id) ? 'active' : item.status}
 								{@const daysLeft = eff === 'deleted' ? itemRestoreDaysLeft(item) : 0}
 								{@const sp = item.category === 'singles' ? dbItemToProfile(item) : null}
-								<div class="bg-white/5 rounded-2xl border {sp ? 'border-pink-500/30' : 'border-white/10'} p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''}">
+								{@const upgrade = sp && eff !== 'deleted' ? singlesUpgradeNeeded(item.extra_fields) : null}
+								<div class="relative bg-white/5 rounded-2xl border {sp ? 'border-pink-500/30' : 'border-white/10'} p-4 hover:border-purple-500/30 hover:bg-white/8 transition-all group {eff === 'deleted' ? 'opacity-75' : ''} {upgrade ? 'mt-4' : ''}">
+								{#if upgrade}
+									<!-- מדבקת שדרוג: מפנה לתא הראשון שעוד לא מולא (לשדכנים / שאלון ההתאמה) -->
+									<a
+										href="/add/singles?edit={item.id}&level={upgrade.level}&upgrade=1"
+										class="upgrade-sticker absolute -top-5 left-2 z-10 rounded-2xl border-2 border-white/90 bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500 px-4 py-2 text-center text-black shadow-2xl shadow-amber-500/40"
+									>
+										<span class="block text-lg md:text-xl font-black leading-tight">{tFn("profile.up_sticker")}</span>
+										<span class="block text-[11px] font-bold">{tFn("profile.up_sticker_sub")}</span>
+									</a>
+								{/if}
 								<a
 									href="/{sp ? 'singles' : 'items'}/{item.id}"
 									class="block"
@@ -3179,6 +3191,28 @@
 										</div>
 									</div>
 								</a>
+								{#if upgrade}
+									<div class="mt-3 rounded-xl border border-amber-400/40 bg-amber-500/10 p-2.5">
+										<p class="text-amber-100 text-xs leading-relaxed"><b>{tFn("profile.up_title")}</b> {tFn("profile.up_intro")}</p>
+										<div class="mt-2 grid grid-cols-2 gap-2">
+											{#each [
+												{ lv: 2, done: upgrade.matchmakers, title: tFn("profile.up_mm_title"), sub: tFn("profile.up_mm_sub") },
+												{ lv: 3, done: upgrade.quiz, title: tFn("profile.up_quiz_title"), sub: tFn("profile.up_quiz_sub") },
+											] as s (s.lv)}
+												<a
+													href="/add/singles?edit={item.id}&level={s.lv}&upgrade=1"
+													class="rounded-lg border px-2.5 py-1.5 transition-colors {s.done ? 'border-emerald-400/30 bg-emerald-500/10' : 'border-amber-300/50 bg-black/20 hover:bg-amber-500/15'}"
+												>
+													<span class="flex items-center justify-between gap-1 text-white text-xs font-black">
+														{s.title}
+														<span class="text-[10px] font-bold {s.done ? 'text-emerald-300' : 'text-amber-300'}">{s.done ? tFn("profile.up_done") : tFn("profile.up_fill")}</span>
+													</span>
+													<span class="block text-gray-300 text-[11px] leading-snug mt-0.5">{s.sub}</span>
+												</a>
+											{/each}
+										</div>
+									</div>
+								{/if}
 								{#if !sp || eff === 'deleted' || item.status === 'frozen' || republishedItemIds.includes(item.id)}
 								<div class="mt-3 pt-3 border-t border-white/5 flex justify-end gap-2 flex-wrap">
 									{#if eff === 'deleted' && daysLeft > 0}
@@ -7613,5 +7647,20 @@
 	}
 	.register-glow:not(:hover) {
 		animation: registerGlow 1.5s ease-in-out 3;
+	}
+	/* מדבקת "שדרג את כרטיסך" - מוטה, ומנענעת קלות כל כמה שניות כדי למשוך את העין */
+	.upgrade-sticker {
+		transform: rotate(-6deg);
+		animation: sticker-wiggle 4s ease-in-out infinite;
+		transition: transform 0.15s;
+	}
+	.upgrade-sticker:hover { animation: none; transform: rotate(0deg) scale(1.05); }
+	@keyframes sticker-wiggle {
+		0%, 88%, 100% { transform: rotate(-6deg); }
+		92% { transform: rotate(-1deg) scale(1.06); }
+		96% { transform: rotate(-10deg) scale(1.06); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.upgrade-sticker { animation: none; }
 	}
 </style>

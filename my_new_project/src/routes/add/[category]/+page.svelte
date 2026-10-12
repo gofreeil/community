@@ -3,6 +3,7 @@
     import CameraCapture from '$lib/components/CameraCapture.svelte';
     import { browser } from '$app/environment';
     import { goto, invalidateAll } from '$app/navigation';
+    import { page } from '$app/state';
     import LevelUpCard from '$lib/components/LevelUpCard.svelte';
     import { LS_KEY, DEFAULT_NEIGHBORHOOD, citiesAndNeighborhoods, effectiveNeighborhoods, defaultNeighborhoodFor } from '$lib/neighborhoodsData';
     import { nearestCityNeighborhood } from '$lib/neighborhoodCoords';
@@ -366,7 +367,10 @@
     const isSinglesCard = categoryId === 'singles';
     // כרטיס פנויים בשלוש רמות: 1 = מה שמוצג בכרטיס, 2 = מידע לשדכנים, 3 = שאלון התאמה ל-AI.
     // כל רמה נשמרת בפועל בשרת (שמירה והמשך), והשמירות הבאות מעדכנות את אותו כרטיס.
-    let level = $state<1 | 2 | 3>(1);
+    // ?level=2|3 - כניסה ישירה לרמה (מדבקת "שדרג את כרטיסך" באזור האישי); ?upgrade=1 - הסבר על השדרוג
+    const startLevel = untrack(() => Number(page.url.searchParams.get('level')));
+    const fromUpgrade = untrack(() => isSinglesCard && isEditMode && page.url.searchParams.get('upgrade') === '1');
+    let level = $state<1 | 2 | 3>(isSinglesCard && (startLevel === 2 || startLevel === 3) ? startLevel : 1);
     let stageSaved = $state<Record<number, boolean>>({});
     let stageToast = $state('');
     let activeEditId = $state<string>(untrack(() => (editItem?.id ? String(editItem.id) : '')));
@@ -1163,6 +1167,16 @@
             onsubmit={handleSubmit}
             class="rounded-2xl border {colors.border} {colors.bg} p-4 md:p-8 grid grid-cols-2 gap-x-3 gap-y-3.5 md:gap-5"
         >
+            {#if fromUpgrade}
+                <div class="col-span-2 rounded-xl border border-amber-400/50 bg-amber-500/10 px-4 py-3" style="grid-column: 1 / -1;">
+                    <p class="text-amber-200 font-black text-sm">⚡ שדרגנו את הכרטיס — נוספו שני תאים חדשים</p>
+                    <p class="text-amber-100/80 text-xs mt-1 leading-relaxed">
+                        <b>🤝 רמה 2 · לשדכנים בלבד</b> — מידע פרטי שרק צוות השדכנים רואה, כדי להציע לך התאמות מדויקות.
+                        <b>🧠 רמה 3 · למערכת שלנו</b> — שאלון אישיות שמזין את מנוע ההתאמה החכם.
+                        שניהם לא מוצגים בכרטיס ולא גלויים לאף משתמש. אפשר למלא בהדרגה.
+                    </p>
+                </div>
+            {/if}
             {#if isSinglesCard}
                 <!-- שלוש רמות: כרטיס / מידע לשדכנים / שאלון התאמה ל-AI -->
                 <div class="col-span-2 flex items-stretch gap-1.5" style="grid-column: 1 / -1;" role="tablist">

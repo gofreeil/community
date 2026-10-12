@@ -329,6 +329,18 @@ export const he = {
         ss_in_relationship: "בקשר",
         ss_break: "הפסקה זמנית",
 
+        // ===== מדבקת "שדרג את כרטיסך" (כרטיס הפנויים) =====
+        up_sticker: "⚡ שדרג את כרטיסך עכשיו!",
+        up_sticker_sub: "חדש: תא לשדכנים + שאלון התאמה",
+        up_title: "🆕 שדרגנו את הכרטיס!",
+        up_intro: "נוספו שני תאים חדשים — שניהם לא מוצגים בכרטיס ולא גלויים לאף משתמש:",
+        up_mm_title: "🤝 לשדכנים בלבד",
+        up_mm_sub: "מידע פרטי שרק צוות השדכנים רואה",
+        up_quiz_title: "🧠 למערכת שלנו",
+        up_quiz_sub: "שאלון שמזין את מנוע ההתאמה החכם",
+        up_done: "✓ מולא",
+        up_fill: "למילוי ←",
+
         // ===== דרגה והרשאות =====
         levels_title: "דרגה והרשאות",
         current_level_prefix: "דרגה נוכחית -",
@@ -867,6 +879,18 @@ export const en = {
         ss_in_relationship: "In a relationship",
         ss_break: "Taking a break",
 
+        // ===== "Upgrade your card" sticker (singles card) =====
+        up_sticker: "⚡ Upgrade your card now!",
+        up_sticker_sub: "New: matchmakers section + match quiz",
+        up_title: "🆕 We upgraded the card!",
+        up_intro: "Two new sections were added — neither is shown on the card or visible to any user:",
+        up_mm_title: "🤝 Matchmakers only",
+        up_mm_sub: "Private info only our matchmaking team sees",
+        up_quiz_title: "🧠 For our system",
+        up_quiz_sub: "A quiz that feeds the smart matching engine",
+        up_done: "✓ Filled",
+        up_fill: "Fill in ←",
+
         // ===== Level and permissions =====
         levels_title: "Level and permissions",
         current_level_prefix: "Current level -",
@@ -1403,6 +1427,18 @@ export const ru = {
         ss_not_available: "Недоступен/на",
         ss_in_relationship: "В отношениях",
         ss_break: "Временный перерыв",
+
+        // ===== Наклейка «Улучшите карточку» (карточка знакомств) =====
+        up_sticker: "⚡ Улучшите свою карточку!",
+        up_sticker_sub: "Новое: раздел для сватов + анкета",
+        up_title: "🆕 Мы обновили карточку!",
+        up_intro: "Добавлены два новых раздела — оба не показываются в карточке и не видны пользователям:",
+        up_mm_title: "🤝 Только для сватов",
+        up_mm_sub: "Личная информация, которую видит только команда сватов",
+        up_quiz_title: "🧠 Для нашей системы",
+        up_quiz_sub: "Анкета для умного подбора пар",
+        up_done: "✓ Заполнено",
+        up_fill: "Заполнить ←",
 
         // ===== Уровень и права =====
         levels_title: "Уровень и права",
