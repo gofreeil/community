@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { untrack } from 'svelte';
     import type { PageData } from './$types';
     import { _ } from 'svelte-i18n';
     import { goto } from '$app/navigation';
@@ -30,7 +29,7 @@
     function openProfile(id: string) {
         // פתיחת הדף המלא בעיצוב העשיר (/items/[id]) - לבקשת המשתמש
         if (isGuest) {
-            goto('/login?next=' + encodeURIComponent(`/items/${id}`));
+            goto('/login?redirect=' + encodeURIComponent(`/items/${id}`));
             return;
         }
         goto(`/items/${id}`);
@@ -57,7 +56,7 @@
 
     async function submitAccessRequest() {
         gateError = '';
-        if (isGuest) { goto('/login?next=' + encodeURIComponent('/singles')); return; }
+        if (isGuest) { goto('/login?redirect=' + encodeURIComponent('/singles')); return; }
         gateSubmitting = true;
         try {
             const res = await fetch('/api/singles-access', {
@@ -242,34 +241,9 @@
         };
     })();
 
-    // ── שדכן מערכת: בקשה / סטטוס ──
-    // untrack: מצב מקומי שמתעדכן מיד אחרי שליחת בקשה, בלי להמתין לרענון
-    let mmStatus = $state<string>(untrack(() => data.matchmakerStatus) ?? 'none');
-    let mmSubmitting = $state(false);
-    let mmError = $state('');
-
-    async function requestMatchmaker() {
-        if (isGuest) { goto('/login?next=' + encodeURIComponent('/singles')); return; }
-        mmError = '';
-        mmSubmitting = true;
-        try {
-            const res = await fetch('/api/matchmaker-request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: '{}',
-            });
-            const out = await res.json().catch(() => ({}));
-            if (res.ok && out?.success) {
-                mmStatus = out.already === 'approved' ? 'approved' : 'pending';
-            } else {
-                mmError = out?.message || $_('extras.s_mm_error');
-            }
-        } catch {
-            mmError = $_('extras.s_mm_error');
-        } finally {
-            mmSubmitting = false;
-        }
-    }
+    // ── שדכן מערכת: סטטוס ──
+    // הבקשה עצמה נשלחת במסך /singles/matchmaker/join (גם לאורחת שעוברת הרשמה בדרך)
+    const mmStatus = $derived<string>(data.matchmakerStatus ?? 'none');
 </script>
 
 <svelte:head>
@@ -405,99 +379,70 @@
                     <div class="flex-1 text-right">
                         <p class="text-white font-bold text-sm">{$_('extras.s_mm_cta_title')}</p>
                         <p class="text-rose-200/80 text-xs mt-0.5 mb-3">{$_('extras.s_mm_cta_desc')}</p>
-                        {#if mmError}<p class="text-red-400 text-xs mb-2">{mmError}</p>{/if}
-                        <button
-                            type="button"
-                            onclick={requestMatchmaker}
-                            disabled={mmSubmitting}
-                            class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-500 hover:to-pink-400 disabled:opacity-50 text-white font-bold py-2 px-5 rounded-full transition-all text-sm shadow-lg shadow-rose-500/30"
+                        <!-- מסך אחד לכל המסלולים (אורחת / מחוברת / מאושרת): מטפל בהרשמה, חוזר לבד ושולח את הבקשה -->
+                        <a
+                            href="/singles/matchmaker/join"
+                            class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-500 hover:to-pink-400 text-white font-bold py-2 px-5 rounded-full transition-all text-sm shadow-lg shadow-rose-500/30"
                         >
-                            {mmSubmitting ? $_('extras.s_mm_submitting') : $_('extras.s_mm_cta_btn')}
-                        </button>
+                            {$_('extras.s_mm_cta_btn')}
+                        </a>
                     </div>
                 </div>
             </div>
         {/if}
 
-        <!-- Filters: chips מינימליסטיים בשורה זורמת -->
-        <div class="mb-6">
-            <div class="flex flex-wrap justify-center items-center gap-x-2 gap-y-2">
-                <span class="text-gray-300 text-sm font-semibold tracking-wide me-1 inline-flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-                    </svg>
-                    {$_('extras.s_filter')}
-                </span>
-
-                <!-- גילאים -->
-                <button
-                    onclick={() => ageFilter = 'all'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'all' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_age_all')}</button>
-                <button
-                    onclick={() => ageFilter = 'under30'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'under30' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_age_under30')}</button>
-                <button
-                    onclick={() => ageFilter = '30plus'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === '30plus' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_age_30plus')}</button>
-                <button
-                    onclick={() => ageFilter = 'golden'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {ageFilter === 'golden' ? 'bg-pink-500/15 text-pink-200 border-pink-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_age_golden')}</button>
-
-                <span class="text-gray-600 mx-1 hidden sm:inline">·</span>
-
-                <!-- רמה דתית -->
-                <button
-                    onclick={() => relFilter = 'all'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'all' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_rel_all')}</button>
-                <button
-                    onclick={() => relFilter = 'haredi'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'haredi' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_rel_haredi')}</button>
-                <button
-                    onclick={() => relFilter = 'dl'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'dl' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_rel_dl')}</button>
-                <button
-                    onclick={() => relFilter = 'general'}
-                    class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {relFilter === 'general' ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                >{$_('extras.s_rel_general')}</button>
+        <!-- מסננים (select) + מונה — שורה קומפקטית אחת -->
+        <div class="max-w-md mx-auto mb-4 space-y-2">
+            <div class="flex items-center gap-2">
+                <select
+                    bind:value={ageFilter}
+                    aria-label={$_('extras.s_age_all')}
+                    class="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-[13px] border cursor-pointer focus:outline-none {ageFilter === 'all' ? 'bg-white/5 text-gray-300 border-white/10' : 'bg-pink-500/15 text-pink-200 border-pink-400/60'}"
+                >
+                    <option value="all">{$_('extras.s_age_all')}</option>
+                    <option value="under30">{$_('extras.s_age_under30')}</option>
+                    <option value="30plus">{$_('extras.s_age_30plus')}</option>
+                    <option value="golden">{$_('extras.s_age_golden')}</option>
+                </select>
+                <select
+                    bind:value={relFilter}
+                    aria-label={$_('extras.s_rel_all')}
+                    class="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-[13px] border cursor-pointer focus:outline-none {relFilter === 'all' ? 'bg-white/5 text-gray-300 border-white/10' : 'bg-cyan-500/15 text-cyan-200 border-cyan-400/60'}"
+                >
+                    <option value="all">{$_('extras.s_rel_all')}</option>
+                    <option value="haredi">{$_('extras.s_rel_haredi')}</option>
+                    <option value="dl">{$_('extras.s_rel_dl')}</option>
+                    <option value="general">{$_('extras.s_rel_general')}</option>
+                </select>
+                {#if seesBothBoards}
+                    <select
+                        bind:value={adminGender}
+                        aria-label={$_('extras.s_admin_test_board')}
+                        class="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-[13px] border cursor-pointer focus:outline-none {adminGender === 'all' ? 'bg-white/5 text-gray-300 border-white/10' : 'bg-amber-500/15 text-amber-100 border-amber-400/60'}"
+                    >
+                        <option value="all">{$_('extras.s_admin_all')}</option>
+                        <option value="male">{$_('extras.s_admin_male')}</option>
+                        <option value="female">{$_('extras.s_admin_female')}</option>
+                    </select>
+                {/if}
+                <span class="shrink-0 text-gray-400 text-xs">{`💑 ${filteredProfiles.length}`}</span>
             </div>
 
+            {#if lockedFilter && !seesBothBoards}
+                <p class="text-center text-xs font-bold {lockedFilter === 'male' ? 'text-cyan-300' : 'text-pink-300'}">
+                    {lockedFilter === 'male' ? $_('extras.s_locked_male') : $_('extras.s_locked_female')}<span class="text-gray-400 font-normal"> {$_('extras.s_locked_note')}</span>
+                </p>
+            {/if}
+
             {#if seesBothBoards}
-                <div class="flex justify-center items-center gap-2 mt-3 flex-wrap">
+                <div class="flex justify-center items-center gap-1.5 flex-wrap">
                     {#if data.isSuperAdmin}
-                        <span class="text-amber-300 text-xs font-bold">{$_('extras.s_admin_test_board')}</span>
+                        <a href="/admin/singles-review" class="px-2 py-1 rounded-md text-xs font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">{$_('extras.s_admin_review')}</a>
                     {:else}
-                        <span class="text-purple-300 text-xs font-bold">💘 תצוגת שדכן/ית · שני הלוחות</span>
-                    {/if}
-                    {#each [['all', $_('extras.s_admin_all')], ['male', $_('extras.s_admin_male')], ['female', $_('extras.s_admin_female')]] as [val, lbl]}
-                        <button
-                            onclick={() => adminGender = val as Gender}
-                            class="px-3 py-1.5 rounded-md text-[13px] font-medium border transition-colors {adminGender === val ? 'bg-amber-500/20 text-amber-100 border-amber-400/60' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/25 hover:text-gray-200'}"
-                        >{lbl}</button>
-                    {/each}
-                    {#if data.isSuperAdmin}
-                        <a href="/admin/singles-review" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-pink-400/60 bg-pink-500/15 text-pink-200 hover:bg-pink-500/25 transition-colors">{$_('extras.s_admin_review')}</a>
-                    {:else}
-                        <a href="/singles/matchmaker" class="px-3 py-1.5 rounded-md text-[13px] font-bold border border-purple-400/60 bg-purple-500/15 text-purple-200 hover:bg-purple-500/25 transition-colors">🔮 כלים לשדכן</a>
+                        <a href="/singles/matchmaker" class="px-2 py-1 rounded-md text-xs font-bold border border-purple-400/60 bg-purple-500/15 text-purple-200 hover:bg-purple-500/25 transition-colors">🔮 כלים לשדכן</a>
                     {/if}
                 </div>
             {/if}
-
-            <div class="flex justify-center items-center gap-3 mt-3 flex-wrap">
-                {#if lockedFilter && !seesBothBoards}
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r {lockedFilter === 'male' ? 'from-blue-500 to-cyan-500' : 'from-pink-500 to-rose-500'} text-white shadow">
-                        <span>{lockedFilter === 'male' ? $_('extras.s_locked_male') : $_('extras.s_locked_female')}</span>
-                        <span class="text-white/80">{$_('extras.s_locked_note')}</span>
-                    </div>
-                {/if}
-                <p class="text-gray-400 text-sm">{$_('extras.s_active_profiles', { values: { n: filteredProfiles.length } })}</p>
-            </div>
         </div>
         {/if}
 
