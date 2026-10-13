@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
+	import { takeReturn, withWelcomeNew } from '$lib/postAuthReturn';
 
 	let { data } = $props();
 
@@ -57,7 +58,11 @@
 			if (res.ok && j?.ok) {
 				// אישור התנאים נשמר בצד-לקוח (כמו בדף הפרופיל)
 				try { localStorage.setItem('terms_accepted', '1'); } catch { /* noop */ }
-				goto('/profile');
+				// יעד שנשמר לפני ההרשמה (למשל שליחת בקשת שדכנות) - חוזרים אליו ולא ל-/profile,
+				// בטעינה מלאה עם welcome=new: "השלמת את ההרשמה, כעת תועבר לבקשתך הראשונה"
+				const dest = takeReturn();
+				if (dest) window.location.href = withWelcomeNew(dest);
+				else goto('/profile');
 			} else {
 				errorMsg = tFn('onboarding.err_save');
 			}

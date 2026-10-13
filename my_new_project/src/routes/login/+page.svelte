@@ -5,8 +5,17 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import InAppBrowserNotice from '$lib/components/InAppBrowserNotice.svelte';
+	import MatchmakerJoinBanner from '$lib/components/MatchmakerJoinBanner.svelte';
+	import { peekReturn } from '$lib/postAuthReturn';
 
 	let { data, form } = $props();
+
+	// יעד אחרי הכניסה: redirect מפורש ב-URL גובר; אחרת יעד שנשמר בדפדפן (למשל מי שנרשמה
+	// ואישרה מייל - חזרה לכאן בלי הפרמטר). ראו postAuthReturn.ts
+	function destination(): string {
+		if (data.redirectTo && data.redirectTo !== '/profile') return data.redirectTo;
+		return peekReturn() ?? '/profile';
+	}
 
 	let isLoading       = $state(false);
 	let loadingProvider = $state<'google' | 'facebook' | 'credentials' | 'phone' | null>(null);
@@ -30,7 +39,7 @@
 	// משתמש שנוצר עכשיו מקבל מסך "ברוכים המצטרפים".
 	async function finishPhoneLogin(created: boolean) {
 		try {
-			const u = new URL(data.redirectTo || '/profile', window.location.origin);
+			const u = new URL(destination(), window.location.origin);
 			u.searchParams.set('welcome', created ? 'new' : 'back');
 			await signIn('credentials', { callbackUrl: `${u.pathname}${u.search}${u.hash}` });
 			setTimeout(() => { isLoading = false; loadingProvider = null; }, 4000);
@@ -63,7 +72,7 @@
 		try {
 			await signIn(
 				provider,
-				{ callbackUrl: withWelcome(data.redirectTo || '/profile') },
+				{ callbackUrl: withWelcome(destination()) },
 				forceChooser ? { prompt: 'select_account' } : undefined
 			);
 		} catch {
@@ -107,6 +116,8 @@
 
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-12" dir="rtl">
 	<div class="w-full max-w-md">
+
+		<MatchmakerJoinBanner />
 
 		<!-- כרטיס -->
 		<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
@@ -183,7 +194,7 @@
 							// signIn בלי פרטים מרים סשן מהעוגייה (handoff, בדיקה אחת בלבד)
 							try {
 								await signIn('credentials', {
-									callbackUrl: withWelcome(data.redirectTo || '/profile'),
+									callbackUrl: withWelcome(destination()),
 								});
 								// אם הניווט לא קרה (נחסם/אופליין) - משחררים את הכפתור
 								setTimeout(() => { isLoading = false; loadingProvider = null; }, 4000);
@@ -490,7 +501,7 @@
 				<!-- לינק להרשמה -->
 				<p class="text-center text-sm text-gray-500 mb-4">
 					{tFn("no_account")}
-					<a href="/register" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+					<a href={data.redirectTo && data.redirectTo !== '/profile' ? `/register?redirect=${encodeURIComponent(data.redirectTo)}` : '/register'} class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
 						{tFn("register_here")}
 					</a>
 				</p>

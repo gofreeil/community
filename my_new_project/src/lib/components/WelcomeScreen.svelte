@@ -17,6 +17,8 @@
 	import { t, locale } from "svelte-i18n";
 	import { get } from "svelte/store";
 	import { networkSites } from "$lib/networkSites";
+	import { describeReturn } from "$lib/authIntent";
+	import { clearReturn } from "$lib/postAuthReturn";
 
 	let { userName = "" }: { userName?: string } = $props();
 
@@ -29,6 +31,10 @@
 	};
 
 	const WELCOME_MS = 7000;
+	// הגיעו לכאן מבקשה שדרשה הרשמה (ולא לדף הבית): מסך קצר יותר, ישר לבקשה
+	const PENDING_MS = 4500;
+	let pending = $state<string | null>(null);
+	let ms = $state(WELCOME_MS);
 
 	// רק הפרמטר `welcome` נחשב. במפורש *לא* `new=1` — הוא כבר בשימוש אחר לגמרי
 	// (פרסום פריט חדש: /items/<id>?builder=1&new=1), והאזנה לו הייתה מקפיצה את
@@ -56,10 +62,16 @@
 
 	onMount(() => {
 		if (!kind) return;
+		pending = describeReturn(window.location.pathname + window.location.search);
+		if (pending) {
+			ms = PENDING_MS;
+			// הגענו ליעד ששמרנו לפני ההרשמה — לא מחזירים אליו שוב
+			clearReturn();
+		}
 		visible = true;
 		// מפעילים את המילוי בפריים הבא כדי שה-transition ירוץ מ-0% ל-100%
 		requestAnimationFrame(() => (fill = true));
-		timer = setTimeout(dismiss, WELCOME_MS);
+		timer = setTimeout(dismiss, ms);
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
@@ -118,6 +130,15 @@
 						{tFn("welcome_back_body")}
 					</p>
 				{/if}
+				<!-- נשלחו להירשם באמצע פעולה: "השלמת את ההרשמה — כעת תועבר לבקשתך הראשונה" (ראו $lib/authIntent) -->
+				{#if pending}
+					<div class="mx-auto mb-5 max-w-xl rounded-2xl border border-white/20 bg-white/10 px-4 py-3">
+						<p class="text-white font-bold text-base leading-relaxed">
+							{tFn(kind === "new" ? "extras.welcome_pending_new" : "extras.welcome_pending_back")} — <span class="text-amber-300">{tFn(pending)}</span>…
+						</p>
+						<button type="button" onclick={dismiss} class="mt-2 rounded-full bg-white px-5 py-1.5 text-sm font-black text-gray-900 transition-colors hover:bg-gray-100">{tFn("extras.welcome_pending_go")}</button>
+					</div>
+				{/if}
 				<!-- לוגואים של כל האתרים ברשת (הרשימה הקנונית המלאה, כולל האתר
 				     הנוכחי) — מוצגים בשני המצבים (מצטרפים + שבים). flex-wrap עם
 				     מרכוז כדי שהשורה האחרונה (חלקית) תתמרכז ולא תישאר צמודה לצד -->
@@ -149,7 +170,7 @@
 		<div class="fixed bottom-0 left-0 right-0 h-1.5 bg-white/10 z-[110]">
 			<div
 				class="h-full {kind === 'new' ? 'bg-purple-400' : 'bg-emerald-400'}"
-				style="width: {fill ? '100%' : '0%'}; transition: width {WELCOME_MS}ms linear;"
+				style="width: {fill ? '100%' : '0%'}; transition: width {ms}ms linear;"
 			></div>
 		</div>
 	</div>

@@ -49,7 +49,7 @@ export const load: PageServerLoad = async (event) => {
     try { session = await event.locals.auth(); } catch { /* guest */ }
     const viewerId = session?.user?.id as string | undefined;
     if (!viewerId) {
-        throw redirect(302, '/login?next=' + encodeURIComponent(`/singles/match/${event.params.id}`));
+        throw redirect(302, '/login?redirect=' + encodeURIComponent(`/singles/match/${event.params.id}`));
     }
 
     const item = await getDbItemByIdFresh(event.params.id);

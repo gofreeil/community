@@ -2,6 +2,7 @@ import { withSinglesItemImageUrls } from '$lib/server/singlesImages';
 import { toPendingSinglesRefs, type PendingSinglesRef } from '$lib/singlesReviewHandled';
 import { stripInlineImages } from '$lib/server/inlineImage';
 import { redirect, fail } from '@sveltejs/kit';
+import { safeReturnPath } from '$lib/postAuthReturn';
 import type { Actions, PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, getUserByAnyId, updateUserProfile, getItemsByUserId, upsertUser, getMessagesByUserId, createItem, updateItem, getDbItemById, getAllSuperAdmins, getAllUsers, getItemsByCategory, getItemsByCategoryAndStatus, createNeighborhoodRequest } from '$lib/server/db';
 import { finalizeLocationDecision, undoLocationDecision, withdrawOpenLocationRequests } from '$lib/server/locationDecision';
@@ -63,6 +64,13 @@ export const load: PageServerLoad = async (event) => {
     ) {
         const params = new URLSearchParams(event.url.searchParams);
         params.set('welcome', 'back');
+        // נרשמה דרך כפתור עם יעד (למשל בקשת שדכנות) אבל כבר הייתה רשומה - ישר ליעד
+        const dest = safeReturnPath(params.get('redirect'));
+        if (dest) {
+            const u = new URL(dest, event.url.origin);
+            u.searchParams.set('welcome', 'back');
+            redirect(303, `${u.pathname}${u.search}${u.hash}`);
+        }
         redirect(303, `/profile?${params.toString()}`);
     }
 

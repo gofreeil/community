@@ -31,7 +31,7 @@ export const load: PageServerLoad = async (event) => {
     let session = null;
     try { session = await event.locals.auth(); } catch { /* guest */ }
     const uid = session?.user?.id as string | undefined;
-    if (!uid) throw redirect(302, '/login?next=' + encodeURIComponent('/singles/matchmaker'));
+    if (!uid) throw redirect(302, '/login?redirect=' + encodeURIComponent('/singles/matchmaker'));
 
     // הרשאת שדכן (סופר-אדמין תמיד מאושר). כפילות בדיקת התפקיד מול ה-DB למקרה
     // שה-role בסשן לא עודכן.

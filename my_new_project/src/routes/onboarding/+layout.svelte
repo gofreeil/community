@@ -2,8 +2,19 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
+	import { onMount } from 'svelte';
+	import MatchmakerJoinBanner from '$lib/components/MatchmakerJoinBanner.svelte';
+	import { peekReturn, withWelcomeNew } from '$lib/postAuthReturn';
 
 	let { data, children } = $props();
+
+	// "דלג על האשף" חוזר ליעד שנשמר לפני ההרשמה (אם יש), לא ל-/profile — עם welcome=new
+	// ובטעינה מלאה (data-sveltekit-reload), כדי שמסך הפתיחה יציג "כעת תועבר לבקשתך הראשונה"
+	let skipHref = $state('/profile');
+	onMount(() => {
+		const r = peekReturn();
+		if (r) skipHref = withWelcomeNew(r);
+	});
 
 	// tFn ריאקטיבי (דפוס האתר; $t אסור ב-Svelte 5)
 	let _loc = $state(get(locale));
@@ -22,6 +33,7 @@
 
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-6" dir="rtl">
 	<div class="w-full max-w-md">
+		<MatchmakerJoinBanner />
 		<!-- כרטיס -->
 		<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
 			<!-- פס עליון גרדיאנט -->
@@ -69,7 +81,7 @@
 		<!-- דילוג מהיר לכל האשף - לא כשעדיין אין שכונה (השער היה מחזיר לכאן ממילא) -->
 		{#if !data.neighborhoodRequired}
 			<div class="text-center mt-4">
-				<a href="/profile" class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
+				<a href={skipHref} data-sveltekit-reload class="text-gray-500 hover:text-gray-400 text-sm transition-colors">
 					{tFn('onboarding.skip')} →
 				</a>
 			</div>

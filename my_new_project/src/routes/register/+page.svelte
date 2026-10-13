@@ -4,9 +4,26 @@
 	import { tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import InAppBrowserNotice from '$lib/components/InAppBrowserNotice.svelte';
+	import MatchmakerJoinBanner from '$lib/components/MatchmakerJoinBanner.svelte';
+	import { rememberReturn, peekReturn, safeReturnPath } from '$lib/postAuthReturn';
 
 	let { form } = $props();
+
+	// יעד חזרה (למשל "בקשה להיות שדכן"): נשמר בדפדפן כי טופס ההרשמה (?/register)
+	// מחליף את ה-URL, ושאר התחנות בדרך (אשף, אימות מייל) לא רואות אותו. ראו postAuthReturn.ts
+	onMount(() => {
+		const r = safeReturnPath(page.url.searchParams.get('redirect'));
+		if (r) rememberReturn(r);
+	});
+	// callbackUrl של OAuth/auto-login: welcome=1 שומר על מסך הפתיחה והאשף; redirect מחזיר
+	// *משתמש קיים* ליעד (חדש עובר באשף, ושם takeReturn מחזיר אותו)
+	function callbackUrl(): string {
+		const r = peekReturn();
+		return '/profile?welcome=1' + (r ? '&redirect=' + encodeURIComponent(r) : '');
+	}
 	let isLoading    = $state(false);
 	let showPassword = $state(false);
 	let showConfirm  = $state(false);
@@ -27,7 +44,7 @@
 		try {
 			await signIn(
 				provider,
-				{ callbackUrl: '/profile?welcome=1' },
+				{ callbackUrl: callbackUrl() },
 				forceChooser ? { prompt: 'select_account' } : undefined
 			);
 		} catch {
@@ -48,7 +65,7 @@
 			autoLoginStarted = true;
 			// לא מאפסים את הדגל בכשל (היה יוצר לולאת signIn אינסופית כי הדגל
 			// הוא dependency של ה-effect); במקום זה מציגים קישור ידני
-			signIn('credentials', { callbackUrl: '/profile?welcome=1' }).catch(() => {
+			signIn('credentials', { callbackUrl: callbackUrl() }).catch(() => {
 				autoLoginFailed = true;
 			});
 		}
@@ -61,6 +78,8 @@
 
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-6" dir="rtl">
 	<div class="w-full max-w-md">
+
+		<MatchmakerJoinBanner />
 
 		<!-- כרטיס -->
 		<div class="bg-[#0f172a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
