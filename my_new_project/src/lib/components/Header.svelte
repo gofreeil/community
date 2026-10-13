@@ -31,6 +31,10 @@
     ];
 
     let showLangDropdown = $state(false);
+    // תמונת התצוגה המקדימה של "אודות" נכנסת ל-DOM רק בריחוף הראשון. היא יושבת
+    // בבלוק hidden md:flex, אבל img בלי lazy נמשך גם כשהוא מוסתר - כך שכל גולש
+    // נייד הוריד אותה בכל טעינת דף, לתצוגת ריחוף שאין לו דרך להפעיל.
+    let aboutPreviewReady = $state(false);
     // ערך פתיחה עד לתשובת ה-ping הראשונה: הגולש עצמו + היסט התצוגה (+2) שמוחל ב-/api/ping
     let onlineUsers = $state(3);
 
@@ -252,6 +256,7 @@
         const btnWrapper = document.getElementById('about-btn-wrapper');
         if (preview && btnWrapper) {
             btnWrapper.addEventListener('mouseenter', () => {
+                aboutPreviewReady = true;
                 const rect = btnWrapper.getBoundingClientRect();
                 const imgW = 700;
                 let left = rect.left + rect.width / 2 - imgW / 2;
@@ -654,6 +659,9 @@
                             transition: opacity 0.2s ease-out, transform 0.2s ease-out;
                             opacity:0; transform:scale(0.05);
                             transform-origin: top center;">
+                    <!-- ראה aboutPreviewReady. ה-div הוא fixed ו-pointer-events:none,
+                         ולכן הכנסת התמונה לא מזיזה שום דבר בדף -->
+                    {#if aboutPreviewReady}
                     <img
                         src="/images/community-advantages.webp"
                         alt={tFn("welcome")}
@@ -662,6 +670,7 @@
                                mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%);
                                filter: drop-shadow(0 0 40px rgba(0,0,0,0.95)) drop-shadow(0 0 80px rgba(0,0,0,0.7));"
                     />
+                    {/if}
                 </div>
                 <!-- Language Dropdown -->
                 <div class="lang-dropdown-container relative">

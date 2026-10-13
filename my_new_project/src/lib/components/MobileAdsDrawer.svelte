@@ -57,6 +57,12 @@
 	let open = $state(false);
 	let collapsed = $state(false);
 
+	// כל התמונות במגירה (פרסומות, אווטאר, ארנק) נכנסות ל-DOM רק אחרי שהגולש
+	// נגע בלשונית. loading="lazy" לבדו לא הספיק: המגירה הסגורה יושבת ב-left
+	// שלילי *צמוד* לקצה המסך, בתוך מרווח הטעינה-מראש של כרום, כך שכל התמונות
+	// ירדו בכל טעינת דף בנייד. הקישורים והטקסט נשארים ב-SSR, ורק ה-img נדחה.
+	let adImagesReady = $state(false);
+
 	// ---- נפילת תמונות ----
 	// כשבקשת תמונה בודדת נופלת (רשת ניידת, חוסם תוכן, פרוקסי) הדפדפן מצייר
 	// אייקון "תמונה שבורה" עם ה-alt בתוך המשבצת — וכל רשימת ההטבות נראית הרוסה.
@@ -126,6 +132,7 @@
 	});
 
 	function onTabTouchStart(e: TouchEvent) {
+		adImagesReady = true;
 		tabTouchStartX        = e.touches[0].clientX;
 		tabTouchStartY        = e.touches[0].clientY;
 		tabDragStartClientY   = e.touches[0].clientY;
@@ -224,6 +231,7 @@
 	}
 
 	function onTabClick() {
+		adImagesReady = true;
 		if (tabSwipeHandled) {
 			tabSwipeHandled = false;
 			return;
@@ -287,8 +295,13 @@
 					<!-- תמונה + מעגל מילוי -->
 					<div class="relative flex-shrink-0">
 						{#if layoutUser.avatar_url}
-							<img src={layoutUser.avatar_url} alt="avatar"
+							<!-- ראה adImagesReady; עד אז שומר-מקום באותו גודל, בלי קפיצה -->
+							{#if adImagesReady}
+							<img src={layoutUser.avatar_url} alt="avatar" width="64" height="64" loading="lazy" decoding="async"
 								class="w-16 h-16 rounded-full object-cover border-2 border-purple-500/40" />
+							{:else}
+							<div class="w-16 h-16 rounded-full bg-gray-700 border-2 border-purple-500/40"></div>
+							{/if}
 						{:else}
 							<div class="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600">
 								<svg viewBox="0 0 24 24" class="w-8 h-8 text-gray-400" fill="currentColor">
@@ -329,9 +342,11 @@
 					<div class="flex-shrink-0 flex flex-col items-center gap-1 mr-auto">
 						{#if walletFailed}
 							<div class="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-400/25"></div>
-						{:else}
+						{:else if adImagesReady}
 							<img src="/images/wallet.webp" alt={$_('components.mad_wallet_alt')} class="w-10 h-10 object-contain"
-								onerror={() => (walletFailed = true)} />
+								loading="lazy" decoding="async" onerror={() => (walletFailed = true)} />
+						{:else}
+							<span class="w-10 h-10"></span>
 						{/if}
 						<span class="text-green-400 text-xs font-black">{layoutUser.balance ?? 0}₪</span>
 					</div>
@@ -340,8 +355,10 @@
 			</a>
 			{:else if currentUser}
 			<a href="/profile" class="profile-btn" onclick={closeAll}>
-				{#if currentUser.avatar_url}
-				<img src={currentUser.avatar_url} alt="avatar" class="profile-avatar" />
+				{#if currentUser.avatar_url && adImagesReady}
+				<img src={currentUser.avatar_url} alt="avatar" width="40" height="40" loading="lazy" decoding="async" class="profile-avatar" />
+				{:else if currentUser.avatar_url}
+				<span class="profile-avatar-placeholder"></span>
 				{:else}
 				<span class="profile-avatar-placeholder">👤</span>
 				{/if}
@@ -385,7 +402,9 @@
 				<div class="benefit-img-wrap">
 					{#if imgFailed[String(ad.id)]}
 						<span class="benefit-img-fallback bg-gradient-to-br {ad.color}"></span>
-					{:else}
+					{:else if adImagesReady}
+						<!-- ראה adImagesReady. הריבוע 88px שמסביב קבוע, ולכן אין קפיצת
+						     תצוגה כשהתמונה נכנסת. -->
 						<!-- imageScale של הפרסומת מוחל כאן דרך אותו מנגנון זום של הבאנר הימני -->
 						<!-- בפתיחת המגירה עוברים ל-eager: התמונות יושבות בקונטיינר fixed
 						     מחוץ למסך, ושם lazy נשאר מושהה בחלק מהדפדפנים -->
