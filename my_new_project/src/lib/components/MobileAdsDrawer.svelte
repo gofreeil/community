@@ -63,6 +63,12 @@
 	// ירדו בכל טעינת דף בנייד. הקישורים והטקסט נשארים ב-SSR, ורק ה-img נדחה.
 	let adImagesReady = $state(false);
 
+	// רשת ביטחון: הדגל נדלק גם אם המגירה נפתחה ממסלול שאינו הלשונית (דיפ-לינק,
+	// כפתור עתידי במקום אחר). בלי זה מסלול כזה היה פותח מגירה עם ריבועים ריקים.
+	$effect(() => {
+		if (open) adImagesReady = true;
+	});
+
 	// ---- נפילת תמונות ----
 	// כשבקשת תמונה בודדת נופלת (רשת ניידת, חוסם תוכן, פרוקסי) הדפדפן מצייר
 	// אייקון "תמונה שבורה" עם ה-alt בתוך המשבצת — וכל רשימת ההטבות נראית הרוסה.
@@ -269,9 +275,9 @@
 	<!-- Drawer -->
 	<div class="drawer"
 		role="dialog"
-		aria-modal="true"
+		aria-modal={open}
 		aria-label={$_('components.mad_drawer_aria')}
-		aria-hidden={!open}
+		inert={!open || undefined}
 		ontouchstart={onDrawerTouchStart}
 		ontouchend={onDrawerTouchEnd}
 	>
@@ -344,7 +350,8 @@
 							<div class="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-400/25"></div>
 						{:else if adImagesReady}
 							<img src="/images/wallet.webp" alt={$_('components.mad_wallet_alt')} class="w-10 h-10 object-contain"
-								loading="lazy" decoding="async" onerror={() => (walletFailed = true)} />
+								loading="lazy"
+								fetchpriority="low" decoding="async" onerror={() => (walletFailed = true)} />
 						{:else}
 							<span class="w-10 h-10"></span>
 						{/if}
@@ -409,7 +416,7 @@
 						<!-- בפתיחת המגירה עוברים ל-eager: התמונות יושבות בקונטיינר fixed
 						     מחוץ למסך, ושם lazy נשאר מושהה בחלק מהדפדפנים -->
 						<img
-							src={ad.image}
+							src={ad.thumb}
 							alt={ad.title}
 							class="benefit-img"
 							loading={open ? 'eager' : 'lazy'}
