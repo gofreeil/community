@@ -9,6 +9,9 @@ import {
     unrejectAd,
     unapproveAd,
     removeAd,
+    trashAd,
+    restoreAd,
+    listTrash,
     updateAdFields,
     getAdsStats,
     listSchedules,
@@ -80,8 +83,10 @@ export const load: PageServerLoad = async (event) => {
     const backendUnavailable = failures.length > 0;
 
     const shop = await shopPromise;
+    // האשפה: נמחקו (לשחזור) ופג תוקפן (לחידוש) - מאותו קאש של הרשימות
+    const trash = await listTrash().catch(() => []);
 
-    return { pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable, role, shop };
+    return { trash, pending, approved, stats, schedules, advertisers, reminderRun, backendUnavailable, role, shop };
 };
 
 function parseIds(formData: FormData): string[] {
@@ -368,7 +373,30 @@ export const actions: Actions = {
         return { success: true, message: `🌐 "${r.title}" פורסמה ברשת: ${okText}${failText}` };
     },
 
+    // "מחק" = לאשפה (אפשר לשחזר משם)
     remove: async (event) => {
+        await ensureSuperAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        const r = await trashAd(id);
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
+        return { success: true, message: `"${r.title}" הועברה לאשפה - אפשר לשחזר אותה משם` };
+    },
+
+    // שחזור מהאשפה - למצב שלפני המחיקה (המקום בטור והתוקף נשמרו)
+    restore: async (event) => {
+        await ensureSuperAdmin(event);
+        const formData = await event.request.formData();
+        const id = formData.get('id') as string;
+        if (!id) return fail(400, { error: 'חסר מזהה' });
+        const r = await restoreAd(id);
+        if (!r) return fail(404, { error: 'הפרסומת לא נמצאה באשפה' });
+        return { success: true, message: `"${r.title}" שוחזרה ✅` };
+    },
+
+    // ריקון מהאשפה - מחיקה לצמיתות, בלי דרך חזרה
+    purge: async (event) => {
         await ensureSuperAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;

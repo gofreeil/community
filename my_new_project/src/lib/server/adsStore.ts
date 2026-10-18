@@ -82,6 +82,8 @@ export interface SubmittedAd {
     replacesStatus?: AdStatus;
     /** מי החליפה אותה. פרסומת מסומנת כך היא היסטוריה - לא באה בחשבון להחלפה נוספת */
     supersededBy?: string;
+    /** באשפה: נמחקה במסך הניהול ואפשר לשחזר אותה (ראה trashAd) */
+    deletedAt?: string;
 
     // ----- שדות רגעיים: מה קרה בפעולה הנוכחית, לא נשמרים ב-Strapi -----
     /** submitAd: בקשות ממתינות קודמות של אותו מפרסם שהוסרו כרגע מתור האישורים */
@@ -171,6 +173,8 @@ interface StrapiAdAttrs {
               _replacesAdId?: unknown;
               _replacesTitle?: unknown;
               _supersededBy?: unknown;
+              _deletedAt?: unknown;
+              _deletedStatus?: unknown;
           })
         | null;
     submitted_by_id: string | null;
@@ -241,6 +245,8 @@ function fromStrapi(s: StrapiAd): SubmittedAd {
         replacesAdId: typeof s.landing?._replacesAdId === 'string' ? s.landing._replacesAdId : undefined,
         replacesTitle: typeof s.landing?._replacesTitle === 'string' ? s.landing._replacesTitle : undefined,
         supersededBy: typeof s.landing?._supersededBy === 'string' ? s.landing._supersededBy : undefined,
+        // באשפה - מחיקה רכה: הרשומה נשארת כ-rejected והמצב הקודם נשמר לשחזור
+        deletedAt: typeof s.landing?._deletedAt === 'string' ? s.landing._deletedAt : undefined,
         title: s.title ?? '',
         subtitle: s.subtitle ?? '',
         hoverText: s.hover_text ?? '',
@@ -319,7 +325,8 @@ function withoutReplaced(list: SubmittedAd[]): SubmittedAd[] {
             .filter(a => a.status === 'approved' && a.replacesAdId && !a.supersededBy)
             .map(a => a.replacesAdId as string),
     );
-    return replaced.size === 0 ? list : list.filter(a => !replaced.has(a.id));
+    // גם מה שבאשפה מסונן - האשפה מוצגת רק במסך הניהול (listTrash)
+    return list.filter(a => !replaced.has(a.id) && !a.deletedAt);
 }
 
 async function findByDocumentId(id: string): Promise<StrapiAd | null> {
@@ -478,7 +485,8 @@ export async function listPending(): Promise<SubmittedAd[]> {
         listByStatus('pending'),
         listByStatus('rejected'),
     ]);
-    return [...pending, ...rejected];
+    // מה שבאשפה שמור כ-rejected, אבל הוא לא "נדחה" - מוצג בלשונית האשפה
+    return [...pending, ...rejected.filter(a => !a.deletedAt)];
 }
 
 /** כל המאושרות - כולל מושהות ופגות תוקף. לתצוגת הניהול בלבד. */
@@ -668,7 +676,7 @@ export async function getMyAds(identity: { id?: string; email?: string }): Promi
         const now = Date.now();
         const statusRank: Record<AdStatus, number> = { approved: 0, pending: 1, rejected: 2 };
         return [...approvedShown, ...pending, ...rejected]
-            .filter(a => !a.supersededBy && sameAdvertiser(a, me))
+            .filter(a => !a.supersededBy && !a.deletedAt && sameAdvertiser(a, me))
             .map(a => {
                 // חותמת הסנדיקציה חיה בתוך ה-JSON של landing (אין עמודה בסכמה)
                 const syncAt = (a.landing as unknown as { _syndicatedAt?: unknown } | null)?._syndicatedAt;
@@ -1080,6 +1088,73 @@ export async function unapproveAd(id: string): Promise<SubmittedAd | null> {
     });
     invalidate('ads:');
     return fromStrapi(res.data);
+}
+
+// ----- אשפה: מחיקה רכה, שחזור, ופגות תוקף לחידוש -----
+
+/**
+ * "מחק" במסך הניהול - לאשפה ולא לצמיתות: הפרסומת יורדת מהאתר (ad_status
+ * rejected) ונעלמת מהרשימות, אבל התוכן שלה נשמר ואפשר לשחזר אותה. המצב
+ * הקודם נשמר ב-landing (_deletedStatus), יחד עם המקום בטור והתוקף.
+ */
+export async function trashAd(id: string): Promise<{ title: string } | null> {
+    const existing = await findByDocumentId(id);
+    if (!existing) return null;
+    if (typeof existing.landing?._deletedAt === 'string') return { title: existing.title ?? '' };
+    await strapiPut(`${ENDPOINT}/${id}`, {
+        data: {
+            ad_status: 'rejected',
+            landing: {
+                ...(existing.landing ?? {}),
+                _deletedAt: new Date().toISOString(),
+                _deletedStatus: existing.ad_status ?? 'pending',
+            },
+        },
+    });
+    invalidate('ads:');
+    return { title: existing.title ?? '' };
+}
+
+/** שחזור מהאשפה למצב שלפני המחיקה. מאושרת חוזרת לאוויר אם התוקף שלה עוד
+ *  לא עבר; אם עבר - היא מופיעה באשפה כפגה, לחידוש. */
+export async function restoreAd(id: string): Promise<{ title: string } | null> {
+    const existing = await findByDocumentId(id);
+    if (!existing || typeof existing.landing?._deletedAt !== 'string') return null;
+    const landing = { ...existing.landing } as Record<string, unknown>;
+    const prev = landing._deletedStatus;
+    const status: AdStatus = prev === 'approved' || prev === 'rejected' ? prev : 'pending';
+    delete landing._deletedAt;
+    delete landing._deletedStatus;
+    await strapiPut(`${ENDPOINT}/${id}`, { data: { ad_status: status, landing } });
+    invalidate('ads:');
+    return { title: existing.title ?? '' };
+}
+
+export interface TrashItem {
+    id: string;
+    title: string;
+    advertiserName: string;
+    kind: 'deleted' | 'expired';
+    at: string;
+}
+
+/** האשפה של מסך הניהול: מה שנמחק (לשחזור) ומאושרות שפג תוקפן (לחידוש),
+ *  החדשות בראש. */
+export async function listTrash(): Promise<TrashItem[]> {
+    const [rejected, approved] = await Promise.all([listByStatus('rejected'), listByStatus('approved')]);
+    const now = Date.now();
+    const deleted = rejected.filter(a => a.deletedAt);
+    const expired = withoutReplaced(approved)
+        .filter(a => !a.paused && !!a.expiresAt && Date.parse(a.expiresAt) <= now);
+    return [...deleted, ...expired]
+        .map((a): TrashItem => ({
+            id: a.id,
+            title: a.title,
+            advertiserName: a.submittedBy?.name || a.submittedBy?.email || '-',
+            kind: a.deletedAt ? 'deleted' : 'expired',
+            at: a.deletedAt || a.expiresAt || '',
+        }))
+        .sort((x, y) => (Date.parse(y.at) || 0) - (Date.parse(x.at) || 0));
 }
 
 export async function removeAd(id: string): Promise<boolean> {
@@ -1553,11 +1628,13 @@ export interface AdsStats {
 }
 
 export async function getAdsStats(): Promise<AdsStats> {
-    const [pending, rejected, approved] = await Promise.all([
+    const [pending, rejectedAll, approved] = await Promise.all([
         listByStatus('pending'),
         listByStatus('rejected'),
         listByStatus('approved'),
     ]);
+    // מה שבאשפה לא נספר כנדחה
+    const rejected = rejectedAll.filter(a => !a.deletedAt);
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const submittedThisWeek = [...pending, ...rejected, ...approved]
         .filter(a => new Date(a.submittedAt).getTime() >= weekAgo).length;
@@ -1795,7 +1872,7 @@ export async function listAdvertisers(): Promise<AdvertiserSummary[]> {
     ]);
     // גרסאות שהוחלפו הן אותה פרסומת בגלגול קודם - ספירה שלהן הייתה מציגה
     // "3 פרסומות" למפרסם שפשוט שיפר פעמיים את הפרסומת האחת שלו
-    const all = [...pending, ...approved, ...rejectedAll].filter(a => !a.supersededBy);
+    const all = [...pending, ...approved, ...rejectedAll].filter(a => !a.supersededBy && !a.deletedAt);
     const map = new Map<string, AdvertiserSummary>();
     for (const ad of all) {
         const key = ad.submittedBy?.email || ad.submittedBy?.id || ad.id;
