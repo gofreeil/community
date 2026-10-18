@@ -1,20 +1,25 @@
 import type { RequestHandler } from './$types';
-import { getAllItems } from '$lib/server/db';
+import { getActiveItemForImage } from '$lib/server/db';
 import { isPrivateCategory } from '$lib/itemCategories';
 import { canUseMapImage, getMapImage } from '$lib/mapImage';
-import { decodeDataImage, immutableImageResponse } from '$lib/server/inlineImage';
+import { decodeDataImage, immutableImageResponse, imageUnavailableResponse } from '$lib/server/inlineImage';
 
 /**
  * "תמונה או לוגו על המפה" (extra_fields.map_image) - במקום base64 מוטבע
  * בנתוני דף הבית. הכתובת נושאת ?v=<חותם תוכן>, ולכן היא ייחודית לתמונה
  * ומאפשרת קאש immutable בדפדפן ובקצה. ראה inlineImage.ts.
  *
- * נשלף מרשימת הפריטים שב-cache (פריטים פעילים בלבד), ולכן בלי round-trip
- * נוסף ל-Strapi. קטגוריות פרטיות (הודעות, משוב, בקשות) חסומות כאן בדיוק
+ * פריטים פעילים בלבד (getActiveItemForImage - מה-cache כשהוא חם, אחרת
+ * הרשומה הבודדת). קטגוריות פרטיות (הודעות, משוב, בקשות) חסומות כאן בדיוק
  * כפי שהן מוחרגות מדף הבית - כדי שהנתיב לא ייהפך לפרצה לתוכן שלא נועד לגולש.
  */
 export const GET: RequestHandler = async ({ params }) => {
-    const item = (await getAllItems()).find(i => i.id === params.id);
+    let item;
+    try {
+        item = await getActiveItemForImage(params.id);
+    } catch (e) {
+        return imageUnavailableResponse('item-image', e);
+    }
     if (!item || isPrivateCategory(item.category) || !canUseMapImage(item.category)) {
         return new Response(null, { status: 404 });
     }

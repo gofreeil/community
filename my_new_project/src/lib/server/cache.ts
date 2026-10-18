@@ -167,6 +167,14 @@ export function cachedBackground<T>(key: string, ttlMs: number, fn: () => Promis
 }
 
 /**
+ * הערך שכבר יושב בזיכרון המופע (טרי או ישן), בלי לשלוף ובלי לרענן.
+ * undefined כשהמופע קר - והקורא מחליט אם שווה לשלם על שליפה מלאה.
+ */
+export function peekCached<T>(key: string): T | undefined {
+    return liveEntry<T>(key)?.value;
+}
+
+/**
  * מבטל ערכים שמפתחם מתחיל בקידומת (לקריאה אחרי כתיבה). ריק = הכל.
  * גם בקשות בטיסה מתנתקות: שליפה שיצאה לפני הכתיבה לא תישמר כשתחזור.
  */

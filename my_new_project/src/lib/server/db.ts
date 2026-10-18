@@ -9,7 +9,7 @@ import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { isPrivateCategory } from '$lib/itemCategories';
 import { userTier } from '$lib/tiers';
 import { normalizeSmsPrefs, type SmsPrefs } from '$lib/smsPrefs';
-import { cached, invalidate } from './cache.js';
+import { cached, invalidate, peekCached } from './cache.js';
 
 // TTL לערכי ה-cache (במילישניות). קצר מספיק שעדכונים נראים מהר,
 // ארוך מספיק שניווט פעיל לא נוגע ב-Strapi כמעט בכלל.
@@ -347,6 +347,26 @@ export async function getDbItemByIdFresh(id: string): Promise<DbItem | undefined
     } catch {
         return undefined;
     }
+}
+
+/**
+ * פריט פעיל אחד לנתיב התמונה שעל המפה. כשרשימת הפריטים כבר חמה במופע -
+ * ממנה, בלי round-trip. במופע קר - רק הרשומה הבודדת: שליפת כל האוסף (עם כל
+ * תמונות ה-base64) בשביל תמונה אחת חצתה את ה-timeout מול Strapi והפילה 500.
+ * שגיאת רשת נזרקת החוצה (הנתיב מחזיר 503), "לא נמצא" = undefined.
+ */
+export async function getActiveItemForImage(id: string): Promise<DbItem | undefined> {
+    const all = peekCached<DbItem[]>('items:all');
+    if (all) return all.find(i => i.id === id);
+    return cached(`items:img:${id}`, TTL_ITEMS, async () => {
+        const res = await strapiGet<{ data: StrapiItem[] }>('/api/items', {
+            'filters[documentId][$eq]': id,
+            'filters[status1][$eq]':    'active',
+            'pagination[pageSize]':     '1',
+        });
+        const s = res.data?.[0];
+        return s ? mapStrapiItem(s) : undefined;
+    });
 }
 
 export async function getDbItemById(id: string): Promise<DbItem | undefined> {

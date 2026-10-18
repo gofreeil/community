@@ -6,7 +6,7 @@
 
 import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError } from './strapiClient.js';
 import { createItem } from './db.js';
-import { cached, invalidate } from './cache.js';
+import { cached, invalidate, peekCached } from './cache.js';
 import { parseAdImageFit, type AdImageFit } from '../adImageFit.js';
 import { parseAdStyle, type AdStyle } from '../adStyle.js';
 import { imageStamp, decodeDataImage } from './inlineImage.js';
@@ -595,14 +595,33 @@ export function withAdImageUrls(ad: SubmittedAd): SubmittedAd {
 }
 
 /**
- * הבייטים עצמם, לנתיב שמגיש אותם. נשלף מרשימת המאושרות שב-cache: בלי
- * round-trip ל-Strapi, וגם כשומר סף - תמונות של פרסומת שלא אושרה לא נחשפות.
+ * פרסומת מאושרת אחת לנתיב התמונה. כשרשימת המאושרות כבר חמה במופע - ממנה,
+ * בלי round-trip. במופע קר - רק הרשומה הבודדת: הרשימה המלאה (~700KB לכל
+ * פרסומת) בשביל תמונה אחת חצתה את ה-timeout מול Strapi והפילה 500.
+ */
+async function findApprovedAd(id: string): Promise<SubmittedAd | undefined> {
+    const list = peekCached<SubmittedAd[]>('ads:by-status:approved');
+    if (list) return list.find(a => a.id === id);
+    return cached(`ads:img:${id}`, TTL_ADS, async () => {
+        const res = await strapiGet<{ data: StrapiAd[] }>(ENDPOINT, {
+            'filters[documentId][$eq]': id,
+            'filters[ad_status][$eq]':  'approved',
+            'pagination[pageSize]':     '1',
+        });
+        const s = res.data?.[0];
+        return s && belongsToThisSite(s) ? fromStrapi(s) : undefined;
+    });
+}
+
+/**
+ * הבייטים עצמם, לנתיב שמגיש אותם. רק מפרסומת מאושרת - שומר סף: תמונות של
+ * פרסומת שלא אושרה לא נחשפות. שגיאת רשת נזרקת החוצה (הנתיב מחזיר 503).
  */
 export async function getApprovedAdImage(
     id: string,
     kind: AdImageKind,
 ): Promise<{ mime: string; bytes: ArrayBuffer } | null> {
-    const ad = (await listByStatus('approved')).find(a => a.id === id);
+    const ad = await findApprovedAd(id);
     if (!ad) return null;
     return decodeDataImage(pickImage(ad, kind));
 }

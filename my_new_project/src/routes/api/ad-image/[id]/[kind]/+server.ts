@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getApprovedAdImage, isAdImageKind } from '$lib/server/adsStore';
-import { immutableImageResponse } from '$lib/server/inlineImage';
+import { immutableImageResponse, imageUnavailableResponse } from '$lib/server/inlineImage';
 
 /**
  * תמונות הפרסומות - במקום base64 מוטבע בכל דף.
@@ -10,15 +10,20 @@ import { immutableImageResponse } from '$lib/server/inlineImage';
  * גם בדפדפן וגם בקצה של Vercel - אחרי הבקשה הראשונה התמונה כבר לא יוצאת
  * שוב מהשרת, ולא נספרת שוב במכסת ה-Origin Transfer.
  *
- * מוגש רק מפרסומות מאושרות (getApprovedAdImage נשען על רשימת המאושרות
- * שב-cache), כך שתמונות של פרסומת ממתינה/נדחית אינן נחשפות דרך ניחוש מזהה.
+ * מוגש רק מפרסומות מאושרות (getApprovedAdImage), כך שתמונות של פרסומת
+ * ממתינה/נדחית אינן נחשפות דרך ניחוש מזהה.
  */
 export const GET: RequestHandler = async ({ params }) => {
     if (!isAdImageKind(params.kind)) {
         return new Response(null, { status: 404 });
     }
 
-    const img = await getApprovedAdImage(params.id, params.kind);
+    let img;
+    try {
+        img = await getApprovedAdImage(params.id, params.kind);
+    } catch (e) {
+        return imageUnavailableResponse('ad-image', e);
+    }
     if (!img) {
         return new Response(null, { status: 404 });
     }

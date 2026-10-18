@@ -92,6 +92,19 @@ export function immutableImageResponse(img: { mime: string; bytes: ArrayBuffer }
 }
 
 /**
+ * המקור (Strapi) לא ענה בזמן. 503 ולא זריקה: זריקה הופכת ל-500 + התראת
+ * "תקלת שרת" לכל תמונה בדף. no-store - שה-CDN לא ישמור את הכישלון, והטעינה
+ * הבאה תנסה שוב.
+ */
+export function imageUnavailableResponse(where: string, e: unknown): Response {
+    console.warn(`[${where}] image source unavailable:`, e instanceof Error ? e.message : e);
+    return new Response(null, {
+        status: 503,
+        headers: { 'cache-control': 'no-store', 'retry-after': '30' },
+    });
+}
+
+/**
  * מרוקן תמונות מוטבעות (ערכי data: ברמה העליונה של extra_fields) מרשומת פריט -
  * לדפים שמציגים את הפריט ברשימה בלי התמונות (למשל "הפרסומים שלי" בפרופיל,
  * שקורא מ-extra_fields רק את deleted_at). נמדד: 460KB של map_image/logo
