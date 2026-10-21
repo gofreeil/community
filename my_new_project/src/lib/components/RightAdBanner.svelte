@@ -7,6 +7,7 @@
         type AdStyle,
     } from "$lib/adStyle";
     import { AD_SLOT_COUNT } from "$lib/adSlots";
+    import { logoClearance } from "$lib/logoClearance";
 
     // פרסומות של מפרסמים שאושרו - הטור הימני הוא המקום היחיד שלהן באתר.
     type ApprovedAd = {
@@ -337,7 +338,8 @@
                          (live-demo-img-wrap). המפרסם מכוון שם מיקום וזום על מסגרת
                          צרה וגבוהה, ולכן חייבים לשמור את אותו יחס - אחרת החיתוך
                          שהוא בחר נשבר. -->
-                    <div class="relative overflow-hidden w-full aspect-[144/450]">
+                    <!-- הכותרת ותת-הכותרת עוקפות את הלוגו בכל מיקום שלו (logoClearance) -->
+                    <div class="relative overflow-hidden w-full aspect-[144/450]" use:logoClearance={ad}>
                         <div class="absolute inset-0 overflow-hidden">
                             <!-- המיקום/זום שנבחרו בבילדר מוחלים גם כאן — הדמו הוא מה שרואים -->
                             <img
@@ -362,11 +364,11 @@
                             class:has-corner-logo-left={cornerSide === 'left'}
                             style="transform: translateY({st.titleOffsetY}px);"
                         >
-                            <h3 class="promo-title" style="color: {st.titleColor};">{ad.title}</h3>
+                            <h3 class="promo-title" style="color: {st.titleColor};"><span class="logo-avoid" aria-hidden="true"></span>{ad.title}</h3>
                         </div>
                         {#if ad.subtitle}
                             <div class="promo-sub-wrap transition-opacity duration-[1500ms] group-hover:opacity-0">
-                                <p class="promo-sub">{ad.subtitle}</p>
+                                <p class="promo-sub"><span class="logo-avoid" data-anchor="bottom" aria-hidden="true"></span>{ad.subtitle}</p>
                             </div>
                         {/if}
                         {#if ad.logo}
@@ -375,6 +377,7 @@
                                 alt=""
                                 loading="lazy"
                                 decoding="async"
+                                data-ad-logo
                                 class="promo-logo {logoAnchorClass(st, 'promo')} {st.logoShape === 'circle' ? 'promo-logo-circle' : ''}
                                        transition-opacity duration-[1500ms] group-hover:opacity-0"
                                 style={logoFreeStyle(st)}
@@ -573,9 +576,12 @@
         line-height: var(--sub-lh, 1.3);
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     }
-    /* משולש בלתי-נראה שגורם לשורה הראשונה להתקצר לפי שיפוע האלכסון */
+    /* משולש בלתי-נראה שגורם לשורה הראשונה להתקצר לפי שיפוע האלכסון.
+       כשהלוגו בצד שמאל, logoClearance מחליף אותו ב-float משולב ומכבה
+       אותו דרך --logo-avoid-tri. */
     .promo-sub::before {
         content: "";
+        display: var(--logo-avoid-tri, block);
         float: left;
         width: 28%;
         height: 1.35em;
@@ -589,6 +595,10 @@
         line-height: 1.15;
         letter-spacing: 0.005em;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.95);
+    }
+    /* ה-float שגורם לטקסט לעקוף את הלוגו - מוצג ומוצב רק ע"י logoClearance */
+    .logo-avoid {
+        display: none;
     }
     .promo-logo {
         position: absolute;

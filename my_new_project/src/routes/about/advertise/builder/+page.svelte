@@ -10,6 +10,7 @@
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
+    import { logoClearance } from "$lib/logoClearance";
     import { AD_DRAFT_KEY, clearAdSubmitted, getAdIntent, setAdIntent, getAdEditTarget, setAdEditTarget, clearAdEditTarget, setAdEditInPlace, setAdEditReturn, type AdIntent } from "$lib/adDraft";
 
     // ===== Page payload (logged-in user prefill + admin status) =====
@@ -1954,7 +1955,7 @@
                             onfocus={() => hoverPreview = true}
                             onblur={() => hoverPreview = false}
                         >
-                            <div class="ad-img-wrap pro-img-wrap clean-card-img">
+                            <div class="ad-img-wrap pro-img-wrap clean-card-img" use:logoClearance={[title, subtitle, logo, logoFreeX, logoFreeY, logoPosition, diagHeight, titleOffsetY, subFontSize, subLineHeight, subAlign]}>
                                 {#if mainImage}
                                     <img src={mainImage} alt={title} class="ad-img" style:opacity={showHover ? 0 : 1} style:object-position="{mainImageObjectX}% {mainImageObjectY}%" use:adImgFit={mainImageFit} />
                                 {:else}
@@ -1965,10 +1966,10 @@
                                      class:has-corner-logo-right={titleCornerSide === 'right'}
                                      class:has-corner-logo-left={titleCornerSide === 'left'}
                                      style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
-                                    <h3 class="pro-title" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
+                                    <h3 class="pro-title" style:color={titleColor}><span class="logo-avoid" aria-hidden="true"></span>{title || $_('advertise.b_s3_title')}</h3>
                                 </div>
                                 <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
-                                    <p class="pro-sub">{subtitle || $_('advertise.b_ph_slogan')}</p>
+                                    <p class="pro-sub"><span class="logo-avoid" data-anchor="bottom" aria-hidden="true"></span>{subtitle || $_('advertise.b_ph_slogan')}</p>
                                 </div>
                                 <div class="hover-overlay" style:opacity={showHover ? 1 : 0}>
                                     <h3 class="hover-title">{title || $_('advertise.b_ph_title_short')}</h3>
@@ -1979,6 +1980,7 @@
                                     <!-- הלוגו עצמו הוא ידית הגרירה. role=button + tabindex נותנים לו
                                          מקבילת מקלדת מלאה (חיצים מזיזים אותו) ולכן זה תקין נגישותית -->
                                     <img src={logo} alt={$_('advertise.b_logo_alt')}
+                                         data-ad-logo
                                          class="ad-logo ad-logo-draggable {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoFree ? 'ad-logo-free' : logoAnchorClass} {logoDragging ? 'ad-logo-dragging' : ''}"
                                          style={logoFreeStyle}
                                          draggable="false"
@@ -2050,7 +2052,7 @@
         <div class="live-demo-card">
             <p class="live-demo-label">{$_('advertise.b_demo_label')}</p>
             <div class="live-demo-frame pro-ad" dir="rtl">
-                <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap">
+                <div class="ad-img-wrap pro-img-wrap live-demo-img-wrap" use:logoClearance={[title, subtitle, logo, logoFreeX, logoFreeY, logoPosition, diagHeight, titleOffsetY, subFontSize, subLineHeight, subAlign]}>
                     {#if mainImage}
                         <img src={mainImage} alt={title} class="ad-img"
                              style:object-position="{mainImageObjectX}% {mainImageObjectY}%"
@@ -2069,14 +2071,14 @@
                          class:has-corner-logo-left={titleCornerSide === 'left'}
                          style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if title}
-                            <h3 class="pro-title" style:color={titleColor}>{title}</h3>
+                            <h3 class="pro-title" style:color={titleColor}><span class="logo-avoid" aria-hidden="true"></span>{title}</h3>
                         {:else}
                             <div class="placeholder-dashed placeholder-line">{$_('advertise.b_ph_title_step')}</div>
                         {/if}
                     </div>
                     <div class="pro-title-wrap" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if subtitle}
-                            <p class="pro-sub">{subtitle}</p>
+                            <p class="pro-sub"><span class="logo-avoid" data-anchor="bottom" aria-hidden="true"></span>{subtitle}</p>
                         {:else}
                             <div class="placeholder-dashed placeholder-line small">{$_('advertise.b_ph_slogan_step')}</div>
                         {/if}
@@ -2084,7 +2086,8 @@
                     {#if logo}
                         <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
                         <img src={logo} alt={$_('advertise.b_logo_alt')}
-                             class="ad-logo ad-logo-draggable {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoFree ? 'ad-logo-free' : logoAnchorClass} {logoDragging ? 'ad-logo-dragging' : ''}"
+                             data-ad-logo
+                                         class="ad-logo ad-logo-draggable {logoShape === 'circle' ? 'ad-logo-circle' : ''} {logoFree ? 'ad-logo-free' : logoAnchorClass} {logoDragging ? 'ad-logo-dragging' : ''}"
                              style="{logoFreeStyle} opacity:{activeStep === 'hover' ? 0 : 1};"
                              draggable="false"
                              role="button" tabindex="0"
@@ -3188,6 +3191,8 @@
         width: 100%; height: 100%; object-fit: cover;
         transition: opacity 1500ms ease;
     }
+    /* ה-float שגורם לטקסט לעקוף את הלוגו - מוצג ומוצב רק ע"י logoClearance */
+    :global(.logo-avoid) { display: none; }
     :global(.ad-logo) {
         position: absolute; top: 6px;
         width: 36px; height: 36px; border-radius: 6px;
@@ -3586,6 +3591,8 @@
        and subsequent lines flow at full width. Invisible - pure layout. */
     :global(.pro-sub::before) {
         content: '';
+        /* logoClearance מכבה אותו (--logo-avoid-tri) כשהלוגו באותו צד */
+        display: var(--logo-avoid-tri, block);
         float: left;
         width: 28%;
         height: 1.35em;
