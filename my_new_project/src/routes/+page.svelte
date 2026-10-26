@@ -499,23 +499,25 @@
                         {$t('home.neighborhood_prefix', { values: { name: neighborhoodState.neighborhood } })}
                     </h2>
                 </div>
-                <div class="relative flex items-center w-full">
-                    <div class="absolute left-0 z-50">
-                        <button
-                            onclick={handleToggleMenu}
-                            class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-xs shadow-lg transition-all hover:scale-105 whitespace-nowrap relative z-50 pointer-events-auto"
-                        >
-                            {$t('home.all_neighborhoods_short')}
-                        </button>
-                    </div>
+                <!-- רשת 1fr|auto|1fr: הכפתור בעמודה השמאלית בזרימה (לא absolute), כך שהוא אף פעם לא מכסה את שם העיר -->
+                <div class="grid grid-cols-[1fr_auto_1fr] items-center w-full">
+                    <div></div>
                     <div
-                        class="relative group w-full text-center pointer-events-none"
+                        class="relative group text-center pointer-events-none min-w-0"
                     >
                         <h2
                             class="text-[1.6rem] md:text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent cursor-default leading-[1.3]"
                         >
                             {neighborhoodState.city}
                         </h2>
+                    </div>
+                    <div class="justify-self-start ps-1">
+                        <button
+                            onclick={handleToggleMenu}
+                            class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-2 py-1 rounded-md font-bold text-[11px] leading-tight shadow-lg transition-all hover:scale-105 whitespace-nowrap relative z-50 pointer-events-auto"
+                        >
+                            {$t('home.all_neighborhoods_short')}
+                        </button>
                     </div>
                 </div>
             </div>
