@@ -1563,7 +1563,8 @@
         </div>
 
         <!-- Confirmation checkbox -->
-        <label class="flex items-start gap-3 cursor-pointer rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-amber-500/40 p-4 transition-colors">
+        <label class="confirm-banner flex items-start gap-3 cursor-pointer rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-amber-500/40 p-4 transition-colors"
+               class:confirm-blink={!confirmedPeriod}>
             <input type="checkbox" bind:checked={confirmedPeriod}
                    class="mt-0.5 w-5 h-5 rounded border-2 border-amber-500/50 accent-amber-500 cursor-pointer flex-shrink-0" />
             <div class="flex-1">
@@ -1807,6 +1808,13 @@
     @keyframes slideUp {
         from { opacity: 0; transform: translate(-50%, 16px); }
         to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .confirm-blink {
+        animation: confirm-blink 1.4s ease-in-out infinite;
+    }
+    @keyframes confirm-blink {
+        0%, 100% { border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        50% { border-color: rgba(245, 158, 11, 0.9); box-shadow: 0 0 14px 2px rgba(245, 158, 11, 0.45); background-color: rgba(245, 158, 11, 0.12); }
     }
     @keyframes spin {
         to { transform: rotate(360deg); }
