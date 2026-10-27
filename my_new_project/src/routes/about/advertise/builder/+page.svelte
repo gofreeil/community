@@ -70,6 +70,7 @@
     let logo            = $state<string>("");                  // base64 data url - what is rendered (cropped circle or original)
     let logoOriginal    = $state<string>("");                  // base64 data url - raw upload kept as cropping source
     let logoShape       = $state<"square" | "circle">("square");
+    let logoBg          = $state<"white" | "black" | "clear">("white");
     let hasCircleCrop   = $state<boolean>(false);              // true once user confirmed a circular crop
     let logoPosition    = $state<"right" | "left" | "cta">("right");
     // Becomes true the first time the user picks a position manually.
@@ -91,9 +92,9 @@
     );
     // Inline placement, applied only once the user moved the logo themselves
     let logoFreeStyle = $derived(
-        logoFree
+        (logoFree
             ? `left:${logoFreeX}%; top:${logoFreeY}%; right:auto; bottom:auto; transform:translate(-50%,-50%);`
-            : ""
+            : "") + (logoBg === "black" ? "background:#000;" : logoBg === "clear" ? "background:transparent;box-shadow:none;" : "")
     );
 
     // Drag metrics, measured on pointer-down against whichever preview the logo lives in
@@ -394,6 +395,7 @@
     // site defaults and looked nothing like the live preview.
     let adStyle = $derived<AdStyle>({
         logoShape,
+        logoBg,
         logoAnchor: logoPosition,
         logoX: logoFreeX,
         logoY: logoFreeY,
@@ -812,6 +814,7 @@
                 logo            = d.logo ?? "";
                 logoOriginal    = d.logoOriginal ?? d.logo ?? "";
                 logoShape       = d.logoShape ?? "square";
+                logoBg          = d.logoBg === "black" || d.logoBg === "clear" ? d.logoBg : "white";
                 hasCircleCrop   = Boolean(d.hasCircleCrop);
                 logoPosition    = d.logoPosition ?? "right";
                 logoPositionExplicit = Boolean(d.logoPositionExplicit);
@@ -912,7 +915,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
             mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
@@ -999,6 +1002,7 @@
             if (st) {
                 logoShape            = st.logoShape === "circle" ? "circle" : "square";
                 hasCircleCrop        = st.logoShape === "circle";
+                logoBg               = st.logoBg ?? "white";
                 logoPosition         = st.logoAnchor ?? "right";
                 logoPositionExplicit = true;
                 logoFreeX            = typeof st.logoX === "number" ? st.logoX : null;
@@ -1478,6 +1482,18 @@
                         </div>
                     </div>
                     <div>
+                        <p class="text-xs font-bold text-gray-400 mb-1">{$_('advertise.b_logo_bg')}</p>
+                        <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                            {#each [["white", "b_bg_white"], ["black", "b_bg_black"], ["clear", "b_bg_clear"]] as [v, k]}
+                                <button type="button" onclick={() => (logoBg = v as typeof logoBg)}
+                                    class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors
+                                           {logoBg === v ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">
+                                    {$_('advertise.' + k)}
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+                    <div>
                         <p class="text-xs font-bold text-gray-400 mb-1">{$_('advertise.b_logo_pos')}</p>
                         <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
                             <button type="button" onclick={() => setLogoAnchor("right")}
@@ -1862,7 +1878,8 @@
                             <div class="popup-title-row">
                                 {#if logo}
                                     <img src={logo} alt={$_('advertise.b_logo_alt')}
-                                         class="popup-logo-above {logoShape === 'circle' ? 'popup-logo-above-circle' : ''}" />
+                                         class="popup-logo-above {logoShape === 'circle' ? 'popup-logo-above-circle' : ''}"
+                                         style={logoBg === 'black' ? 'background:#000;' : logoBg === 'clear' ? 'background:transparent;' : ''} />
                                 {/if}
                                 <h3 class="popup-title-above" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
                             </div>

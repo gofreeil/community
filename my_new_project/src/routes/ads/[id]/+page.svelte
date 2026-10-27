@@ -89,6 +89,7 @@
             <div class="al-copy">
                 {#if isShown(ad.logo)}
                     <img src={ad.logo} alt="" class="al-logo" class:is-circle={logoCircle}
+                         style={ad.adStyle?.logoBg === 'black' ? 'background:#000' : ad.adStyle?.logoBg === 'clear' ? 'background:transparent;box-shadow:none' : ''}
                          onerror={() => markBroken(ad.logo)} />
                 {/if}
                 <h1>{lp.headline || ad.title}</h1>
