@@ -6,7 +6,7 @@
     import { _ } from "svelte-i18n";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
     import {
-        bandCorners, logoCornerSide, type AdStyle, type SubAlign,
+        bandCorners, DEFAULT_AD_STYLE, logoCornerSide, type AdStyle, type SubAlign,
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
         DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX,
     } from "$lib/adStyle";
@@ -407,6 +407,9 @@
         hoverLogoX,
         hoverLogoY,
         hoverLogoSize,
+        lpLogoAlign: DEFAULT_AD_STYLE.lpLogoAlign,
+        lpLogoBg: DEFAULT_AD_STYLE.lpLogoBg,
+        lpLogoSize: DEFAULT_AD_STYLE.lpLogoSize,
         logoAnchor: logoPosition,
         logoX: logoFreeX,
         logoY: logoFreeY,

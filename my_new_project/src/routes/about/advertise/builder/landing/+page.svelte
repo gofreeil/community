@@ -4,7 +4,7 @@
     import { _ } from "svelte-i18n";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
-    import { DEFAULT_AD_STYLE, parseAdStyle, type AdStyle } from "$lib/adStyle";
+    import { DEFAULT_AD_STYLE, parseAdStyle, lpLogoStyle, type AdStyle, type LpLogoAlign, type LogoBg } from "$lib/adStyle";
     import { AD_DRAFT_KEY, markAdSubmitted, clearAdSubmitted, clearAdIntent, getAdIntent, getAdEditTarget, clearAdEditTarget, getAdEditInPlaceMode, setAdEditInPlace, getAdEditReturn, setAdEditReturn, type AdIntent } from "$lib/adDraft";
 
     let { data } = $props<{
@@ -67,7 +67,11 @@
     // העיצוב שנקבע בשלבים הקודמים - עובר כמו-שהוא אל המודעה בשליחה.
     // בלעדיו הפרסומת מתפרסמת עם ברירות המחדל של האתר: הלוגו קופץ ממקום
     // שהמפרסם גרר אליו, הרצועה משנה גובה והכותרת מאבדת צבע ומיקום.
+    let lpAlign     = $state<LpLogoAlign>("right");
+    let lpBg        = $state<LogoBg | null>(null);
+    let lpSize      = $state<number | null>(null);
     let adStyleFromDraft = $state<AdStyle>({ ...DEFAULT_AD_STYLE });
+    const lpStyle   = $derived<AdStyle>({ ...adStyleFromDraft, lpLogoAlign: lpAlign, lpLogoBg: lpBg, lpLogoSize: lpSize });
 
     // ===== Drag state =====
     let isDraggingLandingImage = $state(false);
@@ -533,7 +537,7 @@
                 // עריכה ממוקדת: המזהה של הפרסומת הספציפית שנערכת. השרת מקשר
                 // את הגרסה החדשה אליה בלבד, והאישור מחליף בדיוק אותה.
                 editOfAdId: adIntent === "edit" ? (getAdEditTarget() ?? undefined) : undefined,
-                adStyle: adStyleFromDraft,
+                adStyle: lpStyle,
                 landing: {
                     headline: landingHeadline, pitch: landingPitch, extended: landingExtended, image: landingImage, advantages: landingAdvantages, uniqueness, phone, whatsapp, website, email, address, hours,
                     // עותק עמוק — כיווץ תמונות מוצר לא ישנה את המצב שעל המסך
@@ -836,7 +840,32 @@
             </div>
         </section>
 
-        <!-- =================== LIVE PREVIEW =================== -->
+        {#if logo}
+            <section class="step-card">
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <span class="font-bold text-gray-300">{$_("advertise.l_logo_ctrl")}</span>
+                    <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                        {#each [["right", "b_pos_right"], ["center", "l_logo_center"], ["left", "b_pos_left"]] as [v, k]}
+                            <button type="button" onclick={() => (lpAlign = v as LpLogoAlign)}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {lpAlign === v ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">{$_("advertise." + k)}</button>
+                        {/each}
+                    </div>
+                    <div class="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+                        {#each [["white", "b_bg_white"], ["black", "b_bg_black"], ["clear", "b_bg_clear"]] as [v, k]}
+                            <button type="button" onclick={() => (lpBg = v as LogoBg)}
+                                class="px-2.5 py-1 rounded-md font-bold transition-colors {(lpBg ?? adStyleFromDraft.logoBg) === v ? 'bg-amber-500 text-black' : 'text-gray-300 hover:text-white'}">{$_("advertise." + k)}</button>
+                        {/each}
+                    </div>
+                    <div class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-2 py-1">
+                        <button type="button" aria-label="-" class="w-6 h-6 rounded-md font-bold text-gray-300 bg-white/5" onclick={() => (lpSize = Math.max(30, (lpSize ?? 54) - 6))}>−</button>
+                        <input type="range" min="30" max="140" step="2" class="w-20 accent-amber-500" value={lpSize ?? 54} oninput={(e) => (lpSize = +e.currentTarget.value)} />
+                        <button type="button" aria-label="+" class="w-6 h-6 rounded-md font-bold text-gray-300 bg-white/5" onclick={() => (lpSize = Math.min(140, (lpSize ?? 54) + 6))}>+</button>
+                    </div>
+                </div>
+            </section>
+        {/if}
+
+        <!-- =================== LIVE PREVIEW ===================  -->
         <section class="step-card">
             <div class="step-head">
                 <span class="step-num">🔍</span>
@@ -852,7 +881,7 @@
                         <div class="landing-hero-inner" class:has-media={!!previewHeroImage}>
                             <div class="landing-copy">
                                 {#if logo}
-                                    <img src={logo} alt={$_("advertise.b_logo_alt")} class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" />
+                                    <img src={logo} alt={$_("advertise.b_logo_alt")} class="landing-logo {logoShape === 'circle' ? 'landing-logo-circle' : ''}" style={lpLogoStyle(lpStyle)} />
                                 {/if}
                                 <h1>{landingHeadline || title || $_("advertise.l_ph_headline")}</h1>
                                 <p>{landingPitch || subtitle || $_("advertise.l_ph_pitch")}</p>

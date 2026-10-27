@@ -3,6 +3,7 @@
     // עיצוב מינימליסטי: הלוגו, הכותרת, משפט הפתיחה, היתרונות ודרכי הקשר
     // יושבים *ליד* התמונה ולא מתחתיה — כך כל העיקר נכנס למסך הראשון בלי גלילה.
     import type { PageData } from './$types';
+    import { parseAdStyle, lpLogoStyle, DEFAULT_AD_STYLE } from '$lib/adStyle';
     import { toExternalUrl, waHref } from '$lib/urlNormalize';
     let { data }: { data: PageData } = $props();
     // $derived: מעבר בין מודעות בניווט צד-לקוח משתמש באותה קומפוננטה
@@ -89,7 +90,7 @@
             <div class="al-copy">
                 {#if isShown(ad.logo)}
                     <img src={ad.logo} alt="" class="al-logo" class:is-circle={logoCircle}
-                         style={ad.adStyle?.logoBg === 'black' ? 'background:#000' : ad.adStyle?.logoBg === 'clear' ? 'background:transparent;box-shadow:none' : ''}
+                         style={lpLogoStyle(parseAdStyle(ad.adStyle) ?? DEFAULT_AD_STYLE)}
                          onerror={() => markBroken(ad.logo)} />
                 {/if}
                 <h1>{lp.headline || ad.title}</h1>
