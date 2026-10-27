@@ -3,7 +3,7 @@
     import { _ } from "svelte-i18n";
     import { adImgFit, parseAdImageFit, type AdImageFit } from "$lib/adImageFit";
     import {
-        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoBgStyle, logoCornerSide,
+        parseAdStyle, legacyAdStyle, adStyleVars, logoAnchorClass, logoFreeStyle, logoBgStyle, logoSizeStyle, logoCornerSide,
         type AdStyle,
     } from "$lib/adStyle";
     import { AD_SLOT_COUNT } from "$lib/adSlots";
@@ -380,7 +380,7 @@
                                 data-ad-logo
                                 class="promo-logo {logoAnchorClass(st, 'promo')} {st.logoShape === 'circle' ? 'promo-logo-circle' : ''}
                                        transition-opacity duration-[1500ms] group-hover:opacity-0"
-                                style={logoFreeStyle(st) + logoBgStyle(st.logoBg)}
+                                style={logoFreeStyle(st) + logoBgStyle(st.logoBg) + logoSizeStyle(st.logoSize)}
                             />
                         {/if}
                         <div

@@ -70,6 +70,7 @@
     let logo            = $state<string>("");                  // base64 data url - what is rendered (cropped circle or original)
     let logoOriginal    = $state<string>("");                  // base64 data url - raw upload kept as cropping source
     let logoShape       = $state<"square" | "circle">("square");
+    let logoSize        = $state<number>(36);
     let logoBg          = $state<"white" | "black" | "clear">("white");
     let hasCircleCrop   = $state<boolean>(false);              // true once user confirmed a circular crop
     let logoPosition    = $state<"right" | "left" | "cta">("right");
@@ -94,7 +95,7 @@
     let logoFreeStyle = $derived(
         (logoFree
             ? `left:${logoFreeX}%; top:${logoFreeY}%; right:auto; bottom:auto; transform:translate(-50%,-50%);`
-            : "") + (logoBg === "black" ? "background:#000;" : logoBg === "clear" ? "background:transparent;box-shadow:none;" : "")
+            : "") + (logoBg === "black" ? "background:#000;" : logoBg === "clear" ? "background:transparent;box-shadow:none;" : "") + (logoSize !== 36 ? `width:${logoSize}px;height:${logoSize}px;` : "")
     );
 
     // Drag metrics, measured on pointer-down against whichever preview the logo lives in
@@ -396,6 +397,7 @@
     let adStyle = $derived<AdStyle>({
         logoShape,
         logoBg,
+        logoSize,
         logoAnchor: logoPosition,
         logoX: logoFreeX,
         logoY: logoFreeY,
@@ -814,6 +816,7 @@
                 logo            = d.logo ?? "";
                 logoOriginal    = d.logoOriginal ?? d.logo ?? "";
                 logoShape       = d.logoShape ?? "square";
+                logoSize        = typeof d.logoSize === "number" ? d.logoSize : 36;
                 logoBg          = d.logoBg === "black" || d.logoBg === "clear" ? d.logoBg : "white";
                 hasCircleCrop   = Boolean(d.hasCircleCrop);
                 logoPosition    = d.logoPosition ?? "right";
@@ -915,7 +918,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
             mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
@@ -1003,6 +1006,7 @@
                 logoShape            = st.logoShape === "circle" ? "circle" : "square";
                 hasCircleCrop        = st.logoShape === "circle";
                 logoBg               = st.logoBg ?? "white";
+                logoSize             = st.logoSize ?? 36;
                 logoPosition         = st.logoAnchor ?? "right";
                 logoPositionExplicit = true;
                 logoFreeX            = typeof st.logoX === "number" ? st.logoX : null;
@@ -1491,6 +1495,16 @@
                                     {$_('advertise.' + k)}
                                 </button>
                             {/each}
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 mb-1">{$_('advertise.b_logo_size')}</p>
+                        <div class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-2 py-1.5">
+                            <button type="button" aria-label="-" onclick={() => (logoSize = Math.max(20, logoSize - 4))}
+                                class="w-6 h-6 rounded-md text-sm font-bold text-gray-300 hover:text-white bg-white/5">−</button>
+                            <input type="range" min="20" max="80" step="2" bind:value={logoSize} class="w-20 accent-amber-500" />
+                            <button type="button" aria-label="+" onclick={() => (logoSize = Math.min(80, logoSize + 4))}
+                                class="w-6 h-6 rounded-md text-sm font-bold text-gray-300 hover:text-white bg-white/5">+</button>
                         </div>
                     </div>
                     <div>

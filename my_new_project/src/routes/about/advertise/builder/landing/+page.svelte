@@ -304,6 +304,8 @@
                 // לאובייקט העיצוב שנשלח עם המודעה
                 adStyleFromDraft = parseAdStyle({
                     logoShape:    d.logoShape,
+                    logoBg:       d.logoBg,
+                    logoSize:     d.logoSize,
                     logoAnchor:   d.logoPosition,
                     logoX:        d.logoFreeX,
                     logoY:        d.logoFreeY,
