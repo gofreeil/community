@@ -8,6 +8,7 @@
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
     import ShopAdsManager from '$lib/components/ShopAdsManager.svelte';
+    import AdCardPreview from '$lib/components/AdCardPreview.svelte';
     import { SHOP_URL } from '$lib/shopAds';
 
     let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -28,6 +29,20 @@
     }
     /** הפרסומת המלאה לפי מזהה - שורת טבלת התזמון לא נושאת את חותמת הפרסום ברשת */
     let approvedById = $derived(new Map(data.approved.map(a => [a.id, a] as const)));
+
+    // תצוגה מקדימה של הכרטיס כפי שהוא מוצג בטור: ריחוף על הכותרת (דסקטופ) או הקשה (נייד/דסקטופ)
+    let hoverPreview = $state<{ id: string; x: number; y: number } | null>(null);
+    let modalPreviewId = $state<string | null>(null);
+    const PREVIEW_W = 144, PREVIEW_H = 490; // מידות הכרטיס האמיתי בטור (w-36 × h-[490px])
+    function openHoverPreview(e: MouseEvent, id: string) {
+        if (!approvedById.has(id)) return;
+        // מסך מגע - אין ריחוף אמיתי; ההקשה פותחת את המודאל
+        if (window.matchMedia('(hover: none)').matches) return;
+        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const y = Math.max(8, Math.min(window.innerHeight - PREVIEW_H - 8, r.top + r.height / 2 - PREVIEW_H / 2));
+        const x = Math.max(8, r.left - PREVIEW_W - 16);
+        hoverPreview = { id, x, y };
+    }
     // תקופות הפרסום שאפשר לקצוב מהטבלה (התקופה נספרת מיום הפרסום)
     const DURATION_OPTIONS = [7, 14, 30, 60, 90, 180, 365];
     // 16 המקומות הממוספרים בטור הפרסומות - בורר המקום בטבלת התזמון
@@ -898,10 +913,69 @@
                                             <span class="max-w-[150px] text-[10px] leading-snug font-bold text-amber-300">⚠ {slotWarning[s.id]}</span>
                                         {/if}
                                     </form>
+                                <!-- שכפל פרסומת (סופר-אדמין): אותה פרסומת גם במקומות נוספים - למשל
+                                     2 ו-6 (אותה רביעייה), כך שהיא נשארת באותה משבצת ולא מתחלפת בסבב.
+                                     תג ⧉ = שכפול קיים; לחיצה עליו מבטלת אותו -->
+                                {#if isSuperAdmin}
+                                    {@const dup = dupOptions(s)}
+                                    <div class="mt-1 flex flex-wrap items-center gap-1 max-w-[200px]">
+                                        {#each s.extraSlots ?? [] as n (n)}
+                                            <form method="POST" action="?/removeExtraSlot" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <input type="hidden" name="slot" value={n} />
+                                                <button type="submit"
+                                                        class="inline-flex h-6 items-center gap-1 rounded-lg border border-black/20 px-1.5 text-[11px] font-black whitespace-nowrap hover:opacity-80"
+                                                        style="background:{slotOptionBg(n)};color:#111"
+                                                        title="שכפול במקום {n} (רביעייה {slotGroupLetter(n)}׳ · המשבצת ה{slotPosName(n)} בטור) - לחיצה מבטלת את השכפול">
+                                                    ⧉ {n} · {slotGroupLetter(n)}׳ <span class="text-red-700">✕</span>
+                                                </button>
+                                            </form>
+                                        {/each}
+                                        {#if dup.same.length + dup.rest.length > 0}
+                                            <form class="flex-1 min-w-[110px]" method="POST" action="?/addExtraSlot" use:enhance>
+                                                <input type="hidden" name="id" value={s.id} />
+                                                <select name="slot"
+                                                        aria-label="שכפל פרסומת"
+                                                        onchange={(e) => e.currentTarget.form?.requestSubmit()}
+                                                        class="h-7 w-full rounded-lg border border-sky-500/40 bg-sky-500/15 px-1.5 text-[11px] font-black text-sky-200 focus:border-sky-400/60 focus:outline-none">
+                                                    <option value="" selected disabled>⧉ שכפל פרסומת</option>
+                                                    {#if dup.same.length > 1}
+                                                        <option value="same" style="background:#fff;color:#111;font-weight:700">
+                                                            ★ קבועה בכל הרביעייה ({dup.same.join(', ')})
+                                                        </option>
+                                                    {/if}
+                                                    {#if dup.same.length > 0}
+                                                        <optgroup label="★ אותה רביעייה (אותה משבצת)">
+                                                            {#each dup.same as n (n)}
+                                                                <option value={n} style="background:{slotOptionBg(n)};color:#111">
+                                                                    {n} · {slotPosName(n)}
+                                                                </option>
+                                                            {/each}
+                                                        </optgroup>
+                                                    {/if}
+                                                    {#each groupSlotOptions(dup.rest) as grp (grp.letter)}
+                                                        <optgroup label="— רביעייה {grp.letter}׳ —">
+                                                            {#each grp.nums as n (n)}
+                                                                <option value={n} style="background:{slotOptionBg(n)};color:#111">
+                                                                    {n} · {slotPosName(n)}
+                                                                </option>
+                                                            {/each}
+                                                        </optgroup>
+                                                    {/each}
+                                                </select>
+                                            </form>
+                                        {/if}
+                                    </div>
+                                {/if}
                                 </td>
                                 <!-- פרסומת + מפרסם + סטטוס בתא אחד, מוערמים -->
                                 <td class="px-2 py-2">
-                                    <div class="font-bold text-white line-clamp-2 break-words max-w-[160px] leading-snug">{s.title}</div>
+                                    <button type="button"
+                                            onmouseenter={(e) => openHoverPreview(e, s.id)}
+                                            onmouseleave={() => hoverPreview = null}
+                                            onclick={() => { hoverPreview = null; modalPreviewId = s.id; }}
+                                            title="תצוגה מקדימה של הפרסומת כפי שהיא מוצגת באתר"
+                                            class="font-bold text-white line-clamp-2 break-words max-w-[160px] leading-snug text-right cursor-pointer underline decoration-dotted decoration-white/30 underline-offset-2 hover:text-amber-300">{s.title}</button>
                                     <div class="text-xs text-gray-300 truncate max-w-[160px] mt-0.5">{s.advertiserName || '-'}</div>
                                     <div class="text-[10px] text-gray-500 truncate max-w-[160px]">{s.advertiserEmail}</div>
                                     <span class="inline-block mt-1 text-[11px] font-black border px-2 py-0.5 rounded-full whitespace-nowrap {stateColor}">{stateLabel}</span>
@@ -1001,60 +1075,6 @@
                                                     {syncedAt ? '🌐 עדכן בכל האתרים' : '🌐 פרסם בכל האתרים'}
                                                 </button>
                                             </form>
-                                        {/if}
-                                        <!-- שכפל פרסומת (סופר-אדמין): אותה פרסומת גם במקומות נוספים - למשל
-                                             2 ו-6 (אותה רביעייה), כך שהיא נשארת באותה משבצת ולא מתחלפת בסבב.
-                                             תג ⧉ = שכפול קיים; לחיצה עליו מבטלת אותו -->
-                                        {#if isSuperAdmin}
-                                            {@const dup = dupOptions(s)}
-                                            <div class="col-span-3 flex flex-wrap items-center gap-1">
-                                                {#each s.extraSlots ?? [] as n (n)}
-                                                    <form method="POST" action="?/removeExtraSlot" use:enhance>
-                                                        <input type="hidden" name="id" value={s.id} />
-                                                        <input type="hidden" name="slot" value={n} />
-                                                        <button type="submit"
-                                                                class="inline-flex h-6 items-center gap-1 rounded-lg border border-black/20 px-1.5 text-[11px] font-black whitespace-nowrap hover:opacity-80"
-                                                                style="background:{slotOptionBg(n)};color:#111"
-                                                                title="שכפול במקום {n} (רביעייה {slotGroupLetter(n)}׳ · המשבצת ה{slotPosName(n)} בטור) - לחיצה מבטלת את השכפול">
-                                                            ⧉ {n} · {slotGroupLetter(n)}׳ <span class="text-red-700">✕</span>
-                                                        </button>
-                                                    </form>
-                                                {/each}
-                                                {#if dup.same.length + dup.rest.length > 0}
-                                                    <form class="flex-1 min-w-[110px]" method="POST" action="?/addExtraSlot" use:enhance>
-                                                        <input type="hidden" name="id" value={s.id} />
-                                                        <select name="slot"
-                                                                aria-label="שכפל פרסומת"
-                                                                onchange={(e) => e.currentTarget.form?.requestSubmit()}
-                                                                class="h-7 w-full rounded-lg border border-sky-500/40 bg-sky-500/15 px-1.5 text-[11px] font-black text-sky-200 focus:border-sky-400/60 focus:outline-none">
-                                                            <option value="" selected disabled>⧉ שכפל פרסומת</option>
-                                                            {#if dup.same.length > 1}
-                                                                <option value="same" style="background:#fff;color:#111;font-weight:700">
-                                                                    ★ קבועה בכל הרביעייה ({dup.same.join(', ')})
-                                                                </option>
-                                                            {/if}
-                                                            {#if dup.same.length > 0}
-                                                                <optgroup label="★ אותה רביעייה (אותה משבצת)">
-                                                                    {#each dup.same as n (n)}
-                                                                        <option value={n} style="background:{slotOptionBg(n)};color:#111">
-                                                                            {n} · {slotPosName(n)}
-                                                                        </option>
-                                                                    {/each}
-                                                                </optgroup>
-                                                            {/if}
-                                                            {#each groupSlotOptions(dup.rest) as grp (grp.letter)}
-                                                                <optgroup label="— רביעייה {grp.letter}׳ —">
-                                                                    {#each grp.nums as n (n)}
-                                                                        <option value={n} style="background:{slotOptionBg(n)};color:#111">
-                                                                            {n} · {slotPosName(n)}
-                                                                        </option>
-                                                                    {/each}
-                                                                </optgroup>
-                                                            {/each}
-                                                        </select>
-                                                    </form>
-                                                {/if}
-                                            </div>
                                         {/if}
                                     </div>
                                 </td>
@@ -1236,4 +1256,43 @@
     </div>
 {/if}
 
-<svelte:window onkeydown={(e) => { if (e.key === 'Escape') closeDurationModal(); }} />
+<!-- תצוגה מקדימה צפה בריחוף על כותרת מודעה מאושרת (דסקטופ בלבד) -->
+{#if hoverPreview}
+    {@const pAd = approvedById.get(hoverPreview.id)}
+    {#if pAd}
+        <div class="fixed z-40 pointer-events-none drop-shadow-2xl hidden md:block"
+             style="left:{hoverPreview.x}px; top:{hoverPreview.y}px">
+            <AdCardPreview ad={pAd} />
+        </div>
+    {/if}
+{/if}
+
+<!-- מודאל תצוגה מקדימה בהקשה על הכותרת (נייד ודסקטופ) -->
+{#if modalPreviewId}
+    {@const mAd = approvedById.get(modalPreviewId)}
+    {#if mAd}
+        <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+        <div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+             role="presentation"
+             onclick={() => modalPreviewId = null}>
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+            <div class="flex flex-col items-center gap-3 my-auto"
+                 role="dialog" aria-modal="true" aria-label="תצוגה מקדימה של הפרסומת" tabindex="-1"
+                 onclick={(e) => e.stopPropagation()}>
+                <AdCardPreview ad={mAd} />
+                <div class="flex items-center gap-2">
+                    <a href={`/ads/${mAd.id}`} target="_blank" rel="noopener"
+                       class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-black hover:bg-amber-500/30">
+                        פתח דף נחיתה
+                    </a>
+                    <button type="button" onclick={() => modalPreviewId = null}
+                            class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-gray-200 text-xs font-black hover:bg-white/20">
+                        ✕ סגור
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/if}
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') { closeDurationModal(); modalPreviewId = null; hoverPreview = null; } }} />
