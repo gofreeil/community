@@ -22,6 +22,10 @@ export type LogoBg = 'white' | 'black' | 'clear';
 export const DEFAULT_LOGO_SIZE = 36;
 export const LOGO_SIZE_MIN = 20;
 export const LOGO_SIZE_MAX = 80;
+/** גודל הכותרת ב-rem */
+export const DEFAULT_TITLE_FONT_SIZE = 1.15;
+export const TITLE_FONT_SIZE_MIN = 0.8;
+export const TITLE_FONT_SIZE_MAX = 1.8;
 export type LogoAnchor = 'right' | 'left' | 'cta';
 /** יישור תת-הכותרת: ימין / מרכז / שמאל / מילוי רוחב */
 export type SubAlign = 'right' | 'center' | 'left' | 'justify';
@@ -42,6 +46,8 @@ export interface AdStyle {
     titleOffsetY: number;
     /** צבע הכותרת (#rgb / #rrggbb בלבד — הערך נכנס ל-style inline) */
     titleColor: string;
+    /** גודל הכותרת ב-rem */
+    titleFontSize: number;
     /** גודל תת-הכותרת ב-rem */
     subFontSize: number;
     /** רווח בין שורות תת-הכותרת (יחס, לא יחידה) */
@@ -77,6 +83,7 @@ export const DEFAULT_AD_STYLE: AdStyle = {
     bandHeight: DEFAULT_BAND_HEIGHT,
     titleOffsetY: 0,
     titleColor: '#ffffff',
+    titleFontSize: DEFAULT_TITLE_FONT_SIZE,
     subFontSize: DEFAULT_SUB_FONT_SIZE,
     subLineHeight: DEFAULT_SUB_LINE_HEIGHT,
     subAlign: 'right',
@@ -113,6 +120,7 @@ export function parseAdStyle(raw: unknown): AdStyle | null {
         bandHeight: clamp(num(o.bandHeight) ?? DEFAULT_BAND_HEIGHT, BAND_MIN, BAND_MAX),
         titleOffsetY: clamp(num(o.titleOffsetY) ?? 0, TITLE_OFFSET_MIN, TITLE_OFFSET_MAX),
         titleColor: parseColor(o.titleColor),
+        titleFontSize: clamp(num(o.titleFontSize) ?? DEFAULT_TITLE_FONT_SIZE, TITLE_FONT_SIZE_MIN, TITLE_FONT_SIZE_MAX),
         subFontSize: clamp(num(o.subFontSize) ?? DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX),
         subLineHeight: clamp(num(o.subLineHeight) ?? DEFAULT_SUB_LINE_HEIGHT, SUB_LINE_HEIGHT_MIN, SUB_LINE_HEIGHT_MAX),
         subAlign: parseSubAlign(o.subAlign),
@@ -173,6 +181,11 @@ export function logoBgStyle(bg: LogoBg): string {
 /** גודל הלוגו → style inline (ריק בגודל ברירת המחדל) */
 export function logoSizeStyle(size: number): string {
     return size === DEFAULT_LOGO_SIZE ? '' : `width:${size}px;height:${size}px;`;
+}
+
+/** גודל הכותרת → style inline (ריק בגודל ברירת המחדל, כדי לא לדרוס את גדלי הנייד) */
+export function titleSizeStyle(size: number): string {
+    return size === DEFAULT_TITLE_FONT_SIZE ? '' : `font-size:${size}rem;`;
 }
 
 /** מיקום חופשי → style inline. ריק כשהלוגו על העוגן */

@@ -273,6 +273,7 @@
     let previewMobileFit   = $derived(mobileImage ? mobileImageFit : mainImageFit);
     let title           = $state<string>("");
     let titleColor      = $state<string>("#ffffff");
+    let titleFontSize   = $state<number>(1.15);
     let titleOffsetY    = $state<number>(0);                    // vertical offset for title on banner (-20..+60 px)
     let subtitle        = $state<string>("");
     // טיפוגרפיית תת-הכותרת (שלב 5) - גודל, רווח בין שורות ויישור
@@ -403,6 +404,7 @@
         logoY: logoFreeY,
         bandHeight: diagHeight,
         titleOffsetY,
+        titleFontSize,
         titleColor,
         subFontSize,
         subLineHeight,
@@ -833,6 +835,7 @@
                 mobileImageZoom    = typeof d.mobileImageZoom === 'number' ? d.mobileImageZoom : 1;
                 title           = d.title ?? "";
                 titleColor      = typeof d.titleColor === 'string' ? d.titleColor : "#ffffff";
+                titleFontSize   = typeof d.titleFontSize === 'number' ? d.titleFontSize : 1.15;
                 titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
                 subFontSize     = typeof d.subFontSize === 'number' ? d.subFontSize : DEFAULT_SUB_FONT_SIZE;
@@ -919,7 +922,7 @@
         if (!browser) return;
         const snapshot = {
             logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
-            mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY,
+            mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY, titleFontSize,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
@@ -1012,6 +1015,7 @@
                 logoFreeX            = typeof st.logoX === "number" ? st.logoX : null;
                 logoFreeY            = typeof st.logoY === "number" ? st.logoY : null;
                 diagHeight           = typeof st.bandHeight === "number" ? st.bandHeight : diagHeight;
+                titleFontSize        = typeof st.titleFontSize === "number" ? st.titleFontSize : 1.15;
                 titleOffsetY         = typeof st.titleOffsetY === "number" ? st.titleOffsetY : 0;
                 titleColor           = typeof st.titleColor === "string" ? st.titleColor : "#ffffff";
                 subFontSize          = typeof st.subFontSize === "number" ? st.subFontSize : DEFAULT_SUB_FONT_SIZE;
@@ -1647,6 +1651,16 @@
             <span>{title.length}/40</span>
         </div>
 
+        <div class="mt-4">
+            <div class="flex items-center justify-between mb-1.5">
+                <p class="text-sm font-bold text-gray-300">{$_('advertise.b_title_size')} <span class="text-amber-300">{titleFontSize.toFixed(2)}</span></p>
+                <button type="button" onclick={() => (titleFontSize = 1.15)}
+                        class="text-[11px] text-gray-400 hover:text-amber-300 underline">{$_('advertise.b_reset_word')}</button>
+            </div>
+            <input type="range" min="0.8" max="1.8" step="0.05" bind:value={titleFontSize}
+                   class="w-full accent-amber-500" aria-label={$_('advertise.b_title_size')} />
+        </div>
+
         <!-- Title vertical offset slider - move title up/down on the banner -->
         <div class="mt-4">
             <div class="flex items-center justify-between mb-1.5">
@@ -1997,7 +2011,7 @@
                                      class:has-corner-logo-right={titleCornerSide === 'right'}
                                      class:has-corner-logo-left={titleCornerSide === 'left'}
                                      style:opacity={showHover ? 0 : 1} style:transform="translateY({titleOffsetY}px)">
-                                    <h3 class="pro-title" style:color={titleColor}><span class="logo-avoid" aria-hidden="true"></span>{title || $_('advertise.b_s3_title')}</h3>
+                                    <h3 class="pro-title" style:color={titleColor} style:font-size={titleFontSize !== 1.15 ? `${titleFontSize}rem` : undefined}><span class="logo-avoid" aria-hidden="true"></span>{title || $_('advertise.b_s3_title')}</h3>
                                 </div>
                                 <div class="pro-title-wrap" style:opacity={showHover ? 0 : 1}>
                                     <p class="pro-sub"><span class="logo-avoid" data-anchor="bottom" aria-hidden="true"></span>{subtitle || $_('advertise.b_ph_slogan')}</p>
@@ -2102,7 +2116,7 @@
                          class:has-corner-logo-left={titleCornerSide === 'left'}
                          style:transform="translateY({titleOffsetY}px)" style:opacity={activeStep === "hover" ? 0 : 1}>
                         {#if title}
-                            <h3 class="pro-title" style:color={titleColor}><span class="logo-avoid" aria-hidden="true"></span>{title}</h3>
+                            <h3 class="pro-title" style:color={titleColor} style:font-size={titleFontSize !== 1.15 ? `${titleFontSize}rem` : undefined}><span class="logo-avoid" aria-hidden="true"></span>{title}</h3>
                         {:else}
                             <div class="placeholder-dashed placeholder-line">{$_('advertise.b_ph_title_step')}</div>
                         {/if}

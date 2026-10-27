@@ -312,6 +312,7 @@
                     bandHeight:   d.diagHeight,
                     titleOffsetY: d.titleOffsetY,
                     titleColor:   d.titleColor,
+                    titleFontSize: d.titleFontSize,
                     // טיפוגרפיית תת-הכותרת משלב 5
                     subFontSize:   d.subFontSize,
                     subLineHeight: d.subLineHeight,
