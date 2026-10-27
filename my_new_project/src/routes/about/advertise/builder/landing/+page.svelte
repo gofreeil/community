@@ -304,6 +304,10 @@
                 // לאובייקט העיצוב שנשלח עם המודעה
                 adStyleFromDraft = parseAdStyle({
                     logoShape:    d.logoShape,
+                    hoverLogo:    d.hoverLogo,
+                    hoverLogoX:   d.hoverLogoX,
+                    hoverLogoY:   d.hoverLogoY,
+                    hoverLogoSize: d.hoverLogoSize,
                     logoBg:       d.logoBg,
                     logoSize:     d.logoSize,
                     logoAnchor:   d.logoPosition,

@@ -70,6 +70,10 @@
     let logo            = $state<string>("");                  // base64 data url - what is rendered (cropped circle or original)
     let logoOriginal    = $state<string>("");                  // base64 data url - raw upload kept as cropping source
     let logoShape       = $state<"square" | "circle">("square");
+    let hoverLogo       = $state<boolean>(false);
+    let hoverLogoX      = $state<number>(50);
+    let hoverLogoY      = $state<number>(22);
+    let hoverLogoSize   = $state<number>(56);
     let logoSize        = $state<number>(36);
     let logoBg          = $state<"white" | "black" | "clear">("white");
     let hasCircleCrop   = $state<boolean>(false);              // true once user confirmed a circular crop
@@ -399,6 +403,10 @@
         logoShape,
         logoBg,
         logoSize,
+        hoverLogo,
+        hoverLogoX,
+        hoverLogoY,
+        hoverLogoSize,
         logoAnchor: logoPosition,
         logoX: logoFreeX,
         logoY: logoFreeY,
@@ -818,6 +826,10 @@
                 logo            = d.logo ?? "";
                 logoOriginal    = d.logoOriginal ?? d.logo ?? "";
                 logoShape       = d.logoShape ?? "square";
+                hoverLogo       = d.hoverLogo === true;
+                hoverLogoX      = typeof d.hoverLogoX === 'number' ? d.hoverLogoX : 50;
+                hoverLogoY      = typeof d.hoverLogoY === 'number' ? d.hoverLogoY : 22;
+                hoverLogoSize   = typeof d.hoverLogoSize === 'number' ? d.hoverLogoSize : 56;
                 logoSize        = typeof d.logoSize === "number" ? d.logoSize : 36;
                 logoBg          = d.logoBg === "black" || d.logoBg === "clear" ? d.logoBg : "white";
                 hasCircleCrop   = Boolean(d.hasCircleCrop);
@@ -921,7 +933,7 @@
     $effect(() => {
         if (!browser) return;
         const snapshot = {
-            logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
+            logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, hoverLogo, hoverLogoX, hoverLogoY, hoverLogoSize, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
             mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY, titleFontSize,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
@@ -1010,6 +1022,10 @@
                 hasCircleCrop        = st.logoShape === "circle";
                 logoBg               = st.logoBg ?? "white";
                 logoSize             = st.logoSize ?? 36;
+                hoverLogo            = st.hoverLogo === true;
+                hoverLogoX           = st.hoverLogoX ?? 50;
+                hoverLogoY           = st.hoverLogoY ?? 22;
+                hoverLogoSize        = st.hoverLogoSize ?? 56;
                 logoPosition         = st.logoAnchor ?? "right";
                 logoPositionExplicit = true;
                 logoFreeX            = typeof st.logoX === "number" ? st.logoX : null;
@@ -1853,6 +1869,30 @@
                   class="text-input"></textarea>
         <div class="text-xs text-gray-500 mt-2 text-end">{hoverText.length}/90</div>
 
+        {#if logo}
+            <div class="mt-3 rounded-lg border border-white/10 bg-black/20 p-2.5 space-y-2">
+                <label class="flex items-center gap-2 text-sm font-bold text-gray-300 cursor-pointer">
+                    <input type="checkbox" bind:checked={hoverLogo} class="accent-amber-500"
+                           onchange={() => activeStep === "hover" || (activeStep = "hover")} />
+                    {$_('advertise.b_hover_logo')}
+                </label>
+                {#if hoverLogo}
+                    <div class="flex items-center gap-2 text-xs text-gray-400">
+                        <span class="w-16 shrink-0">{$_('advertise.b_hover_logo_x')}</span>
+                        <input type="range" min="0" max="100" step="1" class="flex-1 accent-amber-500" bind:value={hoverLogoX} />
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-400">
+                        <span class="w-16 shrink-0">{$_('advertise.b_hover_logo_y')}</span>
+                        <input type="range" min="0" max="100" step="1" class="flex-1 accent-amber-500" bind:value={hoverLogoY} />
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-400">
+                        <span class="w-16 shrink-0">{$_('advertise.b_hover_logo_size')}</span>
+                        <input type="range" min="20" max="120" step="2" class="flex-1 accent-amber-500" bind:value={hoverLogoSize} />
+                    </div>
+                {/if}
+            </div>
+        {/if}
+
         <div class="step-nav-row">
             <button type="button" class="step-nav-btn" onclick={() => advance(prevOf("hover"))}>
                 {$_('advertise.b_prev_step')}
@@ -2019,6 +2059,9 @@
                                 <div class="hover-overlay" style:opacity={showHover ? 1 : 0}>
                                     <h3 class="hover-title">{title || $_('advertise.b_ph_title_short')}</h3>
                                     <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
+                                    {#if logo && hoverLogo}
+                                        <img src={logo} alt="" class="hover-logo" style="left:{hoverLogoX}%;top:{hoverLogoY}%;width:{hoverLogoSize}px;height:{hoverLogoSize}px;{logoShape === 'circle' ? 'border-radius:50%;' : ''}{logoBg === 'black' ? 'background:#000;' : logoBg === 'clear' ? 'background:transparent;box-shadow:none;' : ''}" />
+                                    {/if}
                                 </div>
                                 {#if logo}
                                     <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
@@ -2148,6 +2191,9 @@
                     <div class="hover-overlay" style:opacity={activeStep === "hover" ? 1 : 0}>
                         <h3 class="hover-title">{title || $_('advertise.b_ph_title_short')}</h3>
                         <p class="hover-text">{hoverText || $_('advertise.b_ph_hover')}</p>
+                                    {#if logo && hoverLogo}
+                                        <img src={logo} alt="" class="hover-logo" style="left:{hoverLogoX}%;top:{hoverLogoY}%;width:{hoverLogoSize}px;height:{hoverLogoSize}px;{logoShape === 'circle' ? 'border-radius:50%;' : ''}{logoBg === 'black' ? 'background:#000;' : logoBg === 'clear' ? 'background:transparent;box-shadow:none;' : ''}" />
+                                    {/if}
                     </div>
                 </div>
                 <!-- כרטיס מוצר מהחנות - בלי רצועת המחיר, כמו בטור -->
@@ -3287,6 +3333,11 @@
         padding: 0.75rem; text-align: center; transition: opacity 1500ms ease;
         pointer-events: none;
         z-index: 4; /* must sit above the decorative diagonal line on .pro-img-wrap::before (z-index:3) */
+    }
+    :global(.hover-logo) {
+        position: absolute; transform: translate(-50%, -50%);
+        object-fit: contain; border-radius: 6px; background: white; padding: 3px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
     }
     :global(.hover-title) { color: white; font-weight: 700; font-size: 0.95rem; margin: 0 0 0.4rem; }
     /* pre-line - ירידות שורה שהמפרסם הקליד בשלב 6 נשמרות בתצוגה המקדימה
