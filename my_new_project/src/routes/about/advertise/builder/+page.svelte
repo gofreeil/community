@@ -278,6 +278,10 @@
     let title           = $state<string>("");
     let titleColor      = $state<string>("#ffffff");
     let titleFontSize   = $state<number>(1.15);
+    // לוגו בדף הנחיתה (נקבע בעמוד הנחיתה) - נשמר בטיוטה כדי שלא יתאפס בעריכה
+    let lpLogoAlign = $state<"right" | "center" | "left">("right");
+    let lpLogoBg = $state<"white" | "black" | "clear" | null>(null);
+    let lpLogoSize = $state<number | null>(null);
     let titleOffsetY    = $state<number>(0);                    // vertical offset for title on banner (-20..+60 px)
     let subtitle        = $state<string>("");
     // טיפוגרפיית תת-הכותרת (שלב 5) - גודל, רווח בין שורות ויישור
@@ -407,9 +411,9 @@
         hoverLogoX,
         hoverLogoY,
         hoverLogoSize,
-        lpLogoAlign: DEFAULT_AD_STYLE.lpLogoAlign,
-        lpLogoBg: DEFAULT_AD_STYLE.lpLogoBg,
-        lpLogoSize: DEFAULT_AD_STYLE.lpLogoSize,
+        lpLogoAlign,
+        lpLogoBg,
+        lpLogoSize,
         logoAnchor: logoPosition,
         logoX: logoFreeX,
         logoY: logoFreeY,
@@ -851,6 +855,9 @@
                 title           = d.title ?? "";
                 titleColor      = typeof d.titleColor === 'string' ? d.titleColor : "#ffffff";
                 titleFontSize   = typeof d.titleFontSize === 'number' ? d.titleFontSize : 1.15;
+                lpLogoAlign = d.lpLogoAlign === "center" || d.lpLogoAlign === "left" ? d.lpLogoAlign : "right";
+                lpLogoBg = d.lpLogoBg === "white" || d.lpLogoBg === "black" || d.lpLogoBg === "clear" ? d.lpLogoBg : null;
+                lpLogoSize = typeof d.lpLogoSize === "number" ? d.lpLogoSize : null;
                 titleOffsetY    = typeof d.titleOffsetY === 'number' ? d.titleOffsetY : 0;
                 subtitle        = d.subtitle ?? "";
                 subFontSize     = typeof d.subFontSize === 'number' ? d.subFontSize : DEFAULT_SUB_FONT_SIZE;
@@ -937,7 +944,7 @@
         if (!browser) return;
         const snapshot = {
             logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, hoverLogo, hoverLogoX, hoverLogoY, hoverLogoSize, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
-            mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY, titleFontSize,
+            mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY, titleFontSize, lpLogoAlign, lpLogoBg, lpLogoSize,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
@@ -1035,6 +1042,9 @@
                 logoFreeY            = typeof st.logoY === "number" ? st.logoY : null;
                 diagHeight           = typeof st.bandHeight === "number" ? st.bandHeight : diagHeight;
                 titleFontSize        = typeof st.titleFontSize === "number" ? st.titleFontSize : 1.15;
+                lpLogoAlign = st.lpLogoAlign === "center" || st.lpLogoAlign === "left" ? st.lpLogoAlign : "right";
+                lpLogoBg = st.lpLogoBg === "white" || st.lpLogoBg === "black" || st.lpLogoBg === "clear" ? st.lpLogoBg : null;
+                lpLogoSize = typeof st.lpLogoSize === "number" ? st.lpLogoSize : null;
                 titleOffsetY         = typeof st.titleOffsetY === "number" ? st.titleOffsetY : 0;
                 titleColor           = typeof st.titleColor === "string" ? st.titleColor : "#ffffff";
                 subFontSize          = typeof st.subFontSize === "number" ? st.subFontSize : DEFAULT_SUB_FONT_SIZE;
