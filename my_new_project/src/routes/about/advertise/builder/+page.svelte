@@ -2797,8 +2797,8 @@
     :global(.crop-reset:hover) { background: rgba(245,158,11,0.85); color: black; transform: translate(-50%, -50%) scale(1.12); }
     :global(.crop-zoom) {
         position: absolute;
-        background: rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.5);
+        background: rgba(8,145,178,0.85);
+        border: 1px solid rgba(103,232,249,0.9);
         color: white;
         width: 32px; height: 32px;
         border-radius: 50%;
@@ -2812,7 +2812,7 @@
         transition: background 150ms, transform 150ms;
         padding: 0;
     }
-    :global(.crop-zoom:hover) { background: rgba(245,158,11,0.85); color: black; transform: scale(1.12); }
+    :global(.crop-zoom:hover) { background: rgba(103,232,249,0.95); color: black; transform: scale(1.12); }
     :global(.crop-zoom.zoom-in)  { bottom: 8px; right: 8px; }
     :global(.crop-zoom.zoom-out) { bottom: 8px; left: 8px; }
     :global(.crop-hint) {
