@@ -34,9 +34,7 @@
         {#each sites as site (site.id)}
             <a
                 href={site.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="{site.title} – {site.description}{$_('components.opens_new_window_suffix')}"
+                aria-label="{site.title} – {site.description}"
                 class="block overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 group relative"
             >
                 <div class="relative overflow-hidden" style="height: {site.imageHeight ?? '160px'}">
