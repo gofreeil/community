@@ -3,7 +3,7 @@ import Google from '@auth/sveltekit/providers/google';
 import Facebook from '@auth/sveltekit/providers/facebook';
 import Credentials from '@auth/sveltekit/providers/credentials';
 import type { Handle } from '@sveltejs/kit';
-import { upsertUser, getUserByEmail, getUserById } from '$lib/server/db';
+import { upsertUser, getUserByEmail, getUserById, claimUnconfirmedAccount } from '$lib/server/db';
 import { strapiLogin, getStrapiMe } from '$lib/server/strapiClient';
 import { getOrCreateStrapiJwt } from '$lib/server/strapiJwt';
 import { notifyAdminsNewUser } from '$lib/server/userNotifications';
@@ -194,13 +194,26 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             // אצל הספק - אחרת מי שפותח חשבון גוגל עם כתובת של אחר (בלי לאמת אותה)
             // היה נכנס לחשבון של הבעלים האמיתי. גוגל מחזירה email_verified; נדחים רק
             // מקרים שהיא מצהירה בהם במפורש false. פייסבוק מחזירה אימייל מאומת בלבד.
+            let verifiedEmail = false; // האימייל הוכח כשייך למשתמש (גוגל email_verified === true)
             if (account.provider !== 'credentials' && account.provider !== 'gofreeil-sso') {
-                if (account.provider === 'google' && (profile as { email_verified?: boolean } | undefined)?.email_verified === false) {
+                const emailVerified = (profile as { email_verified?: boolean } | undefined)?.email_verified;
+                if (account.provider === 'google' && emailVerified === false) {
                     console.warn('[auth] signIn rejected - unverified Google email:', user.email);
-                    return false;
+                    return '/login?error=OAuthUnverified';
                 }
+                verifiedEmail = account.provider === 'google' && emailVerified === true;
                 // נרמול: אותו אימייל ברישיות שונה לא ייצור משתמש כפול ב-Strapi
                 if (user.email) user.email = user.email.trim().toLowerCase();
+                // ספק בלי אימייל (פייסבוק שהמשתמש סירב לשתף): אי אפשר לקשר לחשבון
+                // משותף ולכן נוצר "משתמש רפאים" בלי רשומה ב-Strapi. חוסמים עם הסבר -
+                // אלא אם זה משתמש שכבר רשום (external_id קיים) כדי לא לנעול אותו.
+                if (!user.email) {
+                    const known = await getUserById(`${account.provider}_${account.providerAccountId}`).catch(() => undefined);
+                    if (!known) {
+                        console.warn('[auth] signIn rejected - no email from provider:', account.provider);
+                        return '/login?error=OAuthNoEmail';
+                    }
+                }
             }
 
             // Credentials / SSO - ה-JWT מגיע מה-authorize callback דרך ה-user object
@@ -227,6 +240,16 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
             // לראשונה. זה הסימן היחיד האמין ל"משתמש חדש" במסלול OAuth (isExisting
             // לא מתאים: getUserByEmail מוצא גם את מי שנרשם לפני רגע בשלב הזה).
             const jwtDiag: Record<string, unknown> = {};
+
+            // 0. בעלות מוכחת על האימייל (גוגל): אם יש חשבון סיסמה שלא אושר - מנטרלים
+            // את הסיסמה שלו לפני המיזוג (הגנה מהרשמה-מראש על אימייל של אחר)
+            if (verifiedEmail && user.email) {
+                try {
+                    if (await claimUnconfirmedAccount(user.email)) {
+                        console.log('[auth] claimed unconfirmed password account for verified owner:', user.email);
+                    }
+                } catch (e) { console.warn('[auth] claimUnconfirmedAccount failed:', e); }
+            }
 
             try {
                 // 1. קודם JWT

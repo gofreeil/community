@@ -4,6 +4,7 @@
 // פריטים + קופת קהילה + משתמשים → Strapi 5 (async, cloud-persistent)
 // ============================================================
 
+import { randomBytes } from 'node:crypto';
 import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete, StrapiContentTypeError, findStrapiUpUsers, findStrapiUpUsersAll, updateStrapiUpUser } from './strapiClient.js';
 import { DEFAULT_DISCOUNT_CODES, type DiscountCode } from '$lib/discountCodes';
 import { isPrivateCategory } from '$lib/itemCategories';
@@ -1983,6 +1984,22 @@ export async function getMergedUserByAnyId(id: string, _jwt?: string): Promise<D
 export async function getUserByEmail(email: string, _jwt?: string): Promise<DbUser | undefined> {
     const u = await findUpUserByEmail(email);
     return u ? mapUpUser(u) : undefined;
+}
+
+/**
+ * "תפיסת חשבון" ע"י בעל אימייל מאומת (גוגל). הגנה מהרשמה-מראש: מישהו נרשם עם
+ * אימייל של אחר ובחר סיסמה, והחשבון נשאר לא מאושר. כשהבעלים האמיתי נכנס עם גוגל
+ * הוא ממוזג לאותו חשבון - והסיסמה של התוקף הייתה חיה, ופועלת ברגע שמישהו לוחץ על
+ * מייל האישור הישן. לכן בכניסה מאומתת לחשבון *לא מאושר*: מחליפים את הסיסמה באקראית
+ * (אף אחד לגיטימי לא הצליח להתחבר איתה - חשבון לא מאושר חסום בכניסה) ומסמנים אושר.
+ * חשבון מאושר/מיובא/SMS לא נוגעים בו. מחזיר true אם נתפס.
+ */
+export async function claimUnconfirmedAccount(email: string): Promise<boolean> {
+    const u = await findUpUserByEmail(email);
+    if (!u || u.confirmed !== false) return false;
+    await updateStrapiUpUser(u.id, { password: randomBytes(32).toString('hex'), confirmed: true });
+    invalidate('user:');
+    return true;
 }
 
 export async function getUserByPhone(phone: string, _jwt?: string): Promise<DbUser | undefined> {

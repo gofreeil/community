@@ -90,6 +90,8 @@
 			OAuthAccountNotLinked: 'account.err_oauth_not_linked',
 			Callback:              'account.err_callback',
 			CredentialsSignin:     'account.err_credentials',
+			OAuthNoEmail:          'account.err_oauth_no_email',
+			OAuthUnverified:       'account.err_oauth_unverified',
 			Default:               'account.err_unknown',
 		};
 		return tFn(map[code] ?? map['Default']);
