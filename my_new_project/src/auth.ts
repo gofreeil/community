@@ -183,11 +183,24 @@ export const { handle, signIn, signOut } = !AUTH_SECRET
     ],
 
     callbacks: {
-        async signIn({ user, account }) {
+        async signIn({ user, account, profile }) {
             console.log('[auth] signIn called - provider:', account?.provider, 'email:', user?.email);
             if (!account || !user) {
                 console.warn('[auth] signIn rejected - missing account or user');
                 return false;
+            }
+
+            // OAuth מתמזג לחשבון קיים *לפי אימייל*, ולכן האימייל חייב להיות מאומת
+            // אצל הספק - אחרת מי שפותח חשבון גוגל עם כתובת של אחר (בלי לאמת אותה)
+            // היה נכנס לחשבון של הבעלים האמיתי. גוגל מחזירה email_verified; נדחים רק
+            // מקרים שהיא מצהירה בהם במפורש false. פייסבוק מחזירה אימייל מאומת בלבד.
+            if (account.provider !== 'credentials' && account.provider !== 'gofreeil-sso') {
+                if (account.provider === 'google' && (profile as { email_verified?: boolean } | undefined)?.email_verified === false) {
+                    console.warn('[auth] signIn rejected - unverified Google email:', user.email);
+                    return false;
+                }
+                // נרמול: אותו אימייל ברישיות שונה לא ייצור משתמש כפול ב-Strapi
+                if (user.email) user.email = user.email.trim().toLowerCase();
             }
 
             // Credentials / SSO - ה-JWT מגיע מה-authorize callback דרך ה-user object
