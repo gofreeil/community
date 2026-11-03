@@ -17,7 +17,7 @@
     import { page } from "$app/state";
     import { neighborhoodState } from "$lib/neighborhoodState.svelte";
     import { mapSearchState } from "$lib/mapSearchState.svelte";
-    import { getCoordsFor, jitterCoord, areaForPin, cityCenters } from "$lib/neighborhoodCoords";
+    import { getCoordsFor, jitterCoord, areaForPin, cityCenters, isNearNeighborhood, isNeighboringNeighborhood } from "$lib/neighborhoodCoords";
     import { canonicalCity, normalizeNeighborhoodName } from "$lib/neighborhoodsData";
     import { canUseMapImage, getMapImage, isDisplayableImage } from "$lib/mapImage";
     import { isOpenNow } from "$lib/openingHours";
@@ -783,19 +783,6 @@
         ),
     );
 
-    // פין במרחק הליכה ממרכז השכונה הנבחרת. רק לשכונה עם מרכז משלה - בשכונה בלי
-    // קואורדינטה getCoordsFor מחזיר את מרכז העיר, ורדיוס סביבו היה מכניס פריטים
-    // מכל העיר (אותו תנאי כמו nbPrecise בהתאמת התצוגה).
-    const WALK_NB_RADIUS_KM = 0.8;
-    function isWithinWalkOfSelectedNb(lat: number, lng: number): boolean {
-        if (!normalizeNeighborhoodName(neighborhoodState.neighborhood)) return false;
-        const nbCenter = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
-        const cityCenter = cityCenters[canonicalCity(neighborhoodState.city)];
-        if (cityCenter && nbCenter[0] === cityCenter[0] && nbCenter[1] === cityCenter[1]) return false;
-        const km = Math.hypot((lat - nbCenter[0]) * 111, (lng - nbCenter[1]) * 111 * Math.cos((nbCenter[0] * Math.PI) / 180));
-        return km <= WALK_NB_RADIUS_KM;
-    }
-
     // ---- לאיזה אזור שייך פריט ----
     // מפרסם שסימן פין על המפה התכוון למקום שסימן, ולכן הפין קובע - לא תווית
     // השכונה שנשמרה לידו. התווית עלולה להיות שגויה ("מרכז" שנגזר בעיר
@@ -818,16 +805,23 @@
                     return true;
                 }
                 // הפין "שייך" לשכונה שכנה רק כי המרכז הרשום שלה קרוב אליו יותר, אבל הוא
-                // במרחק הליכה ממרכז השכונה שנבחרה - כלומר נמצא בתוך התצוגה שלה. בית
-                // הכנסת "קרליבך" (גבעת שאול, 550 מ' ממרכז קרית משה) נעלם כך מהמפה של
-                // קרית משה. פין בקצה שכונה מוצג בשתי השכונות הגובלות.
-                if (isWithinWalkOfSelectedNb(d.lat, d.lng)) return true;
+                // בסביבת השכונה שנבחרה - כלומר בתוך התצוגה שלה. בית הכנסת "קרליבך"
+                // (גבעת שאול, 550 מ' ממרכז קרית משה) נעלם כך מהמפה של קרית משה.
+                // כל שכונה מקיפה את הגובלות בה (ראו NEARBY_NB_RADIUS_KM).
+                if (isNearNeighborhood([d.lat, d.lng], neighborhoodState.neighborhood, neighborhoodState.city)) {
+                    return true;
+                }
             }
         }
 
         // 2. התווית שנשמרה עם הפריט
         if (!sameCity(d.city, neighborhoodState.city)) return false;
         if (!d.neighborhood || sameNeighborhood(d.neighborhood, neighborhoodState.neighborhood)) return true;
+        // פריט בלי פין שרשום בשכונה גובלת: הוא מצויר על מרכזה, שבסביבת השכונה הנבחרת.
+        if ((d.lat == null || d.lng == null) &&
+            isNeighboringNeighborhood(d.neighborhood, d.city, neighborhoodState.neighborhood, neighborhoodState.city)) {
+            return true;
+        }
         // שם שכונה שאינו ברשימת העיר אינו ניתן לבחירה באף בורר, ולכן פריט
         // שנשמר איתו לא היה מוצג באף שכונה. מציגים אותו ברמת העיר.
         return !isKnownNeighborhood(d.city ?? '', d.neighborhood, approvedNbs);

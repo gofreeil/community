@@ -712,6 +712,48 @@ export function areaForPin(
     return area;
 }
 
+// ---- סביבת שכונה ----
+// כל שכונה נבחרת "מקיפה" את השכונות הגובלות בה: פריט שהמיקום שלו בתוך הטווח הזה
+// ממרכז השכונה הנבחרת מוצג בה, גם אם הוא רשום בשכונה אחרת. המיקום הוא הפין, ובפריט
+// בלי פין - מרכז השכונה הרשומה שלו (שם הוא מצויר על המפה). בלי זה פין בקצה שכונה
+// נעלם מהמפה של השכונה שהוא נראה בתוכה, רק כי המרכז הרשום של שכנתה קרוב אליו יותר.
+export const NEARBY_NB_RADIUS_KM = 1.2;
+
+/** מרחק בק"מ בין שתי נקודות (קירוב equirectangular, מספיק למרחקי שכונות). */
+export function distanceKm(a: Coord, b: Coord): number {
+    const lngK = Math.cos(((a[0] + b[0]) / 2) * Math.PI / 180);
+    return Math.hypot((a[0] - b[0]) * 111.2, (a[1] - b[1]) * 111.2 * lngK);
+}
+
+/**
+ * האם נקודה בסביבת השכונה הנבחרת. רק לשכונה עם מרכז *מדויק* משלה: בשכונה בלי
+ * קואורדינטה getCoordsFor נופל למרכז העיר, ורדיוס סביבו היה מכניס פריטים מכל העיר.
+ */
+export function isNearNeighborhood(
+    point: Coord,
+    neighborhood: string | undefined,
+    city: string | undefined,
+    radiusKm: number = NEARBY_NB_RADIUS_KM,
+): boolean {
+    const center = preciseNeighborhoodCoord(neighborhood ?? '', city ?? '');
+    return !!center && distanceKm(point, center) <= radiusKm;
+}
+
+/**
+ * האם שכונה אחרת (של פריט בלי פין) גובלת בשכונה הנבחרת - לפי מרכזיה הרשומים.
+ * שכונה בלי מרכז משלה אינה גובלת באף אחת (אין לה מיקום, רק מרכז העיר).
+ */
+export function isNeighboringNeighborhood(
+    itemNeighborhood: string | undefined,
+    itemCity: string | undefined,
+    neighborhood: string | undefined,
+    city: string | undefined,
+    radiusKm: number = NEARBY_NB_RADIUS_KM,
+): boolean {
+    const itemCenter = preciseNeighborhoodCoord(itemNeighborhood ?? '', itemCity ?? '');
+    return !!itemCenter && isNearNeighborhood(itemCenter, neighborhood, city, radiusKm);
+}
+
 /** ניקוי ה-cache אחרי רישום שכונות מאושרות חדשות (הן משנות את התוצאה). */
 export function clearPinAreaCache(): void {
     pinAreaCache.clear();
