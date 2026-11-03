@@ -792,39 +792,55 @@
     //
     // התווית עדיין מזכה בהצגה בפני עצמה (בדיקה שנייה למטה): לפריט בלי פין היא
     // כל מה שיש, ופריט עם תווית תקינה ממשיך להופיע בלוח שלה כמו קודם.
-    function belongsToMyArea(d: { neighborhood?: string; city?: string; lat?: number | null; lng?: number | null }): boolean {
+    //
+    // התוצאה: null = הפריט לא שייך לאזור; '' = השכונה הנבחרת עצמה (או ברמת העיר);
+    // אחרת - שם (מנורמל) של שכונה גובלת שהפריט שלה מוצג בסביבת השכונה הנבחרת.
+    // לכל שכונה גובלת מכסת סמנים משלה (ראו dynamicMarkers).
+    function areaOf(d: { neighborhood?: string; city?: string; lat?: number | null; lng?: number | null }): string | null {
+        const lat = d.lat;
+        const lng = d.lng;
+        const hasPin = lat != null && lng != null;
+        let pinNeighbor = '';
+
         // 1. הפין - המקום שהמפרסם באמת סימן. העיר שנשמרה מגבילה אותו: הפין
         //    מדייק את השכונה בתוך העיר, ולא מעביר את הפריט לעיר שכנה בגלל
         //    שהמרכז הרשום הקרוב ביותר שייך לה.
-        if (d.lat != null && d.lng != null) {
-            const area = areaForPin(d.lat, d.lng, cityNbPairs, d.city);
+        if (hasPin) {
+            const area = areaForPin(lat, lng, cityNbPairs, d.city);
             if (area && sameCity(area.city, neighborhoodState.city)) {
                 // שכונה ריקה = הפין זוהה ברמת העיר בלבד (אין שכונה עם קואורדינטה
                 // קרובה יותר ממרכז העיר) → מוצג בכל שכונות העיר.
                 if (!area.neighborhood || sameNeighborhood(area.neighborhood, neighborhoodState.neighborhood)) {
-                    return true;
+                    return '';
                 }
                 // הפין "שייך" לשכונה שכנה רק כי המרכז הרשום שלה קרוב אליו יותר, אבל הוא
                 // בסביבת השכונה שנבחרה - כלומר בתוך התצוגה שלה. בית הכנסת "קרליבך"
                 // (גבעת שאול, 550 מ' ממרכז קרית משה) נעלם כך מהמפה של קרית משה.
                 // כל שכונה מקיפה את הגובלות בה (ראו NEARBY_NB_RADIUS_KM).
-                if (isNearNeighborhood([d.lat, d.lng], neighborhoodState.neighborhood, neighborhoodState.city)) {
-                    return true;
+                if (isNearNeighborhood([lat, lng], neighborhoodState.neighborhood, neighborhoodState.city)) {
+                    pinNeighbor = normalizeNeighborhoodName(area.neighborhood);
                 }
             }
         }
 
         // 2. התווית שנשמרה עם הפריט
-        if (!sameCity(d.city, neighborhoodState.city)) return false;
-        if (!d.neighborhood || sameNeighborhood(d.neighborhood, neighborhoodState.neighborhood)) return true;
-        // פריט בלי פין שרשום בשכונה גובלת: הוא מצויר על מרכזה, שבסביבת השכונה הנבחרת.
-        if ((d.lat == null || d.lng == null) &&
-            isNeighboringNeighborhood(d.neighborhood, d.city, neighborhoodState.neighborhood, neighborhoodState.city)) {
-            return true;
+        if (sameCity(d.city, neighborhoodState.city)) {
+            if (!d.neighborhood || sameNeighborhood(d.neighborhood, neighborhoodState.neighborhood)) return '';
+            // פריט בלי פין שרשום בשכונה גובלת: הוא מצויר על מרכזה, שבסביבת השכונה הנבחרת.
+            if (!pinNeighbor && !hasPin &&
+                isNeighboringNeighborhood(d.neighborhood, d.city, neighborhoodState.neighborhood, neighborhoodState.city)) {
+                return normalizeNeighborhoodName(d.neighborhood);
+            }
         }
+        if (pinNeighbor) return pinNeighbor;
+        if (!sameCity(d.city, neighborhoodState.city)) return null;
         // שם שכונה שאינו ברשימת העיר אינו ניתן לבחירה באף בורר, ולכן פריט
         // שנשמר איתו לא היה מוצג באף שכונה. מציגים אותו ברמת העיר.
-        return !isKnownNeighborhood(d.city ?? '', d.neighborhood, approvedNbs);
+        return isKnownNeighborhood(d.city ?? '', d.neighborhood ?? '', approvedNbs) ? null : '';
+    }
+
+    function belongsToMyArea(d: { neighborhood?: string; city?: string; lat?: number | null; lng?: number | null }): boolean {
+        return areaOf(d) !== null;
     }
 
     // ---- עסקים מאתר האינדקס (index.gofreeil.com) ----
@@ -988,6 +1004,7 @@
     );
 
     // ---- מרקרים דינמיים נטועים במפה (lat/lng אמיתי) ----
+    // מכסת סמנים לכל שכונה בנפרד: השכונה הנבחרת, ולכל שכונה גובלת שמוצגת סביבה.
     const MAX_MARKERS = 30;
 
     // "עכשיו" שמתעדכן כל דקה — כדי שהאפרת סמל של נכס שסגור-לפי-שעות תתעדכן חיה בלי רענון דף.
@@ -1040,12 +1057,84 @@
         // עסק אינדקס מוצג כפין רק אם עבר geocoding ויש לו קואורדינטות אמיתיות
         // (עסק עם כתובת). עסק בלי כתובת נשאר ברשימה בלבד — בלי קואורדינטות הוא היה
         // נופל על נקודת-המרכז ונערם שם. belongsToMyArea מציב אותו בעיר שנגזרה מהכתובת.
-        const inHood = dbItems.filter(d =>
-            belongsToMyArea(d) && d.category !== 'raise_hand' && !d.category.startsWith('singles')
-            && (!isIndexItem(d) || (d.lat != null && d.lng != null)));
+        // ממיינים לשכונה הנבחרת עצמה (own) ולכל שכונה גובלת שפריטיה מוצגים בסביבה
+        // (around, לפי שם השכונה) - לכל אחת מהן מכסה משלה של MAX_MARKERS סמנים.
+        const own: DbItem[] = [];
+        const around = new Map<string, DbItem[]>();
+        for (const d of dbItems) {
+            if (d.category === 'raise_hand' || d.category.startsWith('singles')) continue;
+            if (isIndexItem(d) && (d.lat == null || d.lng == null)) continue;
+            const area = areaOf(d);
+            if (area === null) continue;
+            if (area === '') { own.push(d); continue; }
+            const list = around.get(area);
+            if (list) list.push(d); else around.set(area, [d]);
+        }
+        const newestFirst = (a: DbItem, b: DbItem) => (b.created_at || '').localeCompare(a.created_at || '');
 
-        // יש פריט אמיתי אחד לפחות - מציגים רק את האמיתיים, בלי דמו
-        if (inHood.length > 0) {
+        const toMarker = (item: DbItem) => {
+            const id = String(item.id);
+            // פריט עם פין מדויק (שהמשתמש סימן על המפה) - משתמשים בקואורדינטות שלו;
+            // אחרת נופלים למרכז השכונה/העיר.
+            const fallback = getCoordsFor(item.neighborhood, item.city);
+            const center: [number, number] =
+                item.lat != null && item.lng != null
+                    ? [item.lat, item.lng]
+                    : fallback;
+            // jitter (±~50 מ׳) נועד רק לפזר פריטים שנופלים לאותה נקודת-מרכז מדויקת
+            // (בלי פין - נגזר מהשכונה/עיר או geocoding שהחזיר את המרכז) כדי שלא
+            // ייערמו זה על זה. פין מדויק שהמשתמש סימן מוצג בדיוק במקומו - בלי jitter,
+            // אחרת המרקר "קופץ" ~50 מ׳ מהמבנה שסומן וזה נראה כמו באג מיקום.
+            const onCenter =
+                Math.abs(center[0] - fallback[0]) < 1e-9 &&
+                Math.abs(center[1] - fallback[1]) < 1e-9;
+            const [lat, lng] = onCenter ? jitterCoord(center, id) : center;
+            // תמונה/לוגו על המפה - במקום האימוג'י.
+            // סדר עדיפויות: תמונה שהמשתמש העלה ידנית > סמל "שירות ציבורי"
+            // לפי service_type (אוטומטי, חינם) > אימוג'י הקטגוריה.
+            let mapImage = '';
+            let serviceHex = '';
+            if (canUseMapImage(item.category)) {
+                try {
+                    const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+                    const mi = getMapImage(ef);
+                    if (isDisplayableImage(mi)) {
+                        mapImage = mi;
+                    } else {
+                        const svc = logoForService(ef);
+                        if (svc) { mapImage = svc; serviceHex = serviceColor(ef.service_type); }
+                    }
+                } catch { /* extra_fields לא תקין - נופלים לאימוג'י */ }
+            }
+            // פתוח/סגור לפי שעות הפתיחה (extra_fields.hours). null = אין שעות מובנות
+            // או שהבעלים הסתיר אותן (hours_public=false) → הסמל נשאר צבעוני.
+            let openNow: boolean | null = null;
+            try {
+                const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
+                if (ef.hours_public !== false) openNow = isOpenNow(ef.hours, new Date(nowTick));
+            } catch { /* extra_fields לא תקין - נשאר null */ }
+            return {
+                id,
+                category: item.category,
+                lat,
+                lng,
+                icon:     item.icon  || '📌',
+                label:    item.label || $t('map.item_fallback'),
+                color:    item.color || 'purple',
+                mapImage,
+                // צבע מסגרת/תווית מותאם לסמל השירות (אם קיים)
+                serviceHex,
+                openNow,
+                isMock:   false,
+            };
+        };
+
+        // השכונות הגובלות: עד MAX_MARKERS סמנים לכל אחת, החדשים ראשונים.
+        const aroundMarkers = [...around.values()].flatMap(items =>
+            [...items].sort(newestFirst).slice(0, MAX_MARKERS).map(toMarker));
+
+        // יש פריט אמיתי אחד לפחות בשכונה עצמה - מציגים רק את האמיתיים, בלי דמו
+        if (own.length > 0) {
             // המכסה (MAX_MARKERS) נותנת קדימות לפריטים שיושבים בשכונה עצמה - ורק אחריהם,
             // לפי תאריך, לפריטים ברמת העיר (בלי שכונה ובלי פין, שנערמים על מרכז העיר
             // ומוצגים בכל שכונות העיר). אחרת ייבוא גדול של פריטי-עיר חדשים דחק את
@@ -1059,70 +1148,15 @@
                     : getCoordsFor(d.neighborhood, d.city);
                 return Math.hypot(lat - nbCenter[0], (lng - nbCenter[1]) * lngK) <= NB_RADIUS_DEG;
             };
-            const sorted = [...inHood].sort((a, b) =>
-                (Number(inNb(b)) - Number(inNb(a))) ||
-                (b.created_at || '').localeCompare(a.created_at || '')
+            const sorted = [...own].sort((a, b) =>
+                (Number(inNb(b)) - Number(inNb(a))) || newestFirst(a, b)
             ).slice(0, MAX_MARKERS);
 
-            return sorted.map(item => {
-                const id = String(item.id);
-                // פריט עם פין מדויק (שהמשתמש סימן על המפה) - משתמשים בקואורדינטות שלו;
-                // אחרת נופלים למרכז השכונה/העיר.
-                const fallback = getCoordsFor(item.neighborhood, item.city);
-                const center: [number, number] =
-                    item.lat != null && item.lng != null
-                        ? [item.lat, item.lng]
-                        : fallback;
-                // jitter (±~50 מ׳) נועד רק לפזר פריטים שנופלים לאותה נקודת-מרכז מדויקת
-                // (בלי פין - נגזר מהשכונה/עיר או geocoding שהחזיר את המרכז) כדי שלא
-                // ייערמו זה על זה. פין מדויק שהמשתמש סימן מוצג בדיוק במקומו - בלי jitter,
-                // אחרת המרקר "קופץ" ~50 מ׳ מהמבנה שסומן וזה נראה כמו באג מיקום.
-                const onCenter =
-                    Math.abs(center[0] - fallback[0]) < 1e-9 &&
-                    Math.abs(center[1] - fallback[1]) < 1e-9;
-                const [lat, lng] = onCenter ? jitterCoord(center, id) : center;
-                // תמונה/לוגו על המפה - במקום האימוג'י.
-                // סדר עדיפויות: תמונה שהמשתמש העלה ידנית > סמל "שירות ציבורי"
-                // לפי service_type (אוטומטי, חינם) > אימוג'י הקטגוריה.
-                let mapImage = '';
-                let serviceHex = '';
-                if (canUseMapImage(item.category)) {
-                    try {
-                        const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
-                        const mi = getMapImage(ef);
-                        if (isDisplayableImage(mi)) {
-                            mapImage = mi;
-                        } else {
-                            const svc = logoForService(ef);
-                            if (svc) { mapImage = svc; serviceHex = serviceColor(ef.service_type); }
-                        }
-                    } catch { /* extra_fields לא תקין - נופלים לאימוג'י */ }
-                }
-                // פתוח/סגור לפי שעות הפתיחה (extra_fields.hours). null = אין שעות מובנות
-                // או שהבעלים הסתיר אותן (hours_public=false) → הסמל נשאר צבעוני.
-                let openNow: boolean | null = null;
-                try {
-                    const ef = item.extra_fields ? JSON.parse(item.extra_fields) : {};
-                    if (ef.hours_public !== false) openNow = isOpenNow(ef.hours, new Date(nowTick));
-                } catch { /* extra_fields לא תקין - נשאר null */ }
-                return {
-                    id,
-                    category: item.category,
-                    lat,
-                    lng,
-                    icon:     item.icon  || '📌',
-                    label:    item.label || $t('map.item_fallback'),
-                    color:    item.color || 'purple',
-                    mapImage,
-                    // צבע מסגרת/תווית מותאם לסמל השירות (אם קיים)
-                    serviceHex,
-                    openNow,
-                    isMock:   false,
-                };
-            });
+            return [...sorted.map(toMarker), ...aroundMarkers];
         }
 
         // אין פריטים אמיתיים בשכונה - מפזרים דוגמאות במעגל סביב מרכז השכונה
+        // (הפריטים האמיתיים של השכונות הגובלות, אם יש, מוצגים לצידן)
         const center = getCoordsFor(neighborhoodState.neighborhood, neighborhoodState.city);
         const nbId = `${neighborhoodState.city}_${neighborhoodState.neighborhood}`;
         // hash של שם השכונה - קובע את זווית ההתחלה של המעגל (כדי שלא כל השכונות יציגו אותה תבנית)
@@ -1132,7 +1166,7 @@
         // רדיוסים מתחלפים - חיצוני/פנימי - נראה טבעי יותר ממעגל מושלם
         const RADII = [0.0085, 0.0055, 0.0095, 0.0070, 0.0090, 0.0060, 0.0080]; // ~600-1050 מטר
         const N = MOCK_ITEMS.length;
-        return MOCK_ITEMS.map((m, i) => {
+        const mocks = MOCK_ITEMS.map((m, i) => {
             const id = `mock-${nbId}-${m.suffix}`;
             const angle  = startAngle + (i / N) * 2 * Math.PI;
             const radius = RADII[i % RADII.length];
@@ -1152,6 +1186,7 @@
                 isMock: true,
             };
         });
+        return [...mocks, ...aroundMarkers];
     });
 
     // מרקרי קריאות עזרה - שכבה נפרדת שתמיד מוצגת (ללא תלות בקטגוריה שנבחרה),
