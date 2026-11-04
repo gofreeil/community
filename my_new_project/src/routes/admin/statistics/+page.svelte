@@ -221,6 +221,27 @@
 			<StatsSummaryChart stats={data.stats} itemsSummary={data.itemsSummary} registrations={data.registrations} />
 		</div>
 
+		<!-- התקנות אפליקציה (PWA) מכל האתרים -->
+		{#if data.appInstalls}
+			<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 mb-6">
+				<h2 class="text-lg font-black mb-2">📲 הורדות האפליקציה</h2>
+				<p class="text-sm text-gray-300 mb-3">
+					סה״כ <b class="text-white">{data.appInstalls.total}</b> · 30 ימים אחרונים <b class="text-white">{data.appInstalls.last30}</b> ·
+					אנדרואיד {data.appInstalls.byPlatform.android} · iOS {data.appInstalls.byPlatform.ios} · מחשב {data.appInstalls.byPlatform.desktop}
+				</p>
+				{#if Object.keys(data.appInstalls.bySite).length}
+					<table class="w-full text-sm">
+						<thead><tr class="text-gray-400 text-right"><th class="py-1">אתר</th><th>סה״כ</th><th>30 יום</th><th>אנדרואיד</th><th>iOS</th><th>מחשב</th></tr></thead>
+						<tbody>
+							{#each Object.entries(data.appInstalls.bySite).sort((a, b) => b[1].total - a[1].total) as [site, s]}
+								<tr class="border-t border-white/5"><td class="py-1">{site}</td><td>{s.total}</td><td>{s.last30}</td><td>{s.android}</td><td>{s.ios}</td><td>{s.desktop}</td></tr>
+							{/each}
+						</tbody>
+					</table>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- סיכום התוכן שהועלה לאתר: סה״כ + פילוח לפי קטגוריה -->
 		{#if itemsSummary.total > 0}
 			<div id="items" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5 mb-6">

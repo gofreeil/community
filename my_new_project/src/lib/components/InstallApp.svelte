@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { reportAppInstall } from '$lib/appInstallReport';
     import { t, locale } from 'svelte-i18n';
     import { get } from 'svelte/store';
 
@@ -40,6 +41,8 @@
         if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) kind = 'ios';
         else if (/android/i.test(ua)) kind = 'android';
 
+        if (installed) reportAppInstall('standalone_launch', kind);
+
         deferred = win().__bip ?? null;
 
         const onPrompt = (e: Event) => {
@@ -47,6 +50,7 @@
             deferred = e as InstallEvent;
         };
         const onInstalled = () => {
+            reportAppInstall('appinstalled', kind);
             installed = true;
             deferred = null;
             win().__bip = null;

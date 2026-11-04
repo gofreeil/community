@@ -4,6 +4,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getUserById, getUserByEmail, getItemsByCategory } from '$lib/server/db';
 import { getVisitStats, getVisitsThisMonth } from '$lib/server/visitStats';
+import { getAppInstallSummary, type AppInstallSummary } from '$lib/server/appInstalls';
 import { getServerHealth } from '$lib/server/serverHealth';
 import { buildItemsSummary, buildRegistrationsSummary, type ItemsSummary, type RegistrationsSummary } from '$lib/server/statsSummary';
 
@@ -97,7 +98,11 @@ export const load: PageServerLoad = async (event) => {
         console.warn('[statistics] getServerHealth failed:', e);
         return null;
     });
+    const appInstalls: AppInstallSummary | null = await getAppInstallSummary().catch((e) => {
+        console.warn('[statistics] getAppInstallSummary failed:', e);
+        return null;
+    });
     const monthlyVisits = await getVisitsThisMonth().catch(() => 0);
 
-    return { stats, itemsSummary, helpCalls, registrations, serverHealth, monthlyVisits };
+    return { stats, itemsSummary, helpCalls, registrations, serverHealth, monthlyVisits, appInstalls };
 };
