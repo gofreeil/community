@@ -78,14 +78,17 @@
         aria-label={compact ? tFn('chrome.install_app') : undefined}
         title={tFn('chrome.install_app')}
     >
-        <span aria-hidden="true">📲</span>
-        {#if !compact}<span>{tFn('chrome.install_app')}</span>{/if}
+        {#if compact}
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
+        {:else}
+            <span>{tFn('chrome.install_app')}</span>
+        {/if}
     </button>
 
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
     <dialog bind:this={dlg} aria-labelledby="install-title" onclick={(e) => e.target === dlg && dlg?.close()}>
         <div class="box">
-            <h2 id="install-title">📲 {tFn('chrome.install_app')}</h2>
+            <h2 id="install-title">{tFn('chrome.install_app')}</h2>
             {#if kind === 'ios'}
                 <ol>
                     <li>{tFn('chrome.install_ios_1')}</li>

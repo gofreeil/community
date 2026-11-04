@@ -41,7 +41,7 @@ export const he = {
         profile_nb_saved_cta: "לפרופיל",
 
         // כפתור "הורד את האפליקציה" (InstallApp)
-        install_app: "הורד את האפליקציה",
+        install_app: "להורדת האפליקציה",
         install_ios_1: "לחצו על כפתור השיתוף ⬆️ בסרגל של Safari.",
         install_ios_2: "בחרו ״הוסף למסך הבית״.",
         install_ios_3: "אשרו עם ״הוסף״ — האייקון יופיע ליד שאר האפליקציות.",
