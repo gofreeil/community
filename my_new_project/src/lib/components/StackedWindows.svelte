@@ -157,10 +157,10 @@
         bind:this={stackEl}
         class="stack-inner relative h-[520px] md:h-[670px] {isDragging ? 'dragging' : ''}"
         style="transform-style: preserve-3d; transform: translate3d({dragX}px, 0, 0);"
-        onpointerdown={onPointerDown}
-        onpointermove={onPointerMove}
-        onpointerup={onPointerUp}
-        onpointercancel={onPointerCancel}
+        onpointerdowncapture={onPointerDown}
+        onpointermovecapture={onPointerMove}
+        onpointerupcapture={onPointerUp}
+        onpointercancelcapture={onPointerCancel}
     >
         <!-- Mobile peek tap target - outside 3D so it gets reliable hit-testing -->
         <button
@@ -230,6 +230,11 @@
     .stack-inner {
         touch-action: pan-y;
         transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    /* כל צאצא חייב pan-y: אזור גלילה/כפתור בתוך הכרטיס עם touch-action ברירת מחדל
+       גורם לדפדפן לקחת את התנועה האופקית ולשלוח pointercancel - הגרירה נקטעת */
+    .stack-inner :global(*) {
+        touch-action: pan-y;
     }
     .stack-inner.dragging {
         transition: none;
