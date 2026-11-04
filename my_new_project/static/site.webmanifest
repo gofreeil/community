@@ -1,0 +1,17 @@
+{
+	"name": "קהילה בשכונה",
+	"short_name": "קהילה בשכונה",
+	"description": "כל יתרונות השכונה במקום אחד: יד שנייה ולמסירה, אירוח לשבת, שידוכים, חוגים, גמ״חים, בייבי סיטר, טרמפים והטבות מקומיות.",
+	"lang": "he",
+	"dir": "rtl",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#0f172a",
+	"theme_color": "#0f172a",
+	"icons": [
+		{ "src": "/icons/app-192.png", "sizes": "192x192", "type": "image/png" },
+		{ "src": "/icons/app-512.png", "sizes": "512x512", "type": "image/png" },
+		{ "src": "/icons/app-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+	]
+}

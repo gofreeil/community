@@ -39,6 +39,19 @@ export const he = {
         register_nudge_cta: "הרשמה מהירה",
         profile_nb_saved_text: "השכונה \"{neighborhood}\" ({city}) נשמרה בפרופיל שלך. אפשר לשנות בכל עת.",
         profile_nb_saved_cta: "לפרופיל",
+
+        // כפתור "הורד את האפליקציה" (InstallApp)
+        install_app: "הורד את האפליקציה",
+        install_ios_1: "לחצו על כפתור השיתוף ⬆️ בסרגל של Safari.",
+        install_ios_2: "בחרו ״הוסף למסך הבית״.",
+        install_ios_3: "אשרו עם ״הוסף״ — האייקון יופיע ליד שאר האפליקציות.",
+        install_ios_note: "לא רואים את האפשרות? פתחו את האתר ב-Safari.",
+        install_android_1: "פתחו את תפריט הדפדפן ⋮.",
+        install_android_2: "בחרו ״התקנת אפליקציה״ (או ״הוספה למסך הבית״).",
+        install_android_note: "מומלץ לפתוח את האתר ב-Chrome.",
+        install_desktop_1: "ב-Chrome או Edge: לחצו על סמל ההתקנה ⊕ בקצה שורת הכתובת.",
+        install_desktop_2: "או דרך התפריט ⋮ ← ״התקנת קהילה בשכונה״.",
+        install_close: "הבנתי",
     },
 };
 
@@ -80,6 +93,19 @@ export const en = {
         register_nudge_cta: "Quick sign-up",
         profile_nb_saved_text: "The neighborhood \"{neighborhood}\" ({city}) was saved to your profile. You can change it anytime.",
         profile_nb_saved_cta: "Profile",
+
+        // "Download the app" button (InstallApp)
+        install_app: "Download the app",
+        install_ios_1: "Tap the Share button ⬆️ in Safari's toolbar.",
+        install_ios_2: "Choose \"Add to Home Screen\".",
+        install_ios_3: "Confirm with \"Add\" — the icon will appear next to your other apps.",
+        install_ios_note: "Don't see it? Open the site in Safari.",
+        install_android_1: "Open the browser menu ⋮.",
+        install_android_2: "Choose \"Install app\" (or \"Add to Home screen\").",
+        install_android_note: "We recommend opening the site in Chrome.",
+        install_desktop_1: "In Chrome or Edge: click the install icon ⊕ at the end of the address bar.",
+        install_desktop_2: "Or via the menu ⋮ → \"Install app\".",
+        install_close: "Got it",
     },
 };
 
@@ -121,5 +147,18 @@ export const ru = {
         register_nudge_cta: "Быстрая регистрация",
         profile_nb_saved_text: "Район «{neighborhood}» ({city}) сохранён в вашем профиле. Его можно изменить в любое время.",
         profile_nb_saved_cta: "В профиль",
+
+        // Кнопка «Скачать приложение» (InstallApp)
+        install_app: "Скачать приложение",
+        install_ios_1: "Нажмите кнопку «Поделиться» ⬆️ в панели Safari.",
+        install_ios_2: "Выберите «На экран “Домой”».",
+        install_ios_3: "Подтвердите «Добавить» — значок появится рядом с другими приложениями.",
+        install_ios_note: "Не видите этот пункт? Откройте сайт в Safari.",
+        install_android_1: "Откройте меню браузера ⋮.",
+        install_android_2: "Выберите «Установить приложение» (или «Добавить на главный экран»).",
+        install_android_note: "Рекомендуем открыть сайт в Chrome.",
+        install_desktop_1: "В Chrome или Edge: нажмите значок установки ⊕ в конце адресной строки.",
+        install_desktop_2: "Или через меню ⋮ → «Установить приложение».",
+        install_close: "Понятно",
     },
 };

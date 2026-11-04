@@ -6,6 +6,15 @@
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<link rel="apple-touch-icon" href="/favicon.png" />
 		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="manifest" href="/site.webmanifest" />
+		<meta name="theme-color" content="#0f172a" />
+		<!-- כרום מפעיל את beforeinstallprompt לפעמים לפני שהרכיב "הורד את האפליקציה" נטען — תופסים ושומרים לו. -->
+		<script>
+			window.addEventListener('beforeinstallprompt', function (e) {
+				e.preventDefault();
+				window.__bip = e;
+			});
+		</script>
 		<!-- פתיחת חיבור מוקדמת לשרת אריחי המפה (OSM) - חוסך DNS/TLS בטעינת האריח הראשון -->
 		<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
 		<!-- גופן האתר (Heebo) מתארח אצלנו ומוגדר ב-@font-face שב-app.css.
