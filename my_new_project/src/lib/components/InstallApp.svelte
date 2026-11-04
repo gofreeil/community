@@ -4,7 +4,14 @@
     import { get } from 'svelte/store';
 
     // compact = כפתור אייקון בלבד (הדר מובייל, שם אין מקום לטקסט)
-    let { compact = false }: { compact?: boolean } = $props();
+    // floating = כפתור עגול צף על המסך (מובייל) עד שהמשתמש לוחץ עליו
+    let { compact = false, floating = false }: { compact?: boolean; floating?: boolean } = $props();
+    let dismissed = $state(false);
+    const KEY = 'install_fab_dismissed';
+    $effect(() => {
+        if (!floating) return;
+        try { dismissed = localStorage.getItem(KEY) === '1'; } catch { /* ignore */ }
+    });
 
     // האירוע של כרום/אדג׳ (אנדרואיד + דסקטופ). בספארי/פיירפוקס אין אותו — שם מציגים הוראות.
     type InstallEvent = Event & {
@@ -70,20 +77,29 @@
 </script>
 
 {#if !installed}
+    {#if !(floating && dismissed)}
     <button
         type="button"
         class="install"
         class:compact
-        onclick={install}
-        aria-label={compact ? tFn('chrome.install_app') : undefined}
+        class:floating
+        onclick={() => {
+            if (floating) {
+                dismissed = true;
+                try { localStorage.setItem(KEY, '1'); } catch { /* ignore */ }
+            }
+            install();
+        }}
+        aria-label={compact || floating ? tFn('chrome.install_app') : undefined}
         title={tFn('chrome.install_app')}
     >
-        {#if compact}
-            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
+        {#if compact || floating}
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
         {:else}
             <span>{tFn('chrome.install_app')}</span>
         {/if}
     </button>
+    {/if}
 
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
     <dialog bind:this={dlg} aria-labelledby="install-title" onclick={(e) => e.target === dlg && dlg?.close()}>
@@ -133,6 +149,23 @@
     }
     .install:hover { background: rgba(16, 185, 129, 0.3); transform: scale(1.05); }
     .install.compact { width: 32px; height: 32px; padding: 0; font-size: 1rem; }
+    .install.floating {
+        position: fixed;
+        bottom: 5.5rem;
+        inset-inline-end: 12px;
+        z-index: 90;
+        width: 46px;
+        height: 46px;
+        padding: 0;
+        border-radius: 50%;
+        color: #fff;
+        background: #059669;
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    }
+    @media (min-width: 1024px) {
+        .install.floating { display: none; }
+    }
     /* טלפונים צרים מאוד: אין מקום — כל הרוחב נחוץ לשם המותג בהדר */
     @media (max-width: 339px) {
         .install.compact { display: none; }

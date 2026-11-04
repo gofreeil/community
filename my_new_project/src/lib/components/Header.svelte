@@ -18,7 +18,6 @@
     import { fade } from "svelte/transition";
     import { ads, type Ad } from "$lib/adsData";
     import FullAdModal from "$lib/components/FullAdModal.svelte";
-    import InstallApp from "$lib/components/InstallApp.svelte";
 
     let { currentUser, onLogout, onShowAuth }: Props = $props();
 
@@ -459,9 +458,6 @@
                     </a>
 
                     <div class="flex items-center gap-1.5">
-                        <!-- הורד את האפליקציה - מובייל (אייקון בלבד, אין מקום לטקסט) -->
-                        <InstallApp compact />
-
                         <!-- כפתור אודות - מובייל -->
                         <button
                             onclick={() => goto("/about/revenue")}

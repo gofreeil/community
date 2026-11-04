@@ -4,6 +4,7 @@
 	import "$lib/i18n";
 	import { _ } from "svelte-i18n";
 	import Header from "$lib/components/Header.svelte";
+	import InstallApp from "$lib/components/InstallApp.svelte";
 	import NewsTicker from "$lib/components/NewsTicker.svelte";
 	import RightAdBanner from "$lib/components/RightAdBanner.svelte";
 	import AdsSidebar from "$lib/components/AdsSidebar.svelte";
@@ -197,6 +198,8 @@
 {/if}
 <MobileAdsDrawer currentUser={currentUser} layoutUser={data.layoutUser} />
 <MobileAdPopup />
+<!-- הורדת האפליקציה: כפתור צף במובייל עד שנלחץ -->
+<InstallApp floating />
 <div class="min-h-screen flex flex-col bg-[#0f172a]">
 	<Header
 		currentUser={currentUser}
