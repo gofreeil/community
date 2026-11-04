@@ -645,8 +645,6 @@
                 </a>
             </div>
 <div class="flex items-center gap-2">
-                <!-- הורד את האפליקציה -->
-                <InstallApp />
                 <!-- כפתור אודות עם תצוגה מקדימה -->
                 <div class="relative" id="about-btn-wrapper">
                     <button
