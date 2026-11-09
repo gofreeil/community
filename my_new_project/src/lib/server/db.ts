@@ -1949,6 +1949,13 @@ async function findUpUserAny(id: string): Promise<StrapiUpUser | undefined> {
         const arr = await findStrapiUpUsers({ 'filters[id][$eq]': id, 'pagination[limit]': '1' });
         return arr[0] as StrapiUpUser | undefined;
     }
+    // מזהה סינתטי "credentials_<email>" (משתמש ללא external_id) - נפתר לפי אימייל.
+    // קישורי התראות ל-/admin/users/credentials_<email> קיבלו 404/שגיאה בלי זה.
+    if (id.toLowerCase().startsWith('credentials_')) {
+        let email = id.slice('credentials_'.length).trim();
+        try { email = decodeURIComponent(email); } catch { /* כבר מפוענח */ }
+        if (email.includes('@')) return findUpUserByEmail(email);
+    }
     return undefined;
 }
 
