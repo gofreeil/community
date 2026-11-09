@@ -2,6 +2,7 @@
     import { enhance } from '$app/forms';
     import { get } from 'svelte/store';
     import { _ } from 'svelte-i18n';
+    import { MSG_TYPE_LINKS } from '$lib/notificationKind';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -140,6 +141,18 @@
             if (f?.type !== 'wish_request') return '';
             const l = typeof f.link === 'string' ? f.link : '';
             return l.startsWith('/') ? l : '/admin#pending-wishes';
+        } catch { return ''; }
+    }
+
+    // יעד כללי להודעה: link מפורש ב-extra_fields, ואחרת לפי סוג ההודעה (אותה מפה כמו בהדר).
+    // רק נתיב פנימי. הודעות שכבר יש להן כפתור ייעודי למעלה לא מקבלות כפילות.
+    function actionLink(extraFields: string): string {
+        try {
+            const f = JSON.parse(extraFields);
+            const t = String(f?.type ?? '');
+            if (t === 'ad_submission' || t === 'wish_request' || t === 'tier_upgrade') return '';
+            const l = typeof f?.link === 'string' && f.link.startsWith('/') ? f.link : '';
+            return l || MSG_TYPE_LINKS[t] || '';
         } catch { return ''; }
     }
 
@@ -293,6 +306,13 @@
                         <a href={wishReviewLink(msg.extra_fields)}
                             class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:opacity-90 text-white text-sm font-black transition-all">
                             {$_('extras.m_open_wish_review')}
+                        </a>
+                    {/if}
+
+                    {#if actionLink(msg.extra_fields)}
+                        <a href={actionLink(msg.extra_fields)}
+                            class="block text-center py-2 rounded-xl mb-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 text-white text-sm font-black transition-all">
+                            {$_('extras.m_open_action')}
                         </a>
                     {/if}
 
