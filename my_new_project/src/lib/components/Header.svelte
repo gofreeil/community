@@ -242,7 +242,11 @@
         const usersInterval = setInterval(pingServer, 30000);
 
         fetchUnreadMessages();
-        const msgsInterval = setInterval(fetchUnreadMessages, 30000);
+        // לשונית ברקע לא בודקת הודעות: לשוניות שנשארות פתוחות כל היום היו מייצרות אלפי קריאות
+        // מיותרות ל-/api/my-messages (שמריצה כמה שאילתות). החזרה ללשונית מרעננת מיד (onVisible).
+        const msgsInterval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchUnreadMessages();
+        }, 30000);
 
         // עדכון מיידי של העיגול כשהמשתמש קורא/מטפל בהודעה בדף הפרופיל/הודעות (אירוע מקומי),
         // וכשחוזרים ללשונית - בלי להמתין לפול ה-30 שנ'.
