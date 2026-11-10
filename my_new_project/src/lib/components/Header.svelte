@@ -239,7 +239,10 @@
         } catch {}
 
         pingServer();
-        const usersInterval = setInterval(pingServer, 30000);
+        // לשונית ברקע לא שולחת ping (כל ping = הפעלת פונקציה); ה-TTL בשרת 2 דק' ולכן 60 שנ' מספיק
+        const usersInterval = setInterval(() => {
+            if (document.visibilityState === 'visible') pingServer();
+        }, 60000);
 
         fetchUnreadMessages();
         // לשונית ברקע לא בודקת הודעות: לשוניות שנשארות פתוחות כל היום היו מייצרות אלפי קריאות
@@ -251,7 +254,7 @@
         // עדכון מיידי של העיגול כשהמשתמש קורא/מטפל בהודעה בדף הפרופיל/הודעות (אירוע מקומי),
         // וכשחוזרים ללשונית - בלי להמתין לפול ה-30 שנ'.
         const onMsgsChanged = () => recomputeUnread();
-        const onVisible = () => { if (document.visibilityState === 'visible') fetchUnreadMessages(); };
+        const onVisible = () => { if (document.visibilityState === 'visible') { fetchUnreadMessages(); pingServer(); } };
         window.addEventListener('msgs:changed', onMsgsChanged);
         document.addEventListener('visibilitychange', onVisible);
 
