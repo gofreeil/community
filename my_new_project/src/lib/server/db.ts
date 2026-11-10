@@ -11,6 +11,7 @@ import { isPrivateCategory } from '$lib/itemCategories';
 import { userTier } from '$lib/tiers';
 import { normalizeSmsPrefs, type SmsPrefs } from '$lib/smsPrefs';
 import { cached, invalidate, peekCached } from './cache.js';
+import { unsubUrl } from './emailUnsub';
 
 // TTL לערכי ה-cache (במילישניות). קצר מספיק שעדכונים נראים מהר,
 // ארוך מספיק שניווט פעיל לא נוגע ב-Strapi כמעט בכלל.
@@ -100,6 +101,8 @@ export interface DbUser {
     sms_prefs: SmsPrefs;
     /** מתי נשלח למשתמש SMS "השלם עיר/שכונה בפרופיל" מעמוד הניהול ('' = מעולם לא) */
     sms_profile_nudge_at: string;
+    /** ביטל קבלת עותקי הודעות במייל */
+    email_optout: boolean;
     /** מקור ייבוא ('' = נרשם באתר בעצמו). למשל 'pg-cellular-2026-09' = גיליון הסלולר של רכישות קבוצתיות */
     import_source: string;
     /** מפתחות קמפייני SMS שכבר נשלחו למשתמש (למשל 'welcome-import-2026-09') - כדי לא לשלוח פעמיים */
@@ -216,6 +219,8 @@ interface StrapiUpUser {
     import_source?: string | null;
     /** מפתחות קמפייני SMS שכבר נשלחו למשתמש (json חופשי; מערך מחרוזות) */
     sms_campaigns?: unknown;
+    /** ביטל קבלת עותקי הודעות במייל (קישור חתום בתחתית המייל) */
+    email_optout?: boolean | null;
     createdAt: string;
 }
 
@@ -283,6 +288,7 @@ function mapUpUser(u: StrapiUpUser): DbUser {
         totp_enabled: !!(u.totp_secret && u.totp_secret.trim()),
         sms_prefs:    normalizeSmsPrefs(u.sms_prefs),
         sms_profile_nudge_at: u.sms_profile_nudge_at ?? '',
+        email_optout: !!u.email_optout,
         import_source: u.import_source ?? '',
         sms_campaigns: Array.isArray(u.sms_campaigns) ? u.sms_campaigns.map(String) : [],
     };
@@ -1257,7 +1263,7 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
     }
 
     await notifyCoordinatorApproved(
-        { phone: targetMapped.phone || req.phone, email: targetMapped.email, name: targetMapped.name || req.name },
+        { phone: targetMapped.phone || req.phone, email: targetMapped.email, name: targetMapped.name || req.name, emailOptOut: targetMapped.email_optout },
         req.neighborhoods,
     );
 
@@ -1762,15 +1768,20 @@ function coordinatorApprovedText(name: string, areas: string[]): string {
 }
 
 /** מייל אישור מינוי רכז (Resend, דומיין gofreeil.com מאומת) - best-effort */
-export async function sendCoordinatorApprovedEmail(email: string | null | undefined, name: string | null | undefined, areas: string[]): Promise<void> {
+export async function sendCoordinatorApprovedEmail(email: string | null | undefined, name: string | null | undefined, areas: string[], optedOut = false): Promise<void> {
     try {
         const to = (email ?? '').trim();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return;
+        if (optedOut || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return;
         const apiKey = process.env.RESEND_API_KEY;
         if (!apiKey) { console.warn('[coordinator email] RESEND_API_KEY missing'); return; }
         const { Resend } = await import('resend');
         const from = process.env.COORD_FROM_EMAIL || 'coordinators@gofreeil.com';
-        const text = coordinatorApprovedText(name?.trim() || 'רכז/ה', areas);
+        const unsub = unsubUrl(to);
+        const text = coordinatorApprovedText(name?.trim() || 'רכז/ה', areas) +
+            (unsub ? `
+
+---
+להפסקת קבלת הודעות במייל: ${unsub}` : '');
         const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const html = `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;line-height:1.7;white-space:pre-line">` +
             esc(text).replace('community.gofreeil.com/profile', '<a href="https://community.gofreeil.com/profile">community.gofreeil.com/profile</a>') +
@@ -1779,6 +1790,7 @@ export async function sendCoordinatorApprovedEmail(email: string | null | undefi
             from: `יוצאים לחירות <${from}>`,
             to: [to],
             subject: 'אושרת כרכז באתר קהילה בשכונה 🎉',
+            ...(unsub ? { headers: { 'List-Unsubscribe': `<${unsub}>` } } : {}),
             text,
             html,
         });
@@ -1789,10 +1801,10 @@ export async function sendCoordinatorApprovedEmail(email: string | null | undefi
 }
 
 /** SMS + מייל לרכז שאושר */
-export async function notifyCoordinatorApproved(u: { phone?: string | null; email?: string | null; name?: string | null }, areas: string[]): Promise<void> {
+export async function notifyCoordinatorApproved(u: { phone?: string | null; email?: string | null; name?: string | null; emailOptOut?: boolean }, areas: string[]): Promise<void> {
     await Promise.all([
         sendCoordinatorApprovedSms(u.phone, u.name, areas),
-        sendCoordinatorApprovedEmail(u.email, u.name, areas),
+        sendCoordinatorApprovedEmail(u.email, u.name, areas, u.emailOptOut),
     ]);
 }
 
@@ -1961,6 +1973,15 @@ async function findUpUserByEmail(email: string): Promise<StrapiUpUser | undefine
         'pagination[limit]':    '1',
     });
     return arr[0] as StrapiUpUser | undefined;
+}
+
+/** מסמן/מבטל סימון "בלי עותקי הודעות במייל" למשתמש לפי אימייל. true = נמצא משתמש */
+export async function setEmailOptOutByEmail(email: string, optout: boolean): Promise<boolean> {
+    const u = await findUpUserByEmail(email.trim());
+    if (!u) return false;
+    await updateStrapiUpUser(u.id, { email_optout: optout });
+    invalidate('user:');
+    return true;
 }
 
 /** מחפש משתמש לפי טלפון (השוואה מנורמלת) - fallback כש-external_id השתנה */

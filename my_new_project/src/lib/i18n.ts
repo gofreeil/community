@@ -2,6 +2,7 @@ import { register, init, addMessages } from 'svelte-i18n';
 import * as chrome from './translations/chrome';
 import * as home from './translations/home';
 import * as aboutRevenue from './translations/aboutRevenue';
+import * as unsubscribe from './translations/unsubscribe';
 import * as account from './translations/account';
 import * as profile from './translations/profile';
 import * as aboutPages from './translations/aboutPages';
@@ -805,7 +806,7 @@ register('ru', () => Promise.resolve({
 }));
 
 // מילונים מודולריים לפי אזור באתר - מתמזגים לתוך המילון הראשי
-for (const mod of [chrome, home, aboutRevenue, account, profile, aboutPages, advertise, boards, communityDict, extras, jobs, listings, map, components, labels, tiers, errors, onboarding, search, crumbs]) {
+for (const mod of [chrome, home, aboutRevenue, unsubscribe, account, profile, aboutPages, advertise, boards, communityDict, extras, jobs, listings, map, components, labels, tiers, errors, onboarding, search, crumbs]) {
     addMessages('he', mod.he);
     addMessages('en', mod.en);
     addMessages('ru', mod.ru);

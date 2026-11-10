@@ -477,7 +477,7 @@ export const actions: Actions = {
             // SMS לרכז רק על אזורים שנוספו עכשיו (לא על שמירה חוזרת של אותם אזורים)
             const priorKeys = new Set((prior?.coordinator_of ?? []).map((a) => a.trim()));
             const added = neighborhoods.filter((a) => !priorKeys.has(a));
-            if (added.length > 0) await notifyCoordinatorApproved({ phone: prior?.phone, email: prior?.email, name: prior?.name }, added);
+            if (added.length > 0) await notifyCoordinatorApproved({ phone: prior?.phone, email: prior?.email, name: prior?.name, emailOptOut: prior?.email_optout }, added);
 
             // סגירת בקשות רכזות ממתינות שהמינוי הידני כבר מימש. בלי זה הבקשה נשארת
             // pending ורק *מוסתרת* כל עוד האזורים תואמים - ולכן צצה מחדש ככרטיס
