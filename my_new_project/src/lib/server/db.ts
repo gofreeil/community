@@ -1739,10 +1739,13 @@ export async function sendCoordinatorApprovedSms(phone: string | null | undefine
         await adminSmsSend(
             [{ phone: d, name: name ?? '', city: '' }],
             `שלום {name}, אושרת כרכז${where} באתר קהילה בשכונה\n` +
+            `ברוך הבא 🎉\n` +
             `מעכשיו תוכל למצוא באזור האישי שלך community.gofreeil.com/profile\n` +
-            `את כל ההודעות, כלי העבודה, והתגמולים שלך.\n` +
-            `אנא היכנס לאודותנו כדי להכיר בצורה טובה את תפקידך\n` +
-            `כמו כן בקרוב תצורף לקבוצת הווצאפ של הרכזים הארציים`,
+            `את כל ההודעות, כלי העבודה, והתגמולים שלך.\n\n` +
+            `כמו כן אנא היכנס לאודותנו כדי להכיר בצורה טובה את תפקידך\n` +
+            `אנו כאן כדי לסייע לך בדרך\n` +
+            `בקרוב תצורף לקבוצת הווצאפ של הרכזים הארציים\n` +
+            `בהצלחה צוות יוצאים לחירות 🕊️`,
         );
     } catch (e) {
         console.warn('[coordinator sms] failed:', e instanceof Error ? e.message : e);
