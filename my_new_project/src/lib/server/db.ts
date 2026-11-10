@@ -1745,7 +1745,9 @@ export async function sendCoordinatorApprovedSms(phone: string | null | undefine
             `כמו כן אנא היכנס לאודותנו כדי להכיר בצורה טובה את תפקידך\n` +
             `אנו כאן כדי לסייע לך בדרך\n` +
             `בקרוב תצורף לקבוצת הווצאפ של הרכזים הארציים\n` +
-            `בהצלחה צוות יוצאים לחירות 🕊️`,
+            `בהצלחה.\n` +
+            `מצוות יוצאים לחירות\n` +
+            `🕊️`,
         );
     } catch (e) {
         console.warn('[coordinator sms] failed:', e instanceof Error ? e.message : e);
