@@ -1734,10 +1734,11 @@ export async function sendCoordinatorApprovedSms(phone: string | null | undefine
         if (d.startsWith('972')) d = '0' + d.slice(3);
         if (!/^05\d{8}$/.test(d)) return;
         if (!(await adminSmsStatus()).enabled) return;
-        const where = areas.length ? ` ב${areas.join(', ')}` : '';
+        // קצר בכוונה (עברית = 70 תווים להודעה) - בלי אימוג'י ובלי שמות שכונות
+        void areas;
         await adminSmsSend(
             [{ phone: d, name: name ?? '', city: '' }],
-            `שלום {name}! מינויך כרכז קהילה${where} אושר 🎉 כלי הרכז זמינים עכשיו באתר קהילה בשכונה. תודה על ההתנדבות!`,
+            `{name}, מינוי הרכז אושר! תפקידך: למלא את נתוני השכונה ולחבר אליה תושבים ועסקים. אזור אישי: community.gofreeil.com/profile`,
         );
     } catch (e) {
         console.warn('[coordinator sms] failed:', e instanceof Error ? e.message : e);
