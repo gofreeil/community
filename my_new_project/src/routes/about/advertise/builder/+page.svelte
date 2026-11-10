@@ -1948,6 +1948,48 @@
         <!-- ===== MOBILE PREVIEW - full-screen popup style ===== -->
         {#if previewMode === "mobile"}
             <div class="preview-frame mobile">
+                <!-- תמונה ייעודית לנייד: המשבצת בנייד רחבה ונמוכה, ולכן תמונה
+                     שנראית מצוין בדסקטופ יכולה להיחתך רע כאן. הכלי יושב מעל
+                     לתצוגת הנייד -->
+                <div class="mobile-image-swap">
+                    <p class="mobile-image-swap-title">{$_('advertise.b_mobile_img_title')}</p>
+                    <p class="mobile-image-swap-help">{$_('advertise.b_mobile_img_help')}</p>
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    {#if mobileImage}
+                        <div class="mobile-image-swap-frame"
+                             class:dragging={isDraggingMobile}
+                             ondragover={(e) => dragOver(e, v => isDraggingMobile = v)}
+                             ondragleave={(e) => dragLeave(e, v => isDraggingMobile = v)}
+                             ondrop={(e) => handleDrop(e, "mobile", v => isDraggingMobile = v)}>
+                            <img src={mobileImage} alt={$_('advertise.b_mobile_img_title')} use:adImgFit={mobileImageFit} />
+                            <button type="button" class="remove-x" onclick={() => clearImage("mobile")} aria-label={$_('advertise.b_remove_image')}>✕</button>
+                            <button type="button" class="crop-arrow crop-arrow-up"    onclick={() => nudgeMainImage("up", "mobile")}    aria-label={$_('advertise.b_nudge_up')}>▲</button>
+                            <button type="button" class="crop-arrow crop-arrow-down"  onclick={() => nudgeMainImage("down", "mobile")}  aria-label={$_('advertise.b_nudge_down')}>▼</button>
+                            <button type="button" class="crop-arrow crop-arrow-left"  onclick={() => nudgeMainImage("left", "mobile")}  aria-label={$_('advertise.b_nudge_left')}>◀</button>
+                            <button type="button" class="crop-arrow crop-arrow-right" onclick={() => nudgeMainImage("right", "mobile")} aria-label={$_('advertise.b_nudge_right')}>▶</button>
+                            <button type="button" class="crop-reset" onclick={() => { mobileImageObjectX = 50; mobileImageObjectY = 50; mobileImageZoom = 1; }} aria-label={$_('advertise.b_reset_pos')}>⊙</button>
+                            <button type="button" class="crop-zoom zoom-in"  onclick={() => zoomMainImage("in", "mobile")}  aria-label={$_('advertise.b_zoom_in')}>＋</button>
+                            <button type="button" class="crop-zoom zoom-out" onclick={() => zoomMainImage("out", "mobile")} aria-label={$_('advertise.b_zoom_out')}>－</button>
+                        </div>
+                        <p class="mobile-image-swap-note">{$_('advertise.b_mobile_img_active')}</p>
+                    {:else}
+                        <!-- אזור שחרור מלא, לא רק כפתור בחירה: גרירת קובץ לכאן
+                             עובדת בדיוק כמו באזור התמונה הראשית -->
+                        <label class="mobile-image-swap-drop"
+                               class:dragging={isDraggingMobile}
+                               ondragover={(e) => dragOver(e, v => isDraggingMobile = v)}
+                               ondragleave={(e) => dragLeave(e, v => isDraggingMobile = v)}
+                               ondrop={(e) => handleDrop(e, "mobile", v => isDraggingMobile = v)}>
+                            <span class="text-2xl" aria-hidden="true">{isDraggingMobile ? "✨" : "📱"}</span>
+                            <span class="mobile-image-swap-drop-main">
+                                {isDraggingMobile ? $_('advertise.b_drop_here') : $_('advertise.b_mobile_img_upload')}
+                            </span>
+                            <span class="mobile-image-swap-drop-sub">{$_('advertise.b_click_or_drag')}</span>
+                            <input type="file" accept="image/*" onchange={(e) => handleImage(e, "mobile")} class="hidden" />
+                        </label>
+                    {/if}
+                </div>
+
                 <div class="preview-with-side-caption">
                     {@render previewSideControls()}
                     <div class="phone-screen">
@@ -1989,48 +2031,6 @@
                     </div>
                     </div>
                     <p class="preview-caption preview-caption-side">{$_('advertise.b_mobile_caption')}</p>
-                </div>
-
-                <!-- תמונה ייעודית לנייד: המשבצת בנייד רחבה ונמוכה, ולכן תמונה
-                     שנראית מצוין בדסקטופ יכולה להיחתך רע כאן. הכלי יושב מתחת
-                     לתצוגת הנייד - בדיוק במקום שבו המפרסם רואה את הבעיה. -->
-                <div class="mobile-image-swap">
-                    <p class="mobile-image-swap-title">{$_('advertise.b_mobile_img_title')}</p>
-                    <p class="mobile-image-swap-help">{$_('advertise.b_mobile_img_help')}</p>
-                    <!-- svelte-ignore a11y_no_static_element_interactions -->
-                    {#if mobileImage}
-                        <div class="mobile-image-swap-frame"
-                             class:dragging={isDraggingMobile}
-                             ondragover={(e) => dragOver(e, v => isDraggingMobile = v)}
-                             ondragleave={(e) => dragLeave(e, v => isDraggingMobile = v)}
-                             ondrop={(e) => handleDrop(e, "mobile", v => isDraggingMobile = v)}>
-                            <img src={mobileImage} alt={$_('advertise.b_mobile_img_title')} use:adImgFit={mobileImageFit} />
-                            <button type="button" class="remove-x" onclick={() => clearImage("mobile")} aria-label={$_('advertise.b_remove_image')}>✕</button>
-                            <button type="button" class="crop-arrow crop-arrow-up"    onclick={() => nudgeMainImage("up", "mobile")}    aria-label={$_('advertise.b_nudge_up')}>▲</button>
-                            <button type="button" class="crop-arrow crop-arrow-down"  onclick={() => nudgeMainImage("down", "mobile")}  aria-label={$_('advertise.b_nudge_down')}>▼</button>
-                            <button type="button" class="crop-arrow crop-arrow-left"  onclick={() => nudgeMainImage("left", "mobile")}  aria-label={$_('advertise.b_nudge_left')}>◀</button>
-                            <button type="button" class="crop-arrow crop-arrow-right" onclick={() => nudgeMainImage("right", "mobile")} aria-label={$_('advertise.b_nudge_right')}>▶</button>
-                            <button type="button" class="crop-reset" onclick={() => { mobileImageObjectX = 50; mobileImageObjectY = 50; mobileImageZoom = 1; }} aria-label={$_('advertise.b_reset_pos')}>⊙</button>
-                            <button type="button" class="crop-zoom zoom-in"  onclick={() => zoomMainImage("in", "mobile")}  aria-label={$_('advertise.b_zoom_in')}>＋</button>
-                            <button type="button" class="crop-zoom zoom-out" onclick={() => zoomMainImage("out", "mobile")} aria-label={$_('advertise.b_zoom_out')}>－</button>
-                        </div>
-                        <p class="mobile-image-swap-note">{$_('advertise.b_mobile_img_active')}</p>
-                    {:else}
-                        <!-- אזור שחרור מלא, לא רק כפתור בחירה: גרירת קובץ לכאן
-                             עובדת בדיוק כמו באזור התמונה הראשית -->
-                        <label class="mobile-image-swap-drop"
-                               class:dragging={isDraggingMobile}
-                               ondragover={(e) => dragOver(e, v => isDraggingMobile = v)}
-                               ondragleave={(e) => dragLeave(e, v => isDraggingMobile = v)}
-                               ondrop={(e) => handleDrop(e, "mobile", v => isDraggingMobile = v)}>
-                            <span class="text-2xl" aria-hidden="true">{isDraggingMobile ? "✨" : "📱"}</span>
-                            <span class="mobile-image-swap-drop-main">
-                                {isDraggingMobile ? $_('advertise.b_drop_here') : $_('advertise.b_mobile_img_upload')}
-                            </span>
-                            <span class="mobile-image-swap-drop-sub">{$_('advertise.b_click_or_drag')}</span>
-                            <input type="file" accept="image/*" onchange={(e) => handleImage(e, "mobile")} class="hidden" />
-                        </label>
-                    {/if}
                 </div>
             </div>
         {/if}
@@ -3478,7 +3478,7 @@
 
     /* ============== תמונה ייעודית לנייד (שלב 7) ============== */
     :global(.mobile-image-swap) {
-        margin-top: 0.9rem;
+        margin-bottom: 0.9rem;
         border: 1px solid rgba(255,255,255,0.12);
         border-radius: 0.9rem;
         background: rgba(255,255,255,0.04);
