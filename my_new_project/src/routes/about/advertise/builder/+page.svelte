@@ -5,6 +5,7 @@
     import { goto } from "$app/navigation";
     import { _ } from "svelte-i18n";
     import { adImgFit, AD_ZOOM_MIN, AD_ZOOM_MAX } from "$lib/adImageFit";
+    import MobileAdCard from "$lib/components/MobileAdCard.svelte";
     import {
         bandCorners, DEFAULT_AD_STYLE, logoCornerSide, type AdStyle, type SubAlign,
         DEFAULT_SUB_FONT_SIZE, SUB_FONT_SIZE_MIN, SUB_FONT_SIZE_MAX,
@@ -288,7 +289,20 @@
     let subFontSize     = $state<number>(DEFAULT_SUB_FONT_SIZE);
     let subLineHeight   = $state<number>(DEFAULT_SUB_LINE_HEIGHT);
     let subAlign        = $state<SubAlign>("right");
-    let hoverText       = $state<string>("");
+    // הזזת הכותרת / הכיתוב / הכפתור בפופ-אפ הנייד (שלב 7), באחוזי רוחב הכרטיס
+    let mobTitleX = $state<number>(0); let mobTitleY = $state<number>(0);
+    let mobSubX   = $state<number>(0); let mobSubY   = $state<number>(0);
+    let mobCtaX   = $state<number>(0); let mobCtaY   = $state<number>(0);
+    const num0 = (v: unknown) => (typeof v === "number" && isFinite(v) ? v : 0);
+    function moveMobile(key: "title" | "sub" | "cta", x: number, y: number) {
+        if (key === "title") { mobTitleX = x; mobTitleY = y; }
+        else if (key === "sub") { mobSubX = x; mobSubY = y; }
+        else { mobCtaX = x; mobCtaY = y; }
+    }
+    function resetMobilePositions() {
+        mobTitleX = mobTitleY = mobSubX = mobSubY = mobCtaX = mobCtaY = 0;
+    }
+    let hoverText      = $state<string>("");
     // 'new' = נכנס מהמחירון לקנות משבצת נוספת; 'edit' = עריכת הקיימת
     let adIntent        = $state<AdIntent>("edit");
     let cta             = $state<string>("הקלק לפרטים והזמנות");
@@ -424,6 +438,7 @@
         subFontSize,
         subLineHeight,
         subAlign,
+        mobTitleX, mobTitleY, mobSubX, mobSubY, mobCtaX, mobCtaY,
     });
 
     // Reserve room for a corner logo next to the title - same shared helper the
@@ -863,6 +878,9 @@
                 subFontSize     = typeof d.subFontSize === 'number' ? d.subFontSize : DEFAULT_SUB_FONT_SIZE;
                 subLineHeight   = typeof d.subLineHeight === 'number' ? d.subLineHeight : DEFAULT_SUB_LINE_HEIGHT;
                 subAlign        = (d.subAlign === 'center' || d.subAlign === 'left' || d.subAlign === 'justify') ? d.subAlign : 'right';
+                mobTitleX = num0(d.mobTitleX); mobTitleY = num0(d.mobTitleY);
+                mobSubX   = num0(d.mobSubX);   mobSubY   = num0(d.mobSubY);
+                mobCtaX   = num0(d.mobCtaX);   mobCtaY   = num0(d.mobCtaY);
                 hoverText       = d.hoverText ?? "";
                 cta             = (d.cta && d.cta !== "לפרטים נוספים") ? d.cta : "הקלק לפרטים והזמנות";
                 gradient        = d.gradient ?? gradient;
@@ -946,6 +964,7 @@
             logo, logoOriginal, hasCircleCrop, logoShape, logoBg, logoSize, hoverLogo, hoverLogoX, hoverLogoY, hoverLogoSize, logoPosition, logoPositionExplicit, logoFreeX, logoFreeY, mainImage, mainImageObjectX, mainImageObjectY, mainImageZoom,
             mobileImage, mobileImageObjectX, mobileImageObjectY, mobileImageZoom, title, titleColor, titleOffsetY, titleFontSize, lpLogoAlign, lpLogoBg, lpLogoSize,
             subtitle, subFontSize, subLineHeight, subAlign, hoverText, cta, gradient, diagHeight,
+            mobTitleX, mobTitleY, mobSubX, mobSubY, mobCtaX, mobCtaY,
             landingHeadline, landingPitch, landingExtended, landingImage, landingAdvantages, uniqueness, phone, whatsapp, website,
             email, address, hours, products,
         };
@@ -1050,6 +1069,9 @@
                 subFontSize          = typeof st.subFontSize === "number" ? st.subFontSize : DEFAULT_SUB_FONT_SIZE;
                 subLineHeight        = typeof st.subLineHeight === "number" ? st.subLineHeight : DEFAULT_SUB_LINE_HEIGHT;
                 subAlign             = (st.subAlign === "center" || st.subAlign === "left" || st.subAlign === "justify") ? st.subAlign : "right";
+                mobTitleX = num0(st.mobTitleX); mobTitleY = num0(st.mobTitleY);
+                mobSubX   = num0(st.mobSubX);   mobSubY   = num0(st.mobSubY);
+                mobCtaX   = num0(st.mobCtaX);   mobCtaY   = num0(st.mobCtaY);
             }
 
             landingHeadline = ad.landing?.headline ?? "";
@@ -1995,42 +2017,26 @@
                     <div class="phone-screen">
                         <div class="phone-notch"></div>
                         <div class="phone-content">
-                        <div class="mobile-popup">
-                            <!-- Mobile: logo + title row sits ABOVE the image, regardless of logoPosition.
-                                 Image area below is reserved entirely for the photo + diagonal band + subtitle. -->
-                            <div class="popup-title-row">
-                                {#if logo}
-                                    <img src={logo} alt={$_('advertise.b_logo_alt')}
-                                         class="popup-logo-above {logoShape === 'circle' ? 'popup-logo-above-circle' : ''}"
-                                         style={logoBg === 'black' ? 'background:#000;' : logoBg === 'clear' ? 'background:transparent;' : ''} />
-                                {/if}
-                                <h3 class="popup-title-above" style:color={titleColor}>{title || $_('advertise.b_s3_title')}</h3>
-                            </div>
-                            <div class="popup-img pro-img-wrap">
-                                {#if previewMobileImage}
-                                    <img src={previewMobileImage} alt={title} use:adImgFit={previewMobileFit} />
-                                {:else}
-                                    <div class="img-placeholder">{$_('advertise.b_main_image_alt')}</div>
-                                {/if}
-                                <!-- Diagonal color band -->
-                                <div class="pro-diag bg-gradient-to-br {gradient}"></div>
-                                <!-- Subtitle stays on the diagonal at the bottom -->
-                                <div class="pro-title-wrap mobile">
-                                    <p class="pro-sub">{subtitle || $_('advertise.b_s5_title')}</p>
-                                </div>
-                                <div class="close-countdown">5</div>
-                            </div>
-                            {#if !shopEdit}
-                            <div class="popup-body">
-                                <button type="button" class="popup-cta bg-gradient-to-r {gradient}">
-                                    ← {cta}
-                                </button>
-                            </div>
+                        <div class="mobile-popup-slot">
+                            <MobileAdCard
+                                editable
+                                {title} {subtitle} {cta} {gradient}
+                                image={previewMobileImage}
+                                imageFit={previewMobileFit}
+                                {logo}
+                                st={adStyle}
+                                showCta={!shopEdit}
+                                placeholder={$_('advertise.b_main_image_alt')}
+                                onedit={(f, v) => { if (f === 'title') title = v; else if (f === 'sub') subtitle = v; else cta = v; }}
+                                onmove={moveMobile}
+                            />
+                            {#if mobTitleX || mobTitleY || mobSubX || mobSubY || mobCtaX || mobCtaY}
+                                <button type="button" class="mobile-reset-pos" onclick={resetMobilePositions}>{$_('advertise.b_mobile_reset_pos')}</button>
                             {/if}
                         </div>
                     </div>
                     </div>
-                    <p class="preview-caption preview-caption-side">{$_('advertise.b_mobile_caption')}</p>
+                    <p class="preview-caption preview-caption-side">{$_('advertise.b_mobile_caption')} <b>{$_('advertise.b_mobile_edit_hint')}</b></p>
                 </div>
             </div>
         {/if}
@@ -2697,6 +2703,11 @@
         width: 80px; height: 16px; background: #111827; border-radius: 0 0 12px 12px; z-index: 10;
     }
     :global(.phone-content) { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .mobile-popup-slot { width: 100%; max-width: 240px; }
+    .mobile-reset-pos {
+        display: block; margin: 0.4rem auto 0; font-size: 0.7rem; padding: 0.15rem 0.6rem;
+        border-radius: 9999px; background: rgba(255,255,255,0.08); color: #fbbf24; border: 1px solid rgba(251,191,36,0.4);
+    }
     :global(.mobile-popup) {
         width: 100%; max-width: 240px; background: #0f172a;
         border-radius: 1rem; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
@@ -2776,7 +2787,9 @@
         display: block; width: 100%; padding: 0.55rem; border-radius: 0.6rem;
         color: white; font-weight: 700; font-size: 0.78rem; text-align: center;
         border: none;
+        display: flex; justify-content: center; gap: 0.3rem;
     }
+    /* עריכה במקום בתצוגת הנייד */
     /* Logo straddling the right corner of the diagonal band (mobile popup). 20px = half of 40px logo. */
     :global(.popup-logo-cta) {
         top: auto !important;

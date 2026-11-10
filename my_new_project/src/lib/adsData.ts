@@ -1,3 +1,5 @@
+import type { AdStyle } from './adStyle';
+
 export interface Ad {
     /** פרסומות הרשת ממוספרות; פרסומת של מפרסם משולם נושאת את מזהה Strapi */
     id: number | string;
@@ -19,6 +21,8 @@ export interface Ad {
     internal?: boolean;
     /** כרטיס מוצר מחנות החירות - בפופ-אפ בלי כפתור CTA; התמונה היא הקישור */
     shop?: boolean;
+    /** פרסומת משולמת מהבילדר: הפופ-אפ בנייד נצייר בדיוק כמו התצוגה בשלב 7 (לוגו + עיצוב שנשמר) */
+    card?: { logo: string; style: AdStyle };
 }
 
 export const ads: Ad[] = [

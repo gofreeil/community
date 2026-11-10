@@ -19,6 +19,7 @@
 	import { goto, beforeNavigate } from "$app/navigation";
 	import { page, navigating, updated } from "$app/state";
 	import { closeAdPopup, registerPaidAds } from "$lib/adPopupStore";
+	import { parseAdStyle, legacyAdStyle } from "$lib/adStyle";
 	import { registerDynamicNeighborhoods, MY_PIN_LS_KEY } from "$lib/neighborhoodCoords";
 	import { neighborhoodState } from "$lib/neighborhoodState.svelte";
 	import { installFormGuard, revealFieldError } from "$lib/formGuard";
@@ -70,6 +71,8 @@
 					hover:          a.hover,
 					// בלי כפתור בפופ-אפ: כרטיס מוצר מהחנות, או פרסומת שטקסט הכפתור שלה נמחק
 					shop:           a.shop || !a.cta,
+					// הפופ-אפ מצויר מהעיצוב שהמפרסם קבע (כולל הזזת הטקסטים בנייד)
+					card:           a.shop ? undefined : { logo: a.logo, style: parseAdStyle(a.adStyle) ?? legacyAdStyle(a.title) },
 				})),
 		);
 	});

@@ -2,6 +2,7 @@
     import { adPopup, closeAdPopup } from '$lib/adPopupStore';
     import { adImgFit } from '$lib/adImageFit';
     import type { Ad } from '$lib/adsData';
+    import MobileAdCard from '$lib/components/MobileAdCard.svelte';
     import { goto } from '$app/navigation';
     import { onDestroy } from 'svelte';
     import { _ } from 'svelte-i18n';
@@ -60,6 +61,27 @@
             ></div>
         </div>
 
+        {#if popup.ad.card}
+        <!-- פרסומת משולמת: אותו כרטיס בדיוק כמו התצוגה בשלב 7 בבילדר -->
+        <MobileAdCard
+            title={popup.ad.title}
+            subtitle={popup.ad.description}
+            cta={popup.ad.cta}
+            image={popup.ad.mobileImage || popup.ad.image}
+            imageFit={popup.ad.mobileImage && popup.ad.mobileImageFit
+                ? popup.ad.mobileImageFit
+                : { x: 50, y: 50, z: popup.ad.imageScale ?? 1 }}
+            logo={popup.ad.card.logo}
+            gradient={popup.ad.color}
+            st={popup.ad.card.style}
+            {countdown}
+            onclose={handleClose}
+            href={popup.ad.href}
+            target={popup.ad.internal ? undefined : "_blank"}
+            rel={popup.ad.internal ? undefined : "noopener noreferrer"}
+            onctaclick={() => closeAdPopup()}
+        />
+        {:else}
         <!-- Close button with countdown -->
         <button
             onclick={handleClose}
@@ -122,6 +144,7 @@
             </a>
             {/if}
         </div>
+        {/if}
     </div>
 </div>
 {/if}
