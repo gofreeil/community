@@ -1738,7 +1738,7 @@ export async function sendCoordinatorApprovedSms(phone: string | null | undefine
         void areas;
         await adminSmsSend(
             [{ phone: d, name: name ?? '', city: '' }],
-            `{name}, מינוי הרכז אושר! תפקידך: למלא את נתוני השכונה ולחבר אליה תושבים ועסקים. אזור אישי: community.gofreeil.com/profile`,
+            `{name}, מינוי הרכז אושר! באזור האישי תמצא את כלי הרכז וההודעות שלך. על התפקיד קרא באודותינו באתר. community.gofreeil.com/profile`,
         );
     } catch (e) {
         console.warn('[coordinator sms] failed:', e instanceof Error ? e.message : e);
