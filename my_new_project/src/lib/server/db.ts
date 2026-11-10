@@ -1256,7 +1256,10 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
         console.warn('[approveCoordinatorRequest] notify failed:', e instanceof Error ? e.message : e);
     }
 
-    await sendCoordinatorApprovedSms(targetMapped.phone || req.phone, targetMapped.name || req.name, req.neighborhoods);
+    await notifyCoordinatorApproved(
+        { phone: targetMapped.phone || req.phone, email: targetMapped.email, name: targetMapped.name || req.name },
+        req.neighborhoods,
+    );
 
     return req;
 }
@@ -1734,24 +1737,63 @@ export async function sendCoordinatorApprovedSms(phone: string | null | undefine
         if (d.startsWith('972')) d = '0' + d.slice(3);
         if (!/^05\d{8}$/.test(d)) return;
         if (!(await adminSmsStatus()).enabled) return;
-        // קצר בכוונה (עברית = 70 תווים להודעה) - בלי אימוג'י
-        const where = areas.length ? ` ב${areas.join(', ')}` : '';
         await adminSmsSend(
             [{ phone: d, name: name ?? '', city: '' }],
-            `שלום {name}, אושרת כרכז${where} באתר קהילה בשכונה\n` +
-            `ברוך הבא 🎉\n` +
-            `מעכשיו תוכל למצוא באזור האישי שלך community.gofreeil.com/profile\n` +
-            `את כל ההודעות, כלי העבודה, והתגמולים שלך.\n\n` +
-            `כמו כן אנא היכנס לאודותנו כדי להכיר בצורה טובה את תפקידך,\n` +
-            `אנו כאן כדי לסייע לך בדרך.\n` +
-            `בקרוב תצורף לקבוצת הווצאפ של הרכזים הארציים\n` +
-            `בהצלחה,\n` +
-            `צוות יוצאים לחירות\n` +
-            `🕊️`,
+            coordinatorApprovedText('{name}', areas),
         );
     } catch (e) {
         console.warn('[coordinator sms] failed:', e instanceof Error ? e.message : e);
     }
+}
+
+/** נוסח אישור מינוי רכז - משותף ל-SMS ולמייל */
+function coordinatorApprovedText(name: string, areas: string[]): string {
+    const where = areas.length ? ` ב${areas.join(', ')}` : '';
+    return `שלום ${name}, אושרת כרכז${where} באתר קהילה בשכונה\n` +
+        `ברוך הבא 🎉\n` +
+        `מעכשיו תוכל למצוא באזור האישי שלך community.gofreeil.com/profile\n` +
+        `את כל ההודעות, כלי העבודה, והתגמולים שלך.\n\n` +
+        `כמו כן אנא היכנס לאודותנו כדי להכיר בצורה טובה את תפקידך,\n` +
+        `אנו כאן כדי לסייע לך בדרך.\n` +
+        `בקרוב תצורף לקבוצת הווצאפ של הרכזים הארציים\n` +
+        `בהצלחה,\n` +
+        `צוות יוצאים לחירות\n` +
+        `🕊️`;
+}
+
+/** מייל אישור מינוי רכז (Resend, דומיין gofreeil.com מאומת) - best-effort */
+export async function sendCoordinatorApprovedEmail(email: string | null | undefined, name: string | null | undefined, areas: string[]): Promise<void> {
+    try {
+        const to = (email ?? '').trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return;
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) { console.warn('[coordinator email] RESEND_API_KEY missing'); return; }
+        const { Resend } = await import('resend');
+        const from = process.env.COORD_FROM_EMAIL || 'coordinators@gofreeil.com';
+        const text = coordinatorApprovedText(name?.trim() || 'רכז/ה', areas);
+        const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const html = `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;line-height:1.7;white-space:pre-line">` +
+            esc(text).replace('community.gofreeil.com/profile', '<a href="https://community.gofreeil.com/profile">community.gofreeil.com/profile</a>') +
+            `</div>`;
+        const { error } = await new Resend(apiKey).emails.send({
+            from: `יוצאים לחירות <${from}>`,
+            to: [to],
+            subject: 'אושרת כרכז באתר קהילה בשכונה 🎉',
+            text,
+            html,
+        });
+        if (error) console.warn('[coordinator email] failed:', error.message);
+    } catch (e) {
+        console.warn('[coordinator email] failed:', e instanceof Error ? e.message : e);
+    }
+}
+
+/** SMS + מייל לרכז שאושר */
+export async function notifyCoordinatorApproved(u: { phone?: string | null; email?: string | null; name?: string | null }, areas: string[]): Promise<void> {
+    await Promise.all([
+        sendCoordinatorApprovedSms(u.phone, u.name, areas),
+        sendCoordinatorApprovedEmail(u.email, u.name, areas),
+    ]);
 }
 
 /** חסימת משתמש (אדמין בלבד) */
