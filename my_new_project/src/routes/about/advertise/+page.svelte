@@ -1421,40 +1421,37 @@
         <!-- שלב 4 מקופל - האישור והסכום בשורה אחת -->
         {@render foldedStrip('4', `${$_('advertise.confirm_period')} · ₪${fmt(effectiveTotal)}`, () => periodFolded = false)}
     {:else}
-    <div class="mt-8 rounded-2xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border-2 border-purple-500/40 p-5 md:p-7" dir="rtl">
-        <!-- מספר השלב - גדול וממורכז מעל הכותרת -->
-        <div class="mb-3 flex flex-col items-center gap-2">
-            <span class="w-12 h-12 md:w-14 md:h-14 rounded-full text-black text-2xl md:text-3xl font-black flex items-center justify-center flex-shrink-0"
+    <div class="mt-4 rounded-xl bg-gradient-to-br from-purple-900/20 to-indigo-900/15 border border-purple-500/40 p-3 md:p-4" dir="rtl">
+        <!-- מספר השלב והכותרת בשורה אחת קומפקטית -->
+        <div class="mb-2 flex items-center justify-center gap-2">
+            <span class="w-6 h-6 md:w-7 md:h-7 rounded-full text-black text-xs md:text-sm font-black flex items-center justify-center flex-shrink-0"
                   class:step-num-light={step4NumLight}
                   style="background: radial-gradient(circle, #fde047 0%, #f59e0b 60%, #d97706 100%); opacity: 0.9">4</span>
-            <h2 class="text-xl md:text-2xl font-black text-white text-center"
+            <h2 class="text-base md:text-lg font-black text-white text-center"
                 class:step-title-light={step4TitleLight}>
                 {$_('advertise.step5_title')}
             </h2>
         </div>
 
         <!-- Explainer -->
-        <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
-            <p class="text-amber-300 font-black text-sm md:text-base mb-2 flex items-center gap-2">
-                <span class="text-xl">🎁</span>
-                <span>{$_('advertise.gift_title')}</span>
-            </p>
-            <ul class="text-gray-200 text-xs md:text-sm leading-relaxed space-y-1.5 pr-6 list-disc list-outside">
-                <li>{$_('advertise.gift_li1_pre')} <strong class="text-amber-200">{fmtDate(today)}</strong>, {$_('advertise.gift_li1_post')}</li>
+        <div class="rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 mb-2 text-xs text-gray-200">
+            <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center">
+                <span class="text-amber-300 font-bold">🎁 {$_('advertise.gift_title')}:</span>
+                <span>{$_('advertise.gift_li1_pre')} <strong class="text-amber-200">{fmtDate(today)}</strong>, {$_('advertise.gift_li1_post')}</span>
                 {#each expirationInfos as info}
-                    <li>{$_('advertise.gift_li2_pre')} <strong class="text-amber-200">{$_(`advertise.${info.periodKey}`)}</strong> {$_('advertise.gift_li2_until')} <strong class="text-amber-200">{fmtDate(info.date)} {$_('advertise.incl')}</strong>.</li>
+                    <span>• {$_('advertise.gift_li2_pre')} <strong class="text-amber-200">{$_(`advertise.${info.periodKey}`)}</strong> {$_('advertise.gift_li2_until')} <strong class="text-amber-200">{fmtDate(info.date)} {$_('advertise.incl')}</strong>.</span>
                 {/each}
-                <li>{$_('advertise.gift_li3_pre')}<strong class="text-amber-200">23:59</strong>{$_('advertise.gift_li3_post')}</li>
-            </ul>
+                <span class="text-gray-400">({$_('advertise.gift_li3_pre')} <strong class="text-amber-200">23:59</strong>{$_('advertise.gift_li3_post')})</span>
+            </div>
         </div>
 
-        <!-- Two-month calendar with markers -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <!-- Two-month calendar with markers - compact height -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             {#each [today, ...expirationInfos.map(i => i.date)] as anchor}
                 {@const cells = buildCalendar(anchor)}
-                <div class="rounded-xl bg-black/30 border border-white/10 p-3">
-                    <p class="text-center text-amber-300 font-black text-sm mb-2">{fmtMonthName(anchor)}</p>
-                    <div class="grid grid-cols-7 gap-0.5 text-[10px] text-gray-500 mb-1 text-center font-bold">
+                <div class="rounded-lg bg-black/30 border border-white/10 p-2">
+                    <p class="text-center text-amber-300 font-black text-xs mb-1">{fmtMonthName(anchor)}</p>
+                    <div class="grid grid-cols-7 gap-0.5 text-[9px] text-gray-400 mb-0.5 text-center font-bold">
                         {#each ['dow_sun','dow_mon','dow_tue','dow_wed','dow_thu','dow_fri','dow_sat'] as dowKey}
                             <div>{$_(`advertise.${dowKey}`)}</div>
                         {/each}
@@ -1464,10 +1461,10 @@
                             {@const inMonth = cell.getMonth() === anchor.getMonth()}
                             {@const isToday = sameDay(cell, today)}
                             {@const isExpiry = expirationInfos.some(i => sameDay(cell, i.date))}
-                            <div class="aspect-square flex items-center justify-center text-xs font-bold rounded
+                            <div class="h-5 sm:h-5.5 flex items-center justify-center text-[10px] sm:text-[11px] font-bold rounded
                                 {!inMonth ? 'text-gray-700' : 'text-gray-300'}
-                                {isToday ? 'bg-amber-500 text-black ring-2 ring-amber-300' : ''}
-                                {isExpiry && !isToday ? 'bg-red-500 text-white ring-2 ring-red-300' : ''}">
+                                {isToday ? 'bg-amber-500 text-black ring-1 ring-amber-300' : ''}
+                                {isExpiry && !isToday ? 'bg-red-500 text-white ring-1 ring-red-300' : ''}">
                                 {cell.getDate()}
                             </div>
                         {/each}
@@ -1477,37 +1474,51 @@
         </div>
 
         <!-- Calendar legend -->
-        <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400 mb-5">
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> {$_('advertise.legend_today')}</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500"></span> {$_('advertise.legend_expiry')}</span>
+        <div class="flex flex-wrap items-center justify-center gap-3 text-[11px] text-gray-400 mb-2">
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-amber-500"></span> {$_('advertise.legend_today')}</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-red-500"></span> {$_('advertise.legend_expiry')}</span>
         </div>
 
-        <!-- שליחת סיכום ההזמנה במייל/וואטסאפ - חלק מהאישור הכולל, לא שלב נפרד -->
-        <div class="rounded-xl bg-white/3 border border-white/10 p-4 md:p-5 mb-5">
+        <!-- Confirmation checkbox - immediately under calendar -->
+        <label class="confirm-banner flex items-center gap-2.5 cursor-pointer rounded-lg bg-white/5 hover:bg-white/8 border border-white/10 hover:border-amber-500/40 px-3 py-2 transition-colors mb-2"
+               class:confirm-blink={!confirmedPeriod}>
+            <input type="checkbox" bind:checked={confirmedPeriod}
+                   class="w-4 h-4 rounded border-2 border-amber-500/50 accent-amber-500 cursor-pointer flex-shrink-0" />
+            <div class="flex-1 text-xs">
+                <p class="text-white font-bold text-xs sm:text-sm">
+                    {$_('advertise.confirm_period')}
+                </p>
+                <p class="text-gray-400 text-[11px] sm:text-xs leading-snug">
+                    {$_('advertise.confirm_period_sub1', { values: { date: fmtDate(today) } })}
+                    {$_('advertise.confirm_period_sub2')}
+                    {#each expirationInfos as info, i}{#if i > 0} · {/if}<span class="text-amber-300 font-bold">{fmtDate(info.date)} {$_('advertise.incl')}</span>{#if expirationInfos.length > 1}&nbsp;({$_(`advertise.${info.labelKey}`)}){/if}{/each}.
+                    {$_('advertise.confirm_period_sub3')}
+                    <span class="text-amber-300 font-bold">₪{fmt(effectiveTotal)}</span>.
+                </p>
+            </div>
+        </label>
+
+        <!-- שליחת סיכום ההזמנה במייל/וואטסאפ - קומפקטי -->
+        <div class="rounded-lg bg-white/3 border border-white/10 p-2 sm:p-2.5">
             {#if emailSent}
-                <div class="text-center" style="animation: slideDown 0.3s ease-out;">
-                    <div class="text-3xl mb-2">✅</div>
-                    <p class="text-green-300 font-black text-base mb-1">{$_('advertise.email_sent')}</p>
-                    <p class="text-gray-400 text-sm">
-                        {$_('advertise.email_sent_to')}
-                        <span class="text-green-400 font-bold">{userEmail}</span>
-                    </p>
-                    <p class="text-gray-500 text-xs mt-2">{$_('advertise.we_will_contact')}</p>
+                <div class="text-center py-1" style="animation: slideDown 0.3s ease-out;">
+                    <p class="text-green-300 font-bold text-xs">✅ {$_('advertise.email_sent')} <span class="text-green-400">{userEmail}</span></p>
+                    <p class="text-gray-500 text-[10px] mt-0.5">{$_('advertise.we_will_contact')}</p>
                 </div>
             {:else}
-                <p class="text-amber-300 font-black text-sm md:text-base mb-3 text-center">
+                <p class="text-amber-300 font-bold text-xs mb-1.5 text-center">
                     {$_('advertise.step4_label')}
                 </p>
-                <div class="flex flex-col gap-2">
-                    <!-- Row 1: phone + WhatsApp - equal columns (50/50) so all inputs/buttons align -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="flex flex-col gap-1.5">
+                    <!-- Row 1: phone + WhatsApp -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         <input
                             type="tel"
                             bind:value={userPhone}
                             placeholder="050-1234567"
                             dir="ltr"
-                            class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
-                                   text-white placeholder:text-gray-600 text-sm
+                            class="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5
+                                   text-white placeholder:text-gray-600 text-xs
                                    focus:outline-none focus:border-green-500/60 focus:bg-green-900/10
                                    transition-all"
                         />
@@ -1516,22 +1527,22 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label={$_('advertise.wa_send_aria')}
-                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
-                                   font-black text-sm transition-all shadow-lg
-                                   bg-green-600 hover:bg-green-500 text-white hover:scale-105 shadow-green-500/20"
+                            class="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5
+                                   font-bold text-xs transition-all shadow-md
+                                   bg-green-600 hover:bg-green-500 text-white active:scale-95 shadow-green-500/20"
                         >
                             {$_('advertise.wa_send')}
                         </a>
                     </div>
-                    <!-- Row 2: email + send-email - same equal columns -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <!-- Row 2: email + send-email -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         <input
                             type="email"
                             bind:value={userEmail}
                             placeholder="your@email.com"
                             dir="ltr"
-                            class="rounded-xl border border-white/15 bg-white/5 px-4 py-3
-                                   text-white placeholder:text-gray-600 text-sm
+                            class="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5
+                                   text-white placeholder:text-gray-600 text-xs
                                    focus:outline-none focus:border-amber-500/60 focus:bg-amber-900/10
                                    transition-all"
                             onkeydown={(e) => { if (e.key === 'Enter') sendOrderEmail(); }}
@@ -1540,14 +1551,14 @@
                             type="button"
                             onclick={sendOrderEmail}
                             disabled={emailSending}
-                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
-                                   font-black text-sm transition-all shadow-lg
+                            class="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5
+                                   font-bold text-xs transition-all shadow-md
                                    {emailSending
                                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                                       : 'bg-amber-500 hover:bg-amber-400 text-black hover:scale-105 shadow-amber-500/20'}"
+                                       : 'bg-amber-500 hover:bg-amber-400 text-black active:scale-95 shadow-amber-500/20'}"
                         >
                             {#if emailSending}
-                                <span class="inline-block w-4 h-4 border-2 border-gray-500 border-t-amber-400 rounded-full"
+                                <span class="inline-block w-3 h-3 border-2 border-gray-500 border-t-amber-400 rounded-full"
                                       style="animation: spin 0.7s linear infinite;"></span>
                                 {$_('advertise.sending')}
                             {:else}
@@ -1557,29 +1568,10 @@
                     </div>
                 </div>
                 {#if emailError}
-                    <p class="text-red-400 text-xs mt-2 text-center font-bold">{emailError}</p>
+                    <p class="text-red-400 text-[10px] mt-1 text-center font-bold">{emailError}</p>
                 {/if}
             {/if}
         </div>
-
-        <!-- Confirmation checkbox -->
-        <label class="confirm-banner flex items-start gap-3 cursor-pointer rounded-xl bg-white/5 hover:bg-white/8 border border-white/10 hover:border-amber-500/40 p-4 transition-colors"
-               class:confirm-blink={!confirmedPeriod}>
-            <input type="checkbox" bind:checked={confirmedPeriod}
-                   class="mt-0.5 w-5 h-5 rounded border-2 border-amber-500/50 accent-amber-500 cursor-pointer flex-shrink-0" />
-            <div class="flex-1">
-                <p class="text-white font-bold text-sm md:text-base mb-1">
-                    {$_('advertise.confirm_period')}
-                </p>
-                <p class="text-gray-400 text-xs md:text-sm leading-relaxed">
-                    {$_('advertise.confirm_period_sub1', { values: { date: fmtDate(today) } })}
-                    {$_('advertise.confirm_period_sub2')}
-                    {#each expirationInfos as info, i}{#if i > 0} · {/if}<span class="text-amber-300 font-bold">{fmtDate(info.date)} {$_('advertise.incl')}</span>{#if expirationInfos.length > 1}&nbsp;({$_(`advertise.${info.labelKey}`)}){/if}{/each}.
-                    {$_('advertise.confirm_period_sub3')}
-                    <span class="text-amber-300 font-bold">₪{fmt(effectiveTotal)}</span>.
-                </p>
-            </div>
-        </label>
     </div>
     {/if}
     {/if}
