@@ -1256,6 +1256,8 @@ export async function approveCoordinatorRequest(documentId: string, decidedBy: s
         console.warn('[approveCoordinatorRequest] notify failed:', e instanceof Error ? e.message : e);
     }
 
+    await sendCoordinatorApprovedSms(targetMapped.phone || req.phone, targetMapped.name || req.name, req.neighborhoods);
+
     return req;
 }
 
@@ -1720,6 +1722,26 @@ export async function adminSmsSend(recipients: AdminSmsRecipient[], message: str
     );
     if (!res?.ok) throw new Error(res?.error ?? 'sms_failed');
     return res.results ?? [];
+}
+
+/**
+ * SMS לרכז שמונה (best-effort - כשל לא מבטל את המינוי). שולח רק לנייד תקין
+ * וכשספק SMS מוגדר בבאקאנד.
+ */
+export async function sendCoordinatorApprovedSms(phone: string | null | undefined, name: string | null | undefined, areas: string[]): Promise<void> {
+    try {
+        let d = (phone ?? '').replace(/\D/g, '');
+        if (d.startsWith('972')) d = '0' + d.slice(3);
+        if (!/^05\d{8}$/.test(d)) return;
+        if (!(await adminSmsStatus()).enabled) return;
+        const where = areas.length ? ` ב${areas.join(', ')}` : '';
+        await adminSmsSend(
+            [{ phone: d, name: name ?? '', city: '' }],
+            `שלום {name}! מינויך כרכז קהילה${where} אושר 🎉 כלי הרכז זמינים עכשיו באתר קהילה בשכונה. תודה על ההתנדבות!`,
+        );
+    } catch (e) {
+        console.warn('[coordinator sms] failed:', e instanceof Error ? e.message : e);
+    }
 }
 
 /** חסימת משתמש (אדמין בלבד) */

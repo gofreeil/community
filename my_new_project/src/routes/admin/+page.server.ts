@@ -2,7 +2,7 @@ import { redirect, fail, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireSuperAdmin, requireAdmin } from '$lib/server/auth';
 import { withUserAvatarUrl } from '$lib/server/userAvatar';
-import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getItemsByCategory, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, userSchemaHasField, type DbItem } from '$lib/server/db';
+import { getAllUsers, banUser, unbanUser, deleteUserAccounts, setCoordinatorOf, getAllItems, adminDeleteItem, getUserById, getUserByAnyId, getUserByEmail, createItem, getCoordinatorRequests, approveCoordinatorRequest, sendCoordinatorApprovedSms, rejectCoordinatorRequest, getNeighborhoods, getNeighborhoodById, approveNeighborhood, rejectNeighborhood, createNeighborhoodRequest, getDiscountCodes, saveDiscountCodes, getItemsByCategoryAndStatus, getItemsByCategory, getUserTotpSecret, coordinatorCovers, closeFulfilledCoordinatorRequests, updateItem, getDbItemByIdFresh, getAllSuperAdmins, getMessagesByUserId, getAllUsersRaw, updateUserProfile, markUsersSmsNudged, markUsersSmsCampaign, adminSmsSend, adminSmsStatus, userSchemaHasField, type DbItem } from '$lib/server/db';
 import { markCoordinatorMessagesHandled } from '$lib/server/coordinatorNotifications';
 import { finalizeLocationDecision } from '$lib/server/locationDecision';
 import { finalizeWishDecision } from '$lib/server/wishDecision';
@@ -473,6 +473,11 @@ export const actions: Actions = {
             const removed = (prior?.coordinator_of ?? []).filter((a) => !kept.has(a.trim()));
 
             await setCoordinatorOf(userId, neighborhoods);
+
+            // SMS לרכז רק על אזורים שנוספו עכשיו (לא על שמירה חוזרת של אותם אזורים)
+            const priorKeys = new Set((prior?.coordinator_of ?? []).map((a) => a.trim()));
+            const added = neighborhoods.filter((a) => !priorKeys.has(a));
+            if (added.length > 0) await sendCoordinatorApprovedSms(prior?.phone, prior?.name, added);
 
             // סגירת בקשות רכזות ממתינות שהמינוי הידני כבר מימש. בלי זה הבקשה נשארת
             // pending ורק *מוסתרת* כל עוד האזורים תואמים - ולכן צצה מחדש ככרטיס
