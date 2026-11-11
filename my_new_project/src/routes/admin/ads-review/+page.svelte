@@ -3,7 +3,7 @@
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
     import { page } from '$app/state';
-    import { onMount, onDestroy } from 'svelte';
+    import { onMount, onDestroy, type ComponentProps } from 'svelte';
     import { heMatches } from '$lib/search';
     import { adImgFit, parseAdImageFit } from '$lib/adImageFit';
     import { AD_SLOT_COUNT } from '$lib/adSlots';
@@ -28,14 +28,15 @@
         return typeof at === 'string' ? at : '';
     }
     /** חלון המחיקה של פרסומת שפורסמה ברשת: "מחק מכל האתרים" / "מחק רק מאתר זה" */
-    let removeAsk = $state<{ form: HTMLFormElement; title: string } | null>(null);
-    /** "מחק": פרסומת שפורסמה ברשת פותחת את חלון הבחירה (confirm רגיל לא מאפשר
-     *  לקרוא לכפתורים בשם); אחרת - אישור המחיקה הרגיל (question). */
-    function confirmRemove(e: MouseEvent, ad: unknown, title: string, question?: string) {
+    type PreviewAd = ComponentProps<typeof AdCardPreview>['ad'];
+    let removeAsk = $state<{ form: HTMLFormElement; title: string; ad: PreviewAd } | null>(null);
+    /** "מחק": פרסומת שפורסמה ברשת פותחת את חלון הבחירה, עם הכרטיס שנמחק
+     *  (confirm רגיל לא מאפשר לקרוא לכפתורים בשם); אחרת - אישור המחיקה הרגיל. */
+    function confirmRemove(e: MouseEvent, ad: PreviewAd | undefined, title: string, question?: string) {
         const form = (e.currentTarget as HTMLButtonElement).form;
-        if (form && syndicatedAt(ad)) {
+        if (form && ad && syndicatedAt(ad)) {
             e.preventDefault();
-            removeAsk = { form, title };
+            removeAsk = { form, title, ad };
             return;
         }
         if (question && !confirm(question)) e.preventDefault();
@@ -1329,22 +1330,29 @@
          role="presentation"
          onclick={() => removeAsk = null}>
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-        <div class="w-full max-w-sm rounded-2xl bg-[#0f172a] border border-white/10 p-4 text-right" dir="rtl"
+        <div class="w-full max-w-md rounded-2xl bg-[#0f172a] border border-white/10 p-3 text-right flex gap-3 items-start" dir="rtl"
              role="dialog" aria-modal="true" aria-label="מחיקת פרסומת" tabindex="-1"
              onclick={(e) => e.stopPropagation()}>
-            <p class="text-white font-black text-sm">🗑 להעביר את "{removeAsk.title}" לאשפה?</p>
-            <p class="mt-1 text-xs text-gray-300">היא מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי). אפשר לשחזר אותה מהאשפה.</p>
-            <div class="mt-3 flex flex-wrap gap-2">
+            <!-- הכרטיס שנמחק, כמו בטור, מוקטן: 144px → 80px (ה-transform לא משנה את
+                 מידות הפריסה ש-logoClearance מודד, ולכן העטיפה בגודל המוקטן) -->
+            <div class="flex-shrink-0 w-[80px] h-[270px] overflow-hidden rounded-lg">
+                <div class="origin-top-right scale-[0.555]">
+                    <AdCardPreview ad={removeAsk.ad} />
+                </div>
+            </div>
+            <div class="flex-1 min-w-0 flex flex-col gap-2">
+                <p class="text-white font-black text-sm">🗑 להעביר את "{removeAsk.title}" לאשפה?</p>
+                <p class="text-xs text-gray-300">היא מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי). אפשר לשחזר אותה מהאשפה.</p>
                 <button type="button" onclick={() => finishRemove(true)}
-                        class="flex-1 px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-black hover:bg-red-500 whitespace-nowrap">
+                        class="w-full px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-black hover:bg-red-500 whitespace-nowrap">
                     🌐 מחק מכל האתרים
                 </button>
                 <button type="button" onclick={() => finishRemove(false)}
-                        class="flex-1 px-3 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 text-sm font-black hover:bg-red-600/30 whitespace-nowrap">
+                        class="w-full px-3 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 text-sm font-black hover:bg-red-600/30 whitespace-nowrap">
                     מחק רק מאתר זה
                 </button>
                 <button type="button" onclick={() => removeAsk = null}
-                        class="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-200 text-sm font-black hover:bg-white/20 whitespace-nowrap">
+                        class="w-full px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-gray-200 text-xs font-black hover:bg-white/20 whitespace-nowrap">
                     ✕ סגור
                 </button>
             </div>
