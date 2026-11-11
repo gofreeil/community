@@ -27,16 +27,27 @@
         const at = (ad as { landing?: { _syndicatedAt?: unknown } } | null)?.landing?._syndicatedAt;
         return typeof at === 'string' ? at : '';
     }
-    /** "מחק": אישור המחיקה (question), ולפרסומת שפורסמה ברשת - שאלה שנייה אם
-     *  להסיר אותה גם מכל האתרים. התשובה נכתבת לשדה everywhere לפני שהטופס נשלח. */
+    /** חלון המחיקה של פרסומת שפורסמה ברשת: "מחק מכל האתרים" / "מחק רק מאתר זה" */
+    let removeAsk = $state<{ form: HTMLFormElement; title: string } | null>(null);
+    /** "מחק": פרסומת שפורסמה ברשת פותחת את חלון הבחירה (confirm רגיל לא מאפשר
+     *  לקרוא לכפתורים בשם); אחרת - אישור המחיקה הרגיל (question). */
     function confirmRemove(e: MouseEvent, ad: unknown, title: string, question?: string) {
-        if (question && !confirm(question)) { e.preventDefault(); return; }
-        const input = (e.currentTarget as HTMLButtonElement).form?.elements.namedItem('everywhere');
-        if (!(input instanceof HTMLInputElement)) return;
-        input.value = syndicatedAt(ad) && confirm(
-            `"${title}" מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי).\n\n` +
-            `להסיר אותה גם מכל האתרים?\n\nאישור - מכל האתרים | ביטול - רק מהאתר הזה`,
-        ) ? '1' : '';
+        const form = (e.currentTarget as HTMLButtonElement).form;
+        if (form && syndicatedAt(ad)) {
+            e.preventDefault();
+            removeAsk = { form, title };
+            return;
+        }
+        if (question && !confirm(question)) e.preventDefault();
+    }
+    /** הבחירה בחלון נכתבת לשדה everywhere ואז הטופס נשלח (דרך use:enhance) */
+    function finishRemove(everywhere: boolean) {
+        if (!removeAsk) return;
+        const { form } = removeAsk;
+        removeAsk = null;
+        const input = form.elements.namedItem('everywhere');
+        if (input instanceof HTMLInputElement) input.value = everywhere ? '1' : '';
+        form.requestSubmit();
     }
     /** הפרסומת המלאה לפי מזהה - שורת טבלת התזמון לא נושאת את חותמת הפרסום ברשת */
     let approvedById = $derived(new Map(data.approved.map(a => [a.id, a] as const)));
@@ -1311,4 +1322,34 @@
     {/if}
 {/if}
 
-<svelte:window onkeydown={(e) => { if (e.key === 'Escape') { closeDurationModal(); modalPreviewId = null; hoverPreview = null; } }} />
+<!-- מחיקת פרסומת שפורסמה בכל אתרי הרשת: מכל האתרים או רק מכאן -->
+{#if removeAsk}
+    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+    <div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+         role="presentation"
+         onclick={() => removeAsk = null}>
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <div class="w-full max-w-sm rounded-2xl bg-[#0f172a] border border-white/10 p-4 text-right" dir="rtl"
+             role="dialog" aria-modal="true" aria-label="מחיקת פרסומת" tabindex="-1"
+             onclick={(e) => e.stopPropagation()}>
+            <p class="text-white font-black text-sm">🗑 להעביר את "{removeAsk.title}" לאשפה?</p>
+            <p class="mt-1 text-xs text-gray-300">היא מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי). אפשר לשחזר אותה מהאשפה.</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" onclick={() => finishRemove(true)}
+                        class="flex-1 px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-black hover:bg-red-500 whitespace-nowrap">
+                    🌐 מחק מכל האתרים
+                </button>
+                <button type="button" onclick={() => finishRemove(false)}
+                        class="flex-1 px-3 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 text-sm font-black hover:bg-red-600/30 whitespace-nowrap">
+                    מחק רק מאתר זה
+                </button>
+                <button type="button" onclick={() => removeAsk = null}
+                        class="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-gray-200 text-sm font-black hover:bg-white/20 whitespace-nowrap">
+                    ✕ סגור
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') { closeDurationModal(); modalPreviewId = null; hoverPreview = null; removeAsk = null; } }} />
