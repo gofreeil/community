@@ -27,6 +27,17 @@
         const at = (ad as { landing?: { _syndicatedAt?: unknown } } | null)?.landing?._syndicatedAt;
         return typeof at === 'string' ? at : '';
     }
+    /** "מחק": אישור המחיקה (question), ולפרסומת שפורסמה ברשת - שאלה שנייה אם
+     *  להסיר אותה גם מכל האתרים. התשובה נכתבת לשדה everywhere לפני שהטופס נשלח. */
+    function confirmRemove(e: MouseEvent, ad: unknown, title: string, question?: string) {
+        if (question && !confirm(question)) { e.preventDefault(); return; }
+        const input = (e.currentTarget as HTMLButtonElement).form?.elements.namedItem('everywhere');
+        if (!(input instanceof HTMLInputElement)) return;
+        input.value = syndicatedAt(ad) && confirm(
+            `"${title}" מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי).\n\n` +
+            `להסיר אותה גם מכל האתרים?\n\nאישור - מכל האתרים | ביטול - רק מהאתר הזה`,
+        ) ? '1' : '';
+    }
     /** הפרסומת המלאה לפי מזהה - שורת טבלת התזמון לא נושאת את חותמת הפרסום ברשת */
     let approvedById = $derived(new Map(data.approved.map(a => [a.id, a] as const)));
 
@@ -492,7 +503,9 @@
                             {#if canDelete}
                                 <form method="POST" action="?/remove" use:enhance>
                                     <input type="hidden" name="id" value={t.id} />
-                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10" title="העברה לאשפה - אפשר לשחזר">🗑 מחק</button>
+                                    <input type="hidden" name="everywhere" value="" />
+                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10" title="העברה לאשפה - אפשר לשחזר"
+                                            onclick={(e) => confirmRemove(e, approvedById.get(t.id), t.title)}>🗑 מחק</button>
                                 </form>
                             {/if}
                         {/if}
@@ -754,9 +767,10 @@
                                 {#if canDelete}
                                     <form method="POST" action="?/remove" use:enhance>
                                         <input type="hidden" name="id" value={ad.id} />
+                                        <input type="hidden" name="everywhere" value="" />
                                         <button type="submit"
                                                 class="px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black text-sm hover:bg-red-600/30"
-                                                onclick={(e) => { if (!confirm('להעביר את הפרסומת לאשפה? אפשר לשחזר אותה משם.')) e.preventDefault(); }}>
+                                                onclick={(e) => confirmRemove(e, ad, ad.title, 'להעביר את הפרסומת לאשפה? אפשר לשחזר אותה משם.')}>
                                             🗑 מחק
                                         </button>
                                     </form>
@@ -772,9 +786,10 @@
                                 {#if canDelete}
                                     <form method="POST" action="?/remove" use:enhance>
                                         <input type="hidden" name="id" value={ad.id} />
+                                        <input type="hidden" name="everywhere" value="" />
                                         <button type="submit"
                                                 class="px-4 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black text-sm hover:bg-red-600/30"
-                                                onclick={(e) => { if (!confirm('להעביר את הפרסומת לאשפה? אפשר לשחזר אותה משם.')) e.preventDefault(); }}>
+                                                onclick={(e) => confirmRemove(e, ad, ad.title, 'להעביר את הפרסומת לאשפה? אפשר לשחזר אותה משם.')}>
                                             🗑 מחק
                                         </button>
                                     </form>
@@ -1051,9 +1066,10 @@
                                         {#if canDelete}
                                             <form method="POST" action="?/remove" use:enhance>
                                                 <input type="hidden" name="id" value={s.id} />
+                                                <input type="hidden" name="everywhere" value="" />
                                                 <button type="submit"
                                                         class="h-7 w-full inline-flex items-center justify-center px-1 rounded-lg bg-red-600/20 border border-red-500/40 text-red-300 text-[11px] font-black hover:bg-red-600/30 whitespace-nowrap"
-                                                        onclick={(e) => { if (!confirm(`להעביר את "${s.title}" לאשפה? אפשר לשחזר אותה משם.`)) e.preventDefault(); }}>
+                                                        onclick={(e) => confirmRemove(e, approvedById.get(s.id), s.title, `להעביר את "${s.title}" לאשפה? אפשר לשחזר אותה משם.`)}>
                                                     🗑 מחק
                                                 </button>
                                             </form>

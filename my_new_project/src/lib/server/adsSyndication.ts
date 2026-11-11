@@ -15,9 +15,13 @@
 // הקיימים במקום ליצור כפילויות.
 //
 // כשל באתר אחד לא עוצר את השאר - כל אתר מדווח הצלחה/כשל בנפרד.
+//
+// הסרה: "מחק" במסך הניהול יכול להסיר גם את כל העותקים (removeAdEverywhere).
+// העותקים נמחקים לצמיתות - המקור עובר לאשפה עם כל התוכן, ו"פרסם בכל
+// האתרים" אחרי שחזור יוצר אותם מחדש.
 // ============================================================
 
-import { strapiGet, strapiGetAll, strapiPost, strapiPut } from './strapiClient.js';
+import { strapiGet, strapiGetAll, strapiPost, strapiPut, strapiDelete } from './strapiClient.js';
 import { getAd, type SubmittedAd } from './adsStore.js';
 import { invalidate } from './cache.js';
 import { convertGradient } from '../shopAds.js';
@@ -29,7 +33,8 @@ export interface SyndicationSiteResult {
     /** שם האתר בעברית - להודעת המשוב במסך הניהול */
     label: string;
     ok: boolean;
-    action?: 'created' | 'updated';
+    /** removed = העותק נמחק; missing = לא היה עותק באתר הזה (או שכבר נמחק) */
+    action?: 'created' | 'updated' | 'removed' | 'missing';
     error?: string;
 }
 
@@ -109,6 +114,37 @@ interface SiteAdapter {
     site: SyndicationSite;
     /** מפרסם את הפרסומת באתר; מחזיר את מזהה העותק ואם נוצר או עודכן */
     publish(src: SubmittedAd, decidedBy: string, existingId?: string): Promise<{ id: string; action: 'created' | 'updated' }>;
+    /** מוחק את העותק של הפרסומת באתר, אם יש */
+    remove(src: SubmittedAd, existingId?: string): Promise<'removed' | 'missing'>;
+}
+
+/**
+ * מחיקת עותק אחד: לפי המזהה שנשמר על המקור, ובגיבוי - סריקה לפי הסימון
+ * שעל העותק (כמו בפרסום). belongs מוודא שהרשומה היא באמת מודעה של האתר
+ * הזה - מזהה שגוי לא ימחק לעולם רשומה אחרת באוסף משותף.
+ */
+async function removeCopy(
+    opts: {
+        endpoint: string;
+        scanFilters: Record<string, string>;
+        jsonField: string;
+        isCopyOf: (json: Record<string, unknown> | null) => boolean;
+        belongs: (row: Record<string, unknown>) => boolean;
+    },
+    src: SubmittedAd,
+    existingId?: string,
+): Promise<'removed' | 'missing'> {
+    let copyId = existingId;
+    if (!copyId) {
+        const rows = await fetchRows(opts.endpoint, opts.scanFilters, opts.jsonField);
+        const found = rows.find(r => opts.isCopyOf(r[opts.jsonField] as Record<string, unknown> | null));
+        copyId = typeof found?.documentId === 'string' ? found.documentId : undefined;
+    }
+    if (!copyId || copyId === src.id) return 'missing';
+    const existing = await fetchOne(opts.endpoint, copyId);
+    if (!existing || !opts.belongs(existing)) return 'missing';
+    await strapiDelete(`${opts.endpoint}/${encodeURIComponent(copyId)}`);
+    return 'removed';
 }
 
 // ------------------------------------------------------------
@@ -177,6 +213,16 @@ const indexAdapter: SiteAdapter = {
         });
         return { id: res.data.documentId, action: 'created' };
     },
+    remove(src, existingId) {
+        return removeCopy({
+            endpoint:    '/api/submitted-ads',
+            scanFilters: { 'filters[ad_status][$eq]': 'approved' },
+            jsonField:   'landing',
+            isCopyOf:    l => l?._site === 'index' && l?._syndicatedFrom === src.id,
+            // אותו אוסף כמו הפרסומות שלנו - רק רשומה שמסומנת לאינדקס
+            belongs:     r => (r.landing as Record<string, unknown> | null)?._site === 'index',
+        }, src, existingId);
+    },
 };
 
 // ------------------------------------------------------------
@@ -242,6 +288,15 @@ const pgAdapter: SiteAdapter = {
             data: { ...columns, submitted_at: now },
         });
         return { id: res.data.documentId, action: 'created' };
+    },
+    remove(src, existingId) {
+        return removeCopy({
+            endpoint:    '/api/pg-submitted-ads',
+            scanFilters: { 'filters[ad_status][$eq]': 'approved' },
+            jsonField:   'landing',
+            isCopyOf:    l => l?._syndicatedFrom === src.id,
+            belongs:     () => true,
+        }, src, existingId);
     },
 };
 
@@ -322,6 +377,16 @@ const ngAdapter: SiteAdapter = {
         });
         return { id: res.data.documentId, action: 'created' };
     },
+    remove(src, existingId) {
+        return removeCopy({
+            endpoint:    '/api/items',
+            scanFilters: { 'filters[category][$eq]': '__ng_ad', 'filters[status1][$eq]': 'active' },
+            jsonField:   'extra_fields',
+            isCopyOf:    x => x?.syndicated_from === src.id,
+            // אוסף items משותף לכל הרשת - רק רשומה שהיא מודעה של הגמח
+            belongs:     r => r.category === '__ng_ad',
+        }, src, existingId);
+    },
 };
 
 const ADAPTERS: SiteAdapter[] = [indexAdapter, pgAdapter, ngAdapter];
@@ -370,6 +435,54 @@ export async function publishAdEverywhere(adId: string, decidedBy: string): Prom
             invalidate('ads:');
         } catch (e) {
             console.warn('[adsSyndication] marking source ad failed:', e instanceof Error ? e.message : e);
+        }
+    }
+
+    return { title: src.title, results };
+}
+
+/**
+ * מסיר את כל העותקים של הפרסומת מאתרי הרשת (לפני העברת המקור לאשפה).
+ * בסוף מנקה מהמקור את מיפוי העותקים ואת חותמת הסנכרון - ככה אחרי שחזור
+ * מהאשפה הכפתור חוזר ל"פרסם בכל האתרים". עותק שהמחיקה שלו נכשלה נשאר
+ * במיפוי, כדי שניסיון חוזר ימצא אותו.
+ * מחזיר null אם הפרסומת לא נמצאה.
+ */
+export async function removeAdEverywhere(adId: string): Promise<SyndicationResult | null> {
+    const src = await getAd(adId);
+    if (!src) return null;
+
+    const copies = savedCopies(src);
+    const left: Partial<Record<SyndicationSite, string>> = { ...copies };
+    const results: SyndicationSiteResult[] = [];
+
+    for (const adapter of ADAPTERS) {
+        try {
+            const action = await adapter.remove(src, copies[adapter.site]);
+            delete left[adapter.site];
+            results.push({ site: adapter.site, label: SITE_LABELS[adapter.site], ok: true, action });
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            console.warn(`[adsSyndication] remove from ${adapter.site} failed:`, msg);
+            results.push({ site: adapter.site, label: SITE_LABELS[adapter.site], ok: false, error: msg });
+        }
+    }
+
+    if (results.some(r => r.ok)) {
+        try {
+            // landing גולמי טרי - לא לדרוס מפתחות פנימיים שלא עוברים דרך getAd
+            const raw = await fetchOne('/api/submitted-ads', adId);
+            const landing = { ...((raw?.landing as Record<string, unknown> | null) ?? {}) };
+            if (Object.keys(left).length === 0) {
+                delete landing._syndicatedCopies;
+                delete landing._syndicatedAt;
+            } else {
+                landing._syndicatedCopies = left;
+            }
+            await strapiPut(`/api/submitted-ads/${encodeURIComponent(adId)}`, { data: { landing } });
+            invalidate('ads:');
+        } catch (e) {
+            console.warn('[adsSyndication] unmarking source ad failed:', e instanceof Error ? e.message : e);
         }
     }
 

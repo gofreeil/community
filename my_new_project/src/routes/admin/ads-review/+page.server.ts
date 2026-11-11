@@ -29,7 +29,7 @@ import {
     resumeAd,
 } from '$lib/server/adsStore';
 import { markAdMessagesHandled } from '$lib/server/adNotifications';
-import { publishAdEverywhere } from '$lib/server/adsSyndication';
+import { publishAdEverywhere, removeAdEverywhere } from '$lib/server/adsSyndication';
 import { loadShopAdsAdmin, shopAdsActions } from '$lib/server/shopAdsAdmin';
 
 const fmtDay = (iso: string) =>
@@ -373,15 +373,32 @@ export const actions: Actions = {
         return { success: true, message: `🌐 "${r.title}" פורסמה ברשת: ${okText}${failText}` };
     },
 
-    // "מחק" = לאשפה (אפשר לשחזר משם)
+    // "מחק" = לאשפה (אפשר לשחזר משם). everywhere=1 - מסיר קודם גם את
+    // העותקים מכל אתרי הרשת (אינדקס, קבוצות רכישה, הגמח הארצי)
     remove: async (event) => {
         await ensureSuperAdmin(event);
         const formData = await event.request.formData();
         const id = formData.get('id') as string;
         if (!id) return fail(400, { error: 'חסר מזהה' });
+        let netText = '';
+        if (formData.get('everywhere') === '1') {
+            try {
+                const net = await removeAdEverywhere(id);
+                if (net) {
+                    const ok = net.results.filter(x => x.ok);
+                    const failed = net.results.filter(x => !x.ok);
+                    netText = failed.length === 0
+                        ? ' והוסרה מכל אתרי הרשת 🌐'
+                        : ` | הוסרה מ: ${ok.map(x => x.label).join(', ') || '-'} | נכשל: ${failed.map(f => f.label).join(', ')}`;
+                }
+            } catch (e) {
+                console.warn('[admin/ads-review] removeEverywhere failed:', e instanceof Error ? e.message : e);
+                netText = ' | ההסרה משאר אתרי הרשת נכשלה';
+            }
+        }
         const r = await trashAd(id);
         if (!r) return fail(404, { error: 'הפרסומת לא נמצאה' });
-        return { success: true, message: `"${r.title}" הועברה לאשפה - אפשר לשחזר אותה משם` };
+        return { success: true, message: `"${r.title}" הועברה לאשפה${netText} - אפשר לשחזר אותה משם` };
     },
 
     // שחזור מהאשפה - למצב שלפני המחיקה (המקום בטור והתוקף נשמרו)
