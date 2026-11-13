@@ -29,14 +29,15 @@
     }
     /** חלון המחיקה של פרסומת שפורסמה ברשת: "מחק מכל האתרים" / "מחק רק מאתר זה" */
     type PreviewAd = ComponentProps<typeof AdCardPreview>['ad'];
-    let removeAsk = $state<{ form: HTMLFormElement; title: string; ad: PreviewAd } | null>(null);
-    /** "מחק": פרסומת שפורסמה ברשת פותחת את חלון הבחירה, עם הכרטיס שנמחק
-     *  (confirm רגיל לא מאפשר לקרוא לכפתורים בשם); אחרת - אישור המחיקה הרגיל. */
+    let removeAsk = $state<{ form: HTMLFormElement; title: string; ad: PreviewAd; network: boolean } | null>(null);
+    /** "מחק": חלון אישור עם הכרטיס שנמחק; לפרסומת שפורסמה ברשת - גם הבחירה
+     *  מכל האתרים / רק מכאן (confirm רגיל לא מאפשר לקרוא לכפתורים בשם).
+     *  בלי נתוני הכרטיס - אישור המחיקה הרגיל. */
     function confirmRemove(e: MouseEvent, ad: PreviewAd | undefined, title: string, question?: string) {
         const form = (e.currentTarget as HTMLButtonElement).form;
-        if (form && ad && syndicatedAt(ad)) {
+        if (form && ad) {
             e.preventDefault();
-            removeAsk = { form, title, ad };
+            removeAsk = { form, title, ad, network: Boolean(syndicatedAt(ad)) };
             return;
         }
         if (question && !confirm(question)) e.preventDefault();
@@ -298,6 +299,7 @@
     );
     // האשפה: נמחקו (שחזור) ופג תוקפן (חידוש) - מהשרת, החדשות בראש
     let trash = $derived(data.trash ?? []);
+    let trashOpen = $state(false);
 
     let visibleSelectedIds = $derived(
         Array.from(selected).filter(id => visibleList.some(a => a.id === id))
@@ -481,50 +483,7 @@
         {#if trash.length === 0}
             <div class="text-center py-12 text-gray-500 text-sm italic border border-dashed border-white/10 rounded-2xl">האשפה ריקה</div>
         {/if}
-        <div class="grid gap-2">
-            {#each trash as t (t.id)}
-                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                    <div class="flex min-w-0 flex-col gap-0.5">
-                        <!-- preview=1: תצוגה מקדימה גם לפרסומת שלא באוויר (למי שמאשר פרסומות) -->
-                        <a href={`/ads/${t.id}?preview=1`} target="_blank" rel="noopener noreferrer"
-                           class="text-sm font-black text-white hover:text-amber-300" title="תצוגה מקדימה של הפרסומת">{t.title}</a>
-                        <span class="flex items-center gap-1.5 text-xs text-gray-400">
-                            <span class="rounded-full px-2 py-0.5 text-[11px] font-black
-                                         {t.kind === 'deleted' ? 'bg-red-500/15 text-red-300' : 'bg-amber-500/15 text-amber-300'}">{t.kind === 'deleted' ? 'נמחקה' : 'פג התוקף'}</span>
-                            {fmtDay(t.at)} · {t.advertiserName}
-                        </span>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        {#if t.kind === 'deleted'}
-                            {#if canDelete}
-                                <form method="POST" action="?/restore" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 text-white hover:bg-emerald-500" title="חזרה למצב שלפני המחיקה">♻ שחזר</button>
-                                </form>
-                                <form method="POST" action="?/purge" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black border border-red-500/40 bg-red-600/20 text-red-300 hover:bg-red-600/30"
-                                            onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${t.title}"? אין דרך חזרה.`)) e.preventDefault(); }}>✕ מחק לצמיתות</button>
-                                </form>
-                            {/if}
-                        {:else}
-                            <form method="POST" action="?/approve" use:enhance>
-                                <input type="hidden" name="id" value={t.id} />
-                                <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 text-white hover:bg-emerald-500" title="פרסום מחדש לתקופה חדשה מהיום, באותו מקום בטור">♻ חדש</button>
-                            </form>
-                            {#if canDelete}
-                                <form method="POST" action="?/remove" use:enhance>
-                                    <input type="hidden" name="id" value={t.id} />
-                                    <input type="hidden" name="everywhere" value="" />
-                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10" title="העברה לאשפה - אפשר לשחזר"
-                                            onclick={(e) => confirmRemove(e, approvedById.get(t.id), t.title)}>🗑 מחק</button>
-                                </form>
-                            {/if}
-                        {/if}
-                    </div>
-                </div>
-            {/each}
-        </div>
+        {@render trashRows()}
     {:else if visibleList.length === 0}
         <div class="text-center py-12 text-gray-500 text-sm italic border border-dashed border-white/10 rounded-2xl">
             {searchQuery ? 'לא נמצאו תוצאות לחיפוש' :
@@ -1120,6 +1079,75 @@
         {/if}
     </section>
 
+    {#snippet trashRows()}
+        <div class="grid gap-2">
+            {#each trash as t (t.id)}
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                    <div class="flex min-w-0 flex-col gap-0.5">
+                        <!-- preview=1: תצוגה מקדימה גם לפרסומת שלא באוויר (למי שמאשר פרסומות) -->
+                        <a href={`/ads/${t.id}?preview=1`} target="_blank" rel="noopener noreferrer"
+                           class="text-sm font-black text-white hover:text-amber-300" title="תצוגה מקדימה של הפרסומת">{t.title}</a>
+                        <span class="flex items-center gap-1.5 text-xs text-gray-400">
+                            <span class="rounded-full px-2 py-0.5 text-[11px] font-black
+                                         {t.kind === 'deleted' ? 'bg-red-500/15 text-red-300' : 'bg-amber-500/15 text-amber-300'}">{t.kind === 'deleted' ? 'נמחקה' : 'פג התוקף'}</span>
+                            {fmtDay(t.at)} · {t.advertiserName}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        {#if t.kind === 'deleted'}
+                            {#if canDelete}
+                                <form method="POST" action="?/restore" use:enhance>
+                                    <input type="hidden" name="id" value={t.id} />
+                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 text-white hover:bg-emerald-500" title="חזרה למצב שלפני המחיקה">♻ שחזר</button>
+                                </form>
+                                <form method="POST" action="?/purge" use:enhance>
+                                    <input type="hidden" name="id" value={t.id} />
+                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black border border-red-500/40 bg-red-600/20 text-red-300 hover:bg-red-600/30"
+                                            onclick={(e) => { if (!confirm(`למחוק לצמיתות את "${t.title}"? אין דרך חזרה.`)) e.preventDefault(); }}>✕ מחק לצמיתות</button>
+                                </form>
+                            {/if}
+                        {:else}
+                            <form method="POST" action="?/approve" use:enhance>
+                                <input type="hidden" name="id" value={t.id} />
+                                <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 text-white hover:bg-emerald-500" title="פרסום מחדש לתקופה חדשה מהיום, באותו מקום בטור">♻ חדש</button>
+                            </form>
+                            {#if canDelete}
+                                <form method="POST" action="?/remove" use:enhance>
+                                    <input type="hidden" name="id" value={t.id} />
+                                    <input type="hidden" name="everywhere" value="" />
+                                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-black border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10" title="העברה לאשפה - אפשר לשחזר"
+                                            onclick={(e) => confirmRemove(e, approvedById.get(t.id), t.title)}>🗑 מחק</button>
+                                </form>
+                            {/if}
+                        {/if}
+                    </div>
+                </div>
+            {/each}
+        </div>
+    {/snippet}
+
+    <!-- ============================================================ -->
+    <!-- אשפה - קומה מתקפלת: כל המחוקים + שחזור                      -->
+    <!-- ============================================================ -->
+    <section class="mt-6">
+        <button type="button" onclick={() => (trashOpen = !trashOpen)} aria-expanded={trashOpen}
+                class="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-right hover:bg-white/10">
+            <span class="text-xl">🗑</span>
+            <h2 class="text-base font-black text-white">אשפה</h2>
+            <span class="text-xs font-bold bg-white/10 text-gray-300 border border-white/20 px-2 py-0.5 rounded-full">{trash.length}</span>
+            <span class="mr-auto text-gray-400 text-xs">{trashOpen ? "▲" : "▼"}</span>
+        </button>
+        {#if trashOpen}
+            <div class="mt-2">
+                {#if trash.length === 0}
+                    <div class="text-center py-6 text-gray-500 text-sm italic border border-dashed border-white/10 rounded-2xl">האשפה ריקה</div>
+                {:else}
+                    {@render trashRows()}
+                {/if}
+            </div>
+        {/if}
+    </section>
+
     <!-- ============================================================ -->
     <!-- מפרסמים - קיבוץ לפי אימייל                                  -->
     <!-- ============================================================ -->
@@ -1342,15 +1370,23 @@
             </div>
             <div class="flex-1 min-w-0 flex flex-col gap-2">
                 <p class="text-white font-black text-sm">🗑 להעביר את "{removeAsk.title}" לאשפה?</p>
-                <p class="text-xs text-gray-300">היא מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי). אפשר לשחזר אותה מהאשפה.</p>
-                <button type="button" onclick={() => finishRemove(true)}
-                        class="w-full px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-black hover:bg-red-500 whitespace-nowrap">
-                    🌐 מחק מכל האתרים
-                </button>
-                <button type="button" onclick={() => finishRemove(false)}
-                        class="w-full px-3 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 text-sm font-black hover:bg-red-600/30 whitespace-nowrap">
-                    מחק רק מאתר זה
-                </button>
+                {#if removeAsk.network}
+                    <p class="text-xs text-gray-300">היא מפורסמת גם בשאר אתרי הרשת (אינדקס העסקים, קבוצות רכישה, הגמח הארצי). אפשר לשחזר אותה מהאשפה.</p>
+                    <button type="button" onclick={() => finishRemove(true)}
+                            class="w-full px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-black hover:bg-red-500 whitespace-nowrap">
+                        🌐 מחק מכל האתרים
+                    </button>
+                    <button type="button" onclick={() => finishRemove(false)}
+                            class="w-full px-3 py-2 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 text-sm font-black hover:bg-red-600/30 whitespace-nowrap">
+                        מחק רק מאתר זה
+                    </button>
+                {:else}
+                    <p class="text-xs text-gray-300">אפשר לשחזר אותה משם.</p>
+                    <button type="button" onclick={() => finishRemove(false)}
+                            class="w-full px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-black hover:bg-red-500 whitespace-nowrap">
+                        🗑 העבר לאשפה
+                    </button>
+                {/if}
                 <button type="button" onclick={() => removeAsk = null}
                         class="w-full px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-gray-200 text-xs font-black hover:bg-white/20 whitespace-nowrap">
                     ✕ סגור
