@@ -300,6 +300,7 @@
     // האשפה: נמחקו (שחזור) ופג תוקפן (חידוש) - מהשרת, החדשות בראש
     let trash = $derived(data.trash ?? []);
     let trashOpen = $state(false);
+    let shopOpen = $state(false);
 
     let visibleSelectedIds = $derived(
         Array.from(selected).filter(id => visibleList.some(a => a.id === id))
@@ -778,20 +779,26 @@
     <!-- ============================================================ -->
     {#if isSuperAdmin && data.shop}
         <section class="mt-10 rounded-3xl border border-emerald-500/30 bg-emerald-500/[0.04] p-3 md:p-6">
-            <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
-                <div class="min-w-0">
-                    <h2 class="text-xl md:text-2xl font-black text-white mb-1">🛒 פרסומות מיובאות אוטומטית מאתרים אחרים</h2>
-                    <p class="text-xs md:text-sm text-gray-400">
-                        המוצרים האחרונים שאושרו בחנות החירות עולים אוטומטית לטור הפרסומות בכל אתרי הרשת,
-                        בסדרה {data.shop.wanted.join(', ')}. מקום שכבר נמכר למפרסם - המוצר עובר למקום הפנוי הבא.
-                    </p>
-                </div>
+            <div class="flex flex-wrap items-start justify-between gap-2 {shopOpen ? 'mb-4' : ''}">
+                <button type="button" onclick={() => (shopOpen = !shopOpen)} aria-expanded={shopOpen}
+                        class="min-w-0 flex-1 text-right">
+                    <h2 class="text-xl md:text-2xl font-black text-white mb-1">🛒 פרסומות מיובאות אוטומטית מאתרים אחרים
+                        <span class="text-gray-400 text-xs mr-1">{shopOpen ? '▲' : '▼'}</span></h2>
+                    {#if shopOpen}
+                        <p class="text-xs md:text-sm text-gray-400">
+                            המוצרים האחרונים שאושרו בחנות החירות עולים אוטומטית לטור הפרסומות בכל אתרי הרשת,
+                            בסדרה {data.shop.wanted.join(', ')}. מקום שכבר נמכר למפרסם - המוצר עובר למקום הפנוי הבא.
+                        </p>
+                    {/if}
+                </button>
                 <a href={SHOP_URL} target="_blank" rel="noopener noreferrer"
                    class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-bold hover:bg-white/10">
                     לחנות ↗
                 </a>
             </div>
-            <ShopAdsManager shop={data.shop} {form} />
+            {#if shopOpen}
+                <ShopAdsManager shop={data.shop} {form} />
+            {/if}
         </section>
     {/if}
 
