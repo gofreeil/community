@@ -10,14 +10,15 @@
 	// באמת מגיע responseAlert מהשרת ומוצגת שורת התרעה נפרדת.
 	// ============================================================
 	import { onMount, onDestroy, untrack } from 'svelte';
-	import type { ServerHealth } from '$lib/serverHealthTypes';
+	import type { ServerHealth, VercelCpuUsage } from '$lib/serverHealthTypes';
 
 	// live=true: טיימר קל לתווית "עודכן לפני X" + כפתור רענון ידני.
 	// live=false (דף הסטטיסטיקה + לוח הניהול): תמונת-מצב מרגע הכניסה בלבד — בלי טיימר ובלי רענון.
 	// summaryOnly=true (לוח הניהול): רק המחוג הראשי (הקיצור של כולם), בלי המדים המשניים.
 	// mainHref: הופך את כרטיס המחוג הראשי לקישור (לוח הניהול → באנר השעונים בדף הסטטיסטיקה).
-	let { initial = null, monthlyVisits = 0, live = true, summaryOnly = false, mainHref = null }:
-		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean; summaryOnly?: boolean; mainHref?: string | null } = $props();
+	// vercelCpu: מד Fluid Active CPU של Vercel (30 יום מול המכסה); undefined = לא מוצג
+	let { initial = null, monthlyVisits = 0, live = true, summaryOnly = false, mainHref = null, vercelCpu = undefined }:
+		{ initial?: ServerHealth | null; monthlyVisits?: number; live?: boolean; summaryOnly?: boolean; mainHref?: string | null; vercelCpu?: VercelCpuUsage | null } = $props();
 
 	// untrack: תמונת-מצב פותחת מהשרת; מכאן והלאה המדידות מגיעות מהרענון הפנימי
 	let health = $state<ServerHealth | null>(untrack(() => initial));
@@ -130,7 +131,15 @@
 		const h = health;
 		if (!h) return [];
 		const m = h.metrics;
+		const v = vercelCpu;
+		const vercel = vercelCpu === undefined ? [] : [{
+			key: 'vercel', icon: '▲', label: 'Vercel CPU',
+			load: v?.util ?? 0, util: v?.util ?? 0,
+			score: v ? Math.max(1, Math.min(10, Math.ceil(v.util / 10))) : 1,
+			sub: v ? `${v.usedHours} / ${v.limitHours} שע'` : 'חסר VERCEL_TOKEN'
+		}];
 		return [
+			...vercel,
 			{ key: 'cpu',  icon: '🔥', label: 'מעבד',     load: m.cpu.load ?? m.cpu.util,  util: m.cpu.util,  score: m.cpu.score,
 			  sub: `עומס ${m.cpu.load1} · ${m.cpu.cores} ליבות` },
 			{ key: 'ram',  icon: '🧠', label: 'זיכרון RAM', load: m.ram.load ?? m.ram.util,  util: m.ram.util,  score: m.ram.score,
@@ -349,7 +358,7 @@
 
 	.trend-lbl { color: #94a3b8; font-size: 0.72rem; }
 
-	.mini-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+	.mini-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; }
 	@media (max-width: 640px) { .mini-grid { grid-template-columns: repeat(2, 1fr); } }
 	.mini-card {
 		background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);

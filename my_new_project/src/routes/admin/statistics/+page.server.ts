@@ -6,6 +6,7 @@ import { getUserById, getUserByEmail, getItemsByCategory } from '$lib/server/db'
 import { getVisitStats, getVisitsThisMonth } from '$lib/server/visitStats';
 import { getAppInstallSummary, type AppInstallSummary } from '$lib/server/appInstalls';
 import { getServerHealth } from '$lib/server/serverHealth';
+import { getVercelCpuUsage } from '$lib/server/vercelUsage';
 import { buildItemsSummary, buildRegistrationsSummary, type ItemsSummary, type RegistrationsSummary } from '$lib/server/statsSummary';
 
 export interface HelpCallsSummary {
@@ -103,6 +104,7 @@ export const load: PageServerLoad = async (event) => {
         return null;
     });
     const monthlyVisits = await getVisitsThisMonth().catch(() => 0);
+    const vercelCpu = await getVercelCpuUsage();
 
-    return { stats, itemsSummary, helpCalls, registrations, serverHealth, monthlyVisits, appInstalls };
+    return { stats, itemsSummary, helpCalls, registrations, serverHealth, monthlyVisits, appInstalls, vercelCpu };
 };

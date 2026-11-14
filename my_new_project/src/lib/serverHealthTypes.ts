@@ -16,6 +16,11 @@ export interface HealthMetricResp {
     score: number; load: number; util: number; latencyMs: number | null;
 }
 
+// צריכת Fluid Active CPU של Vercel (30 יום) מול המכסה
+export interface VercelCpuUsage {
+    usedHours: number; limitHours: number; util: number;
+}
+
 export interface ServerHealth {
     ok: boolean;
     timestamp: string;

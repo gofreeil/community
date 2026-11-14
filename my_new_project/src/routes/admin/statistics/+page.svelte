@@ -415,7 +415,7 @@
 
 		<!-- באנר סטטוס השרת (לוח מכוונים) — תחתית הדף. יעד הגלילה האיטית מ-?focus=gauges -->
 		<div class="mt-8" id="server-gauges">
-			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={data.monthlyVisits} live={false} />
+			<ServerHealthGauges initial={data.serverHealth} monthlyVisits={data.monthlyVisits} live={false} vercelCpu={data.vercelCpu} />
 		</div>
 	</div>
 </div>
