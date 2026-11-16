@@ -22,13 +22,3 @@ export const en = {
         wrong_layout_hint: "Looks like it was typed in an English keyboard layout",
     },
 };
-
-export const ru = {
-    search: {
-        did_you_mean: "Возможно, вы имели в виду:",
-        showing_results_for: "Показаны результаты по запросу",
-        search_instead_for: "Искать вместо этого",
-        no_results_for: "Ничего не найдено по запросу",
-        wrong_layout_hint: "Похоже, набрано в английской раскладке",
-    },
-};

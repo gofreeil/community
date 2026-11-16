@@ -27,7 +27,6 @@
     let languages = [
         { name: "עברית", code: "he", flag: "il" },
         { name: "English", code: "en", flag: "us" },
-        { name: "русский", code: "ru", flag: "ru" },
     ];
 
     let showLangDropdown = $state(false);
@@ -235,7 +234,8 @@
         // שחזר שפה שמורה
         try {
             const saved = localStorage.getItem('lang');
-            if (saved) locale.set(saved);
+            // שפה שמורה שכבר לא נתמכת (רוסית) - נשארים בעברית
+            if (saved && languages.some((l) => l.code === saved)) locale.set(saved);
         } catch {}
 
         pingServer();

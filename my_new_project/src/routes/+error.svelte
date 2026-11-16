@@ -1,6 +1,6 @@
 <script lang="ts">
 	// דף השגיאה המותאם של האתר — מוצג בתוך ה-layout (Header/Footer/פרסומות נשארים)
-	// במקום עמוד "500 Internal Error" הגולמי של SvelteKit. תומך עברית/אנגלית/רוסית.
+	// במקום עמוד "500 Internal Error" הגולמי של SvelteKit. תומך עברית/אנגלית.
 	import { page } from "$app/state";
 	import { browser } from "$app/environment";
 	import { _ } from "svelte-i18n";
