@@ -462,9 +462,27 @@ export async function findStrapiUpUsersAll(
     return out;
 }
 
+/**
+ * /api/users מכבד רק start/limit שטוחים ומתעלם מ-pagination[...] — ואז מחזיר את *כל*
+ * המשתמשים (userSchemaHasField עם pagination[limit]=1 הוריד את כל 1,888 בכל קריאה).
+ * מתרגמים כאן פעם אחת, כך שכל קורא מקבל את העימוד שביקש. start/limit מפורשים גוברים.
+ */
+export function upUsersQuery(params: Record<string, string>): Record<string, string> {
+    const pick = (k: string) => params[`pagination[${k}]`];
+    const out = Object.fromEntries(Object.entries(params).filter(([k]) => !k.startsWith('pagination[')));
+    const pageSize = pick('pageSize');
+    const limit = out.limit ?? pick('limit') ?? pageSize;
+    const page = Number(pick('page'));
+    const start = out.start ?? pick('start')
+        ?? (pageSize && Number.isFinite(page) && page > 1 ? String((page - 1) * Number(pageSize)) : undefined);
+    if (limit !== undefined) out.limit = limit;
+    if (start !== undefined) out.start = start;
+    return out;
+}
+
 export async function findStrapiUpUsers(params: Record<string, string>, jwt?: string): Promise<unknown[]> {
     const url = new URL(STRAPI_URL + '/api/users');
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    Object.entries(upUsersQuery(params)).forEach(([k, v]) => url.searchParams.set(k, v));
     const res = await fetch(url.toString(), {
         headers: getHeaders(jwt),
         signal:  AbortSignal.timeout(FETCH_TIMEOUT_MS),
